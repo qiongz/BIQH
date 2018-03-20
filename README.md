@@ -1,1 +1,1 @@
-# BIQH
+# Exact diagonalization of BLQH systems
