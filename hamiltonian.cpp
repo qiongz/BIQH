@@ -15,135 +15,192 @@ hamil::hamil(basis &sector,double _t, double _U) {
     inner_indices.reserve(nHilbert*nsite);
     matrix_elements.reserve(nHilbert*nsite);
     outer_starts.reserve(nHilbert+1);
-    long b,mask,p,q,n,m,i,j,k,l,r,s,t,nsignu,nsignd;
+    long b,mask,mask_u,mask_d,p,q,n,m,i,j,k,l,r,s,t,nsignu,nsignd;
     long row=0;
     outer_starts.push_back(0);
     for(i=0; i<nbasis_up; i++) {
-        for(j=0; j<nbasis_down; j++) {
-            std::map<long,double> col_indices;
-                // select two electrons in left-basis <m_1, m_2|
-                // consider the upper-layer two electrons
-                for(n=0;n<nsite;n++)
-                  for(m=0;m<nsite;m++){
-                     mask=(1<<n)+(1<<m);
-                     // consider the upper-layer two electrons
-                     // if there're two electrons on n and m;
-                     if(i&mask==mask){
-                        // b is the rest electon positions
-                        b=i^mask;
-                        long nt,mt,it,mask_t,occ_t;
-                        nsignu=0;
-                        // perform translation
-                        for(t=0;t<nsite;t++){
-                          // PBC, if one electron cross left boundary, sign change with -1
-                          if(n-t<0){
-                            nt=n-t+nsite;
-                            nsignu++;
-                          }
-                          // PBC, if one electron cross right boundary, sign change with -1
-                          if(m+t>=nsite){
-                            mt=m+t-nsite;
-                            nsignu++;
-                          }
-                          // the translated two electrons indices
-                          mask_t=(1<<nt)+(1<<mt);
-                          // occupation of electons on the translated position
-                          occ_t=mask_t&b;
-                          // if there're no electon on the translated position
-                          // which is a valid translation, can be applied
-                          if(occ_t==0){
-                              // the translated indices
-                              k=mask_t+b;
-                              // calculate the Coulomb matrix contribution and
-                              // add it to the hamiltonian matrix
-                              if(k!=i) {
-                                  // Coulomb matrix element
-                                  long q_x,q_y;
-                                  q_y=nt;
-                                  complex<double> V_uu=0;
-                                  for(q_x=0;q_x<L;q_x++)
-                                     if(q_y!=0&&q_x!=0)
-                                         V_uu+=Coulomb_interaction(0,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
-                                  it=col_indices.find(k*nbasis_down+j);
-                                  if(it==col_indices.end())
-                                    col_indices.insert(std::pair<long,double>(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
-                                  else
-                                    it->second+=V_uu*pow(-1,nsignu);
-                               }
-                          // two electrons are occupied, and to be crossed next
-                          else if(occ_t==mask_t)
-                            signu+=2;
-                          // one electron is occupied, and to be crossed next
-                          else if(occ_t!=0 && occ_t!=mask_t)
-                            signu++;
-                           }
-                         }
-                      }
-
-                     // consider the lower-layer two electrons
-                     // if there're two electrons on n and m;
-                     if(j&mask==mask){
-                      {
-                        // b is the rest electon positions
-                        b=j^mask;
-                        long nt,mt,jt,mask_t,occ_t;
-                        nsignu=0;
-                        // perform translation
-                        for(t=0;t<nsite;t++){
-                          // PBC, if one electron cross left boundary, sign change with -1
-                          if(n-t<0){
-                            nt=n-t+nsite;
-                            nsignu++;
-                          }
-                          // PBC, if one electron cross right boundary, sign change with -1
-                          if(m+t>=nsite){
-                            mt=m+t-nsite;
-                            nsignu++;
-                          }
-                          // the translated two electrons indices
-                          mask_t=(1<<nt)+(1<<mt);
-                          // occupation of electons on the translated position
-                          occ_t=mask_t&b;
-                          // if there're no electon on the translated position
-                          // which is a valid translation, can be applied
-                          if(occ_t==0){
-                              // the translated indices
-                              k=mask_t+b;
-                              // calculate the Coulomb matrix contribution and
-                              // add it to the hamiltonian matrix
-                              if(k!=j) {
-                                  // Coulomb matrix element
-                                  long q_x,q_y;
-                                  q_y=nt;
-                                  complex<double> V_uu=0;
-                                  for(q_x=0;q_x<L;q_x++)
-                                     if(q_y!=0&&q_x!=0)
-                                         V_uu+=Coulomb_interaction(1,1,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
-                                  it=col_indices.find(i*nbasis_down+k);
-                                  if(it==col_indices.end())
-                                    col_indices.insert(std::pair<long,double>(i*nbasis_down+k,V_uu*pow(-1,nsignu)));
-                                  else
-                                    it->second+=V_uu*pow(-1,nsignu);
-                               }
-                          // two electrons are occupied, and to be crossed next
-                          else if(occ_t==mask_t)
-                            signu+=2;
-                          // one electron is occupied, and to be crossed next
-                          else if(occ_t!=0 && occ_t!=mask_t)
-                            signu++;
-                           }
-                         }
-                      }
+      for(j=0; j<nbasis_down; j++) {
+        std::map<long,double> col_indices;
+        // select two electrons in left-basis <m_1, m_2|
+        for(n=0;n<nsite;n++)
+          for(m=n;m<nsite;m++){
+            mask=(1<<n)+(1<<m);
+            // consider the upper-layer two electrons
+            // if there're two electrons on n and m;
+            if(i&mask==mask && m!=n){
+              // b is the rest electon positions
+              b=i^mask;
+              long nt,mt,it,mask_t,occ_t;
+              nsignu=0;
+              // perform translation
+              for(t=0;t<nsite;t++){
+                // PBC, if one electron cross left boundary, sign change with -1
+                if(n-t<0){
+                  nt=n-t+nsite;
+                  nsignu++;
+                }
+                // PBC, if one electron cross right boundary, sign change with -1
+                if(m+t>=nsite){
+                  mt=m+t-nsite;
+                  nsignu++;
+                }
+                // the translated two electrons indices
+                mask_t=(1<<nt)+(1<<mt);
+                // occupation of electons on the translated position
+                occ_t=mask_t&b;
+                // if there're no electon on the translated position
+                // which is a valid translation, can be applied
+                if(occ_t==0){
+                  // the translated indices
+                  k=mask_t+b;
+                  // calculate the Coulomb matrix contribution and
+                  // add it to the hamiltonian matrix
+                  if(k!=i) {
+                    // Coulomb matrix element
+                    long q_x,q_y;
+                    q_y=nt;
+                    complex<double> V_uu=0;
+                    for(q_x=0;q_x<L;q_x++)
+                      if(q_y!=0&&q_x!=0)
+                        V_uu+=Coulomb_interaction(0,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
+                    it=col_indices.find(k*nbasis_down+j);
+                    if(it==col_indices.end())
+                      col_indices.insert(std::pair<long,double>(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
+                    else
+                      it->second+=V_uu*pow(-1,nsignu);
+                    }
                   }
+                // two electrons are occupied, and to be crossed next
+                else if(occ_t==mask_t)
+                  signu+=2;
+                 // one electron is occupied, and to be crossed next
+                else if(occ_t!=0 && occ_t!=mask_t)
+                  signu++;
+                }
+               }
 
-            for(it=col_indices.begin(); it!=col_indices.end(); it++) {
+               // consider the lower-layer two electrons
+               // if there're two electrons on n and m;
+               if(j&mask==mask && m!=n){
+                 // b is the rest electon positions
+                 b=j^mask;
+                 long nt,mt,jt,mask_t,occ_t;
+                 nsignd=0;
+                 // perform translation
+                 for(t=0;t<nsite;t++){
+                   // PBC, if one electron cross left boundary, sign change with -1
+                   if(n-t<0){
+                     nt=n-t+nsite;
+                     nsignd++;
+                    }
+                   // PBC, if one electron cross right boundary, sign change with -1
+                   if(m+t>=nsite){
+                     mt=m+t-nsite;
+                     nsignd++;
+                     }
+                   // the translated two electrons indices
+                   mask_t=(1<<nt)+(1<<mt);
+                   // occupation of electons on the translated position
+                   occ_t=mask_t&b;
+                   // if there're no electon on the translated position
+                   // which is a valid translation, can be applied
+                   if(occ_t==0){
+                     // the translated indices
+                     k=mask_t+b;
+                     // calculate the Coulomb matrix contribution and
+                     // add it to the hamiltonian matrix
+                     if(k!=j) {
+                       // Coulomb matrix element
+                       long q_x,q_y;
+                       q_y=nt;
+                       complex<double> V_dd=0;
+                       for(q_x=0;q_x<L;q_x++)
+                         if(q_y!=0&&q_x!=0)
+                           V_dd+=Coulomb_interaction(1,1,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
+                       it=col_indices.find(i*nbasis_down+k);
+                       if(it==col_indices.end())
+                         col_indices.insert(std::pair<long,double>(i*nbasis_down+k,V_uu*pow(-1,nsignd)));
+                       else
+                         it->second+=V_uu*pow(-1,nsignd);
+                       }
+                     }
+                     // two electrons are occupied, and to be crossed next
+                   else if(occ_t==mask_t)
+                     signd+=2;
+                    // one electron is occupied, and to be crossed next
+                   else if(occ_t!=0 && occ_t!=mask_t)
+                     signd++;
+                  }
+                }
+                // consider the one electron in the upper layer
+                // and one electron in the lower layer case
+                mask_u=(1<<n);
+                mask_d=(1<<m);
+                if(i&mask_u==mask_u && j&mask_d==mask_d){
+                  // b is the rest electon positions for upper-layer electrons
+                  b=i^mask_u;
+                  p=j^mask_d;
+                  long nt,mt,jt,mask_ut,occ_ut,mask_dt,occ_dt;
+                  nsignu=0;
+                  nsignd=0;
+                  // perform translation
+                  for(t=0;t<nsite;t++){
+                    // PBC, if one electron cross left boundary, sign change with -1
+                    if(n-t<0){
+                      nt=n-t+nsite;
+                      nsignu++;
+                      }
+                    // PBC, if one electron cross right boundary, sign change with -1
+                    if(m+t>=nsite){
+                      mt=m+t-nsite;
+                      nsignd++;
+                    }
+                    // the translated upper electron index
+                    mask_ut=(1<<nt);
+                    mask_dt=(1<<mt);
+                    // occupation of electons on the translated position
+                    occ_ut=mask_ut&b;
+                    occ_dt=mask_dt&p;
+                    // if there're no electon on the translated position
+                    // which is a valid translation, can be applied
+                    if(occ_ut==0 && occ_dt==0){
+                      // the translated indices
+                      k=mask_ut+b;
+                      l=mask_dt+p;
+                      // calculate the Coulomb matrix contribution and
+                      // add it to the hamiltonian matrix
+                      if(k!=i && l!=j) {
+                        // Coulomb matrix element
+                        long q_x,q_y;
+                        q_y=nt;
+                        complex<double> V_ud=0;
+                        for(q_x=0;q_x<L;q_x++)
+                          if(q_y!=0&&q_x!=0)
+                            V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
+                        it=col_indices.find(k*nbasis_down+l);
+                        if(it==col_indices.end())
+                          col_indices.insert(std::pair<long,double>(k*nbasis_down+l,V_uu*pow(-1,nsignu)));
+                        else
+                          it->second+=V_uu*pow(-1,nsignu);
+                        }
+                      // two electrons are occupied, and to be crossed next
+                      else if(occ_ut==mask_ut && occ_dt==mask_dt)
+                        signu+=2;
+                      // one electron is occupied, and to be crossed next
+                      else if(occ_ut==0 && occ_dt==mask_dt || occ_dt==0 && occ_ut==mask_ut)
+                        signu++;
+                      }
+                    }
+                  }
+               }
+              for(it=col_indices.begin(); it!=col_indices.end(); it++) {
                 inner_indices.push_back(it->first);
                 matrix_elements.push_back(it->second);
-            }
-            row+=col_indices.size();
-            outer_starts.push_back(row);
-            col_indices.clear();
-          }
+              }
+             row+=col_indices.size();
+             outer_starts.push_back(row);
+             col_indices.clear();
+           }
     }
     H.init(outer_starts,inner_indices,matrix_elements);
     outer_starts.clear();
