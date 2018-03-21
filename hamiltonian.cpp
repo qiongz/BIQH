@@ -1,7 +1,7 @@
 #include"hamiltonian.h"
 hamil::hamil() {}
 
-hamil::hamil(basis &sector,double _d) {
+void hamil::set_hamil(basis & sector, double _d){
     long nbasis_up,nbasis_down;
     d=_d;
     nsite=sector.nsite;
@@ -23,7 +23,7 @@ hamil::hamil(basis &sector,double _d) {
         std::map<long,complex<double> > col_indices;
         // select two electrons in left-basis <m_1, m_2|
         for(n=0;n<nsite;n++)
-          for(m=n;m<nsite;m++){
+          for(m=0;m<nsite;m++){
             mask=(1<<n)+(1<<m);
             // consider the upper-layer two electrons
             // if there're two electrons on n and m;
@@ -39,11 +39,15 @@ hamil::hamil(basis &sector,double _d) {
                   nt=n-t+nsite;
                   nsignu++;
                 }
+                else
+                  nt=n-t;
                 // PBC, if one electron cross right boundary, sign change with -1
                 if(m+t>=nsite){
                   mt=m+t-nsite;
                   nsignu++;
                 }
+                else
+                  mt=m+t;
                 // the translated two electrons indices
                 mask_ut=(1<<nt)+(1<<mt);
                 // occupation of electons on the translated position
@@ -58,7 +62,7 @@ hamil::hamil(basis &sector,double _d) {
                   if(k!=i) {
                     // Coulomb matrix element, in Landau gauge
                     long q_x,q_y;
-                    q_y=nt;
+                    q_y=t;
                     complex<double> V_uu=0;
                     for(q_x=0;q_x<nsite;q_x++)
                       if(q_y!=0&&q_x!=0)
@@ -68,6 +72,7 @@ hamil::hamil(basis &sector,double _d) {
                       col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
                     else
                       it->second+=V_uu*pow(-1,nsignu);
+
                     }
                   }
                 // two electrons are occupied, and to be crossed next
@@ -93,11 +98,15 @@ hamil::hamil(basis &sector,double _d) {
                      nt=n-t+nsite;
                      nsignd++;
                     }
+                   else
+                     nt=n-t;
                    // PBC, if one electron cross right boundary, sign change with -1
                    if(m+t>=nsite){
                      mt=m+t-nsite;
                      nsignd++;
                      }
+                   else
+                     mt=m+t;
                    // the translated two electrons indices
                    mask_dt=(1<<nt)+(1<<mt);
                    // occupation of electons on the translated position
@@ -112,7 +121,7 @@ hamil::hamil(basis &sector,double _d) {
                      if(k!=j) {
                        // Coulomb matrix element, in Landau gauge
                        long q_x,q_y;
-                       q_y=nt;
+                       q_y=t;
                        complex<double> V_dd=0;
                        for(q_x=0;q_x<nsite;q_x++)
                          if(q_y!=0&&q_x!=0)
@@ -136,6 +145,8 @@ hamil::hamil(basis &sector,double _d) {
                 // and one electron in the lower layer case
                 mask_u=(1<<n);
                 mask_d=(1<<m);
+                // if there is one electron at site n in upper-layer
+                // and one electron at site m in lower-layer
                 if(i&mask_u==mask_u && j&mask_d==mask_d){
                   // b is the rest electon positions for upper-layer electrons
                   b=i^mask_u;
@@ -150,11 +161,15 @@ hamil::hamil(basis &sector,double _d) {
                       nt=n-t+nsite;
                       nsignu++;
                       }
+                    else
+                      nt=n-t;
                     // PBC, if one electron cross right boundary, sign change with -1
                     if(m+t>=nsite){
                       mt=m+t-nsite;
                       nsignd++;
                     }
+                    else
+                      mt=m+t;
                     // the translated upper electron index
                     mask_ut=(1<<nt);
                     mask_dt=(1<<mt);
@@ -172,11 +187,12 @@ hamil::hamil(basis &sector,double _d) {
                       if(k!=i && l!=j) {
                         // Coulomb matrix element, in Landau gauge
                         long q_x,q_y;
-                        q_y=nt;
+                        q_y=t;
                         complex<double> V_ud=0;
                         for(q_x=0;q_x<nsite;q_x++)
-                          if(q_y!=0&&q_x!=0)
+                          if(q_y!=0&&q_x!=0){
                             V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/nphi),sin((n-m+t)*q_x*2.0*M_PI/nphi))/(4.0*M_PI*nphi);
+                          }
                         it=col_indices.find(k*nbasis_down+l);
                         if(it==col_indices.end())
                           col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+l,V_ud*pow(-1,nsignu+nsignd)));
@@ -207,7 +223,6 @@ hamil::hamil(basis &sector,double _d) {
     inner_indices.clear();
     matrix_elements.clear();
 }
-
 hamil::~hamil() {}
 
 const hamil & hamil::operator =(const hamil & _gs_hconfig) {
@@ -227,9 +242,9 @@ const hamil & hamil::operator =(const hamil & _gs_hconfig) {
 double hamil::Coulomb_interaction(int alpha, int beta, int q_x, int q_y){
   double q=sqrt(q_x*q_x+q_y*q_y)*2*M_PI/nsite;
   if(alpha==beta)
-      return 2.0*M_PI/(q+1e-8)*exp(-q*q/2);
+      return 2.0*M_PI/(q+1e-10)*exp(-q*q/2);
   else
-      return 2.0*M_PI/(q+1e-8)*exp(-q*q/2-q*d);
+      return 2.0*M_PI/(q+1e-10)*exp(-q*q/2-q*d);
 }
 
 double hamil::spectral_function(vector<complex<double> > &O_phi_0,double omega,double _E0, double eta, int annil) {
