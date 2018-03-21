@@ -9,13 +9,13 @@ public:
     unsigned seed;  //!< Seed for RNGs
     long nHilbert;  //!< Hilbert space size
     long lambda;    //!< Lanczos update steps
-    double d;
-    double E0;      //!< Ground state eigen energy
+    int nsite,nphi;
+    double d,E0;      //!< Ground state eigen energy
     basis sector;   //!< Basis
     Mat H;  //!< Hamiltonian matrix in CSR format
     //Mat O;  //!< Operator matrix in CSR format
     std::vector<double> norm; //!< Normalization coefficients vector in Lanczos update
-    std::vector<double> overlap; //!< Overlap coefficients vector in Lanczos update
+    std::vector< complex<double> > overlap; //!< Overlap coefficients vector in Lanczos update
     std::vector< complex<double> > psir_0; //!< Ground state wave function in real-space
     std::vector< complex<double> > psi_0; //!<Ground state eigenvector in Krylov subspace
     std::vector< complex<double> > psi_n0; //!<First element of eigenvectors in Krylov subspace
@@ -30,8 +30,6 @@ public:
     lhamil(const Mat & _H,long _nHilbert,long _lambda,unsigned _seed);  //!< Constructor with hamiltonian matrix as input
     /**
      \param _sector Basis sector
-     \param t Hopping strength
-     \param U Onsite replusive interaction strength
      \param _lambda Lanczos update steps
      \param _seed Seed for RNGs
     */
@@ -40,8 +38,6 @@ public:
     void init(basis &_sector,double d, long _lambda,unsigned _seed);
     const lhamil & operator=(const lhamil &);
     /** \param _sector Basis sector
-        \param t Hopping strength
-        \param U Onsite replusive interaction strength
     */
     void set_hamil(basis & _sector ,double d);  //!< Initialize hamiltonian matrix
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
@@ -51,6 +47,7 @@ public:
     void diag(int l); //!< Diagonalize the Lanczos hamiltonain with first lxl elements
 
     void eigenstates_reconstruction(); //!< Transform |psi_0> to |psir_0>
+    double Coulomb_interaction(int alpha,int beta, int q_x, int q_y);
     double ground_state_energy();    //!< Ground state energy
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version
     void print_hamil(); //!< print the full hamiltonian matrix

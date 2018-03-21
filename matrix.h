@@ -28,7 +28,7 @@ public:
 
     Vec();
     Vec(long _size);
-    Vec(long _size,const double _init);
+    Vec(long _size,const complex<double> _init);
     Vec(const Vec & rhs);
     ~Vec();
 
@@ -43,6 +43,7 @@ public:
     Vec & operator-=(const Vec & rhs);
     Vec & operator+=(const Vec & rhs);
     Vec & operator*=(const double & rhs);
+    Vec & operator*=(const complex<double> & rhs);
     Vec & operator/=(const double & rhs);
     Vec operator+(const Vec &);
     Vec operator-(const Vec &);

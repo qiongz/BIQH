@@ -12,8 +12,7 @@ lhamil::lhamil(basis &_sector,double _d,long _lambda,unsigned _seed) {
     sector=_sector;
     lambda=_lambda;
     seed=_seed;
-    d=_d;
-    set_hamil(sector,d);
+    set_hamil(sector,_d);
 }
 
 lhamil::~lhamil() {
@@ -23,8 +22,7 @@ void lhamil::init(basis &_sector,double _d,long _lambda,unsigned _seed) {
     sector=_sector;
     lambda=_lambda;
     seed=_seed;
-    d=_d;
-    set_hamil(sector,t,U);
+    set_hamil(sector,_d);
 }
 const lhamil & lhamil::operator =(const lhamil & _config) {
     if(this !=&_config) {
@@ -32,7 +30,6 @@ const lhamil & lhamil::operator =(const lhamil & _config) {
         sector=_config.sector;
         H=_config.H;
         seed=_config.seed;
-        d=_config.d;
         lambda=_config.lambda;
         E0=_config.E0;
         norm.assign(_config.norm.begin(),_config.norm.end());
@@ -44,19 +41,27 @@ const lhamil & lhamil::operator =(const lhamil & _config) {
     return *this;
 }
 
-void lhamil::set_hamil(basis &_sector, double d)
+double lhamil::Coulomb_interaction(int alpha, int beta, int q_x, int q_y){
+  double q=sqrt(q_x*q_x+q_y*q_y)*2*M_PI/nsite;
+  if(alpha==beta)
+      return 2.0*M_PI/(q+1e-8)*exp(-q*q/2);
+  else
+      return 2.0*M_PI/(q+1e-8)*exp(-q*q/2-q*d);
+}
+
+void lhamil::set_hamil(basis &_sector, double _d)
 {
-    long nsite,nbasis_up,nbasis_down;
+    long nbasis_up,nbasis_down;
     d=_d;
     sector=_sector;
     nsite=sector.nsite;
+    nphi=nsite;
     nbasis_up=sector.nbasis_up;
     nbasis_down=sector.nbasis_down;
     nHilbert=nbasis_up*nbasis_down;
-    Nphi=L;
     std::vector<long> inner_indices, outer_starts;
     std::vector< complex<double> > matrix_elements;
-    std::map<long,complex<double> >::iterator it;
+    std::map<long,complex<double> > ::iterator it;
     inner_indices.reserve(nHilbert*nsite);
     matrix_elements.reserve(nHilbert*nsite);
     outer_starts.reserve(nHilbert+1);
@@ -65,7 +70,7 @@ void lhamil::set_hamil(basis &_sector, double d)
     outer_starts.push_back(0);
     for(i=0; i<nbasis_up; i++) {
       for(j=0; j<nbasis_down; j++) {
-        std::map<long,double> col_indices;
+        std::map<long,complex<double> > col_indices;
         // select two electrons in left-basis <m_1, m_2|
         for(n=0;n<nsite;n++)
           for(m=n;m<nsite;m++){
@@ -75,7 +80,7 @@ void lhamil::set_hamil(basis &_sector, double d)
             if(i&mask==mask && m!=n){
               // b is the rest electon positions
               b=i^mask;
-              long nt,mt,it,mask_ut,occ_ut;
+              long nt,mt,mask_ut,occ_ut;
               nsignu=0;
               // perform translation
               for(t=0;t<nsite;t++){
@@ -105,9 +110,9 @@ void lhamil::set_hamil(basis &_sector, double d)
                     long q_x,q_y;
                     q_y=nt;
                     complex<double> V_uu=0;
-                    for(q_x=0;q_x<L;q_x++)
+                    for(q_x=0;q_x<nsite;q_x++)
                       if(q_y!=0&&q_x!=0)
-                        V_uu+=Coulomb_interaction(0,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
+                        V_uu+=Coulomb_interaction(0,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/nphi),sin((n-m+t)*q_x*2.0*M_PI/nphi))/(4.0*M_PI*nphi);
                     it=col_indices.find(k*nbasis_down+j);
                     if(it==col_indices.end())
                       col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
@@ -117,10 +122,10 @@ void lhamil::set_hamil(basis &_sector, double d)
                   }
                 // two electrons are occupied, and to be crossed next
                 else if(occ_ut==mask_ut)
-                  signu+=2;
+                  nsignu+=2;
                  // one electron is occupied, and to be crossed next
                 else if(occ_ut!=0 && occ_ut!=mask_ut)
-                  signu++;
+                  nsignu++;
                 }
                }
 
@@ -129,7 +134,7 @@ void lhamil::set_hamil(basis &_sector, double d)
                if(j&mask==mask && m!=n){
                  // b is the rest electon positions
                  b=j^mask;
-                 long nt,mt,jt,mask_dt,occ_dt;
+                 long nt,mt,mask_dt,occ_dt;
                  nsignd=0;
                  // perform translation
                  for(t=0;t<nsite;t++){
@@ -159,9 +164,9 @@ void lhamil::set_hamil(basis &_sector, double d)
                        long q_x,q_y;
                        q_y=nt;
                        complex<double> V_dd=0;
-                       for(q_x=0;q_x<L;q_x++)
+                       for(q_x=0;q_x<nsite;q_x++)
                          if(q_y!=0&&q_x!=0)
-                           V_dd+=Coulomb_interaction(1,1,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
+                           V_dd+=Coulomb_interaction(1,1,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/nphi),sin((n-m+t)*q_x*2.0*M_PI/nphi))/(4.0*M_PI*nphi);
                        it=col_indices.find(i*nbasis_down+k);
                        if(it==col_indices.end())
                          col_indices.insert(std::pair<long,complex<double> >(i*nbasis_down+k,V_dd*pow(-1,nsignd)));
@@ -171,10 +176,10 @@ void lhamil::set_hamil(basis &_sector, double d)
                      }
                      // two electrons are occupied, and to be crossed next
                    else if(occ_dt==mask_dt)
-                     signd+=2;
+                     nsignd+=2;
                     // one electron is occupied, and to be crossed next
                    else if(occ_dt!=0 && occ_dt!=mask_dt)
-                     signd++;
+                     nsignd++;
                   }
                 }
                 // consider the one electron in the upper layer
@@ -185,7 +190,7 @@ void lhamil::set_hamil(basis &_sector, double d)
                   // b is the rest electon positions for upper-layer electrons
                   b=i^mask_u;
                   p=j^mask_d;
-                  long nt,mt,jt,mask_ut,occ_ut,mask_dt,occ_dt;
+                  long nt,mt,mask_ut,occ_ut,mask_dt,occ_dt;
                   nsignu=0;
                   nsignd=0;
                   // perform translation
@@ -219,21 +224,21 @@ void lhamil::set_hamil(basis &_sector, double d)
                         long q_x,q_y;
                         q_y=nt;
                         complex<double> V_ud=0;
-                        for(q_x=0;q_x<L;q_x++)
+                        for(q_x=0;q_x<nsite;q_x++)
                           if(q_y!=0&&q_x!=0)
-                            V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
+                            V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/nphi),sin((n-m+t)*q_x*2.0*M_PI/nphi))/(4.0*M_PI*nphi);
                         it=col_indices.find(k*nbasis_down+l);
                         if(it==col_indices.end())
-                          col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+l,V_ud*pow(-1,nsignu)));
+                          col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+l,V_ud*pow(-1,nsignu+nsignd)));
                         else
-                          it->second+=V_ud*pow(-1,nsignu);
+                          it->second+=V_ud*pow(-1,nsignu+nsignd);
                         }
                       // two electrons are occupied, and to be crossed next
                       else if(occ_ut==mask_ut && occ_dt==mask_dt)
-                        signu+=2;
+                        nsignu+=2;
                       // one electron is occupied, and to be crossed next
                       else if(occ_ut==0 && occ_dt==mask_dt || occ_dt==0 && occ_ut==mask_ut)
-                        signu++;
+                        nsignu++;
                       }
                     }
                   }
@@ -317,86 +322,86 @@ void lhamil::coeff_explicit_update()
     #endif
 
     norm_factor=0;
-    #pragma omp parallel for reduction(+:norm_factor)
+    //#pragma omp parallel for reduction(+:norm_factor)
     for(i=0; i<nHilbert; i++)
         norm_factor+=conj(phi_0[i])*phi_0[i];
-    norm_factor=norm_factor.norm();
+    norm_factor=abs(norm_factor);
 
-    #pragma omp parallel for schedule(static)
+    //#pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
         phi_0[i]/=norm_factor.real();
     norm[0]=1;
 
     // phi_1=H*phi_0;
     memset(phi_1,0,sizeof(complex<double> )*nHilbert);
-    #pragma omp parallel for schedule(static)
+    //#pragma omp parallel for schedule(static)
     for(i=0; i<H.outer_starts.size()-1; i++) {
-        #pragma ivdep
+        //#pragma ivdep
         for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
             phi_1[i]+=H.value[idx]*phi_0[H.inner_indices[idx]];
     }
 
     //overlap[0] = phi_0 * phi_1;
     overlap_factor=0;
-    #pragma omp parallel for reduction(+:overlap_factor)
+    //#pragma omp parallel for reduction(+:overlap_factor)
     for(i=0; i<nHilbert; i++)
         overlap_factor+=conj(phi_1[i])*phi_0[i];
     overlap[0]=overlap_factor;
 
     //phi_1 -= phi_0 * overlap[0];
-    #pragma omp parallel for schedule(static)
+    //#pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
         phi_1[i]-=phi_0[i]*overlap_factor;
 
     //norm[1] = phi_1.normalize();
     norm_factor=0;
-    #pragma omp parallel for reduction(+:norm_factor)
+    //#pragma omp parallel for reduction(+:norm_factor)
     for(i=0; i<nHilbert; i++)
         norm_factor+=conj(phi_1[i])*phi_1[i];
-    norm_factor=norm_factor.norm();
+    norm_factor=abs(norm_factor);
 
-    #pragma omp parallel for schedule(static)
+    //#pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
         phi_1[i]/=norm_factor.real();
     norm[1]=norm_factor.real();
 
     for(j= 1; j < lambda; j++) {
         memset(phi_2,0,sizeof(complex<double>)*nHilbert);
-        #pragma omp parallel for schedule(static)
+        //#pragma omp parallel for schedule(static)
         for(i=0; i<H.outer_starts.size()-1; i++) {
-            #pragma ivdep
+            //#pragma ivdep
             for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
                 phi_2[i]+=H.value[idx]*phi_1[H.inner_indices[idx]];
         }
 
         //overlap[j] = phi_1 * phi_2;
         overlap_factor=0;
-        #pragma omp parallel for reduction(+:overlap_factor)
+        //#pragma omp parallel for reduction(+:overlap_factor)
         for(i=0; i<nHilbert; i++)
             overlap_factor+=conj(phi_1[i])*phi_2[i];
         overlap[j]=overlap_factor;
 
         //phi_2 -= phi_1 * overlap[j] + phi_0 * norm[j];
-        #pragma omp parallel for schedule(static)
+        //#pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_t[i]=phi_0[i]*norm[j];
 
-        #pragma omp parallel for schedule(static)
+        //#pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_t[i]+=phi_1[i]*overlap_factor;
 
-        #pragma omp parallel for schedule(static)
+        //#pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_2[i]-=phi_t[i];
 
         //norm[j+1] = phi_2.normalize();
         norm_factor=0;
-        #pragma omp parallel for reduction(+:norm_factor)
+        //#pragma omp parallel for reduction(+:norm_factor)
         for(i=0; i<nHilbert; i++)
             norm_factor+=conj(phi_2[i])*phi_2[i];
-        norm_factor=norm_factor.norm();
+        norm_factor=abs(norm_factor);
 
-        #pragma omp parallel for schedule(static)
+        //#pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_2[i]/=norm_factor.real();
         norm[j+1]=norm_factor.real();
@@ -444,11 +449,11 @@ void lhamil::coeff_update_wopt(vector<complex<double> > O_phi_0)
         phi_0[i]=O_phi_0[i];
 
     norm_factor=0;
-    #pragma omp parallel for reduction(+:norm_factor)
+    //#pragma omp parallel for reduction(+:norm_factor)
     for(i=0; i<nHilbert; i++)
         norm_factor+=conj(phi_0[i])*phi_0[i];
-    norm_factor=norm_factor.norm()+1e-24;
-    #pragma omp parallel for schedule(static)
+    norm_factor=abs(norm_factor)+1e-24;
+    //#pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
         phi_0[i]/=norm_factor.real();
 
@@ -456,7 +461,7 @@ void lhamil::coeff_update_wopt(vector<complex<double> > O_phi_0)
 
     // phi_1=H*phi_0;
     memset(phi_1,0,sizeof(complex<double> )*nHilbert);
-    #pragma omp parallel for schedule(static)
+    //#pragma omp parallel for schedule(static)
     for(i=0; i<H.outer_starts.size()-1; i++) {
         #pragma ivdep
         for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
@@ -465,31 +470,31 @@ void lhamil::coeff_update_wopt(vector<complex<double> > O_phi_0)
 
     //overlap[0] = phi_0 * phi_1;
     overlap_factor=0;
-    #pragma omp parallel for reduction(+:overlap_factor)
+    //#pragma omp parallel for reduction(+:overlap_factor)
     for(i=0; i<nHilbert; i++)
         overlap_factor+=conj(phi_1[i])*phi_0[i];
     overlap[0]=overlap_factor;
 
     //phi_1 -= phi_0 * overlap[0];
-    #pragma omp parallel for schedule(static)
+    //#pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
         phi_1[i]-=phi_0[i]*overlap_factor;
 
     //norm[1] = phi_1.normalize();
     norm_factor=0;
-    #pragma omp parallel for reduction(+:norm_factor)
+    //#pragma omp parallel for reduction(+:norm_factor)
     for(i=0; i<nHilbert; i++)
         norm_factor+=conj(phi_1[i])*phi_1[i];
-    norm_factor=norm_factor.norm();
+    norm_factor=abs(norm_factor);
 
-    #pragma omp parallel for schedule(static)
+    //#pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
         phi_1[i]/=norm_factor.real();
     norm[1]=norm_factor.real();
 
     for(j= 1; j < lambda; j++) {
         memset(phi_2,0,sizeof(double)*nHilbert);
-        #pragma omp parallel for schedule(static)
+        //#pragma omp parallel for schedule(static)
         for(i=0; i<H.outer_starts.size()-1; i++) {
             #pragma ivdep
             for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
@@ -498,32 +503,32 @@ void lhamil::coeff_update_wopt(vector<complex<double> > O_phi_0)
 
         //overlap[j] = phi_1 * phi_2;
         overlap_factor=0;
-        #pragma omp parallel for reduction(+:overlap_factor)
+        //#pragma omp parallel for reduction(+:overlap_factor)
         for(i=0; i<nHilbert; i++)
             overlap_factor+=conj(phi_1[i])*phi_2[i];
         overlap[j]=overlap_factor;
 
         //phi_2 -= phi_1 * overlap[j] + phi_0 * norm[j];
-        #pragma omp parallel for schedule(static)
+        //#pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_t[i]=phi_0[i]*norm[j];
 
-        #pragma omp parallel for schedule(static)
+        //#pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_t[i]+=phi_1[i]*overlap_factor;
 
-        #pragma omp parallel for schedule(static)
+        //#pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_2[i]-=phi_t[i];
 
         //norm[j+1] = phi_2.normalize();
         norm_factor=0;
-        #pragma omp parallel for reduction(+:norm_factor)
+        //#pragma omp parallel for reduction(+:norm_factor)
         for(i=0; i<nHilbert; i++)
             norm_factor+=conj(phi_2[i])*phi_2[i];
-        norm_factor=norm_factor.norm();
+        norm_factor=abs(norm_factor);
 
-        #pragma omp parallel for schedule(static)
+        //#pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_2[i]/=norm_factor.real();
         norm[j+1]=norm_factor.real();
@@ -627,7 +632,7 @@ void lhamil::eigenstates_reconstruction() {
     for(n=0; n<nHilbert; n++)
         Norm+=conj(psir_0[n])*psir_0[n];
     for(n=0; n<nHilbert; n++)
-        psir_0[n]/=Norm.norm();
+        psir_0[n]/=abs(Norm);
 }
 
 double lhamil::ground_state_energy() {

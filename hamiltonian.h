@@ -8,7 +8,8 @@ public:
     long nHilbert;
     /** seed for the RNGs */
     unsigned seed;
-    int L,d,Nphi;
+    long nsite,nphi;
+    double d;
     /** Hamiltonian matrix in CSR format */
     Mat H;
     /** Eigenvalues of the hamiltonian */

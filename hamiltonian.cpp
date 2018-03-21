@@ -2,16 +2,16 @@
 hamil::hamil() {}
 
 hamil::hamil(basis &sector,double _d) {
-    long nsite,nbasis_up,nbasis_down;
+    long nbasis_up,nbasis_down;
     d=_d;
     nsite=sector.nsite;
+    nphi=nsite;
     nbasis_up=sector.nbasis_up;
     nbasis_down=sector.nbasis_down;
     nHilbert=nbasis_up*nbasis_down;
-    Nphi=L;
     std::vector<long> inner_indices, outer_starts;
     std::vector< complex<double> > matrix_elements;
-    std::map<long,complex<double> >::iterator it;
+    std::map<long,complex<double> > ::iterator it;
     inner_indices.reserve(nHilbert*nsite);
     matrix_elements.reserve(nHilbert*nsite);
     outer_starts.reserve(nHilbert+1);
@@ -20,7 +20,7 @@ hamil::hamil(basis &sector,double _d) {
     outer_starts.push_back(0);
     for(i=0; i<nbasis_up; i++) {
       for(j=0; j<nbasis_down; j++) {
-        std::map<long,double> col_indices;
+        std::map<long,complex<double> > col_indices;
         // select two electrons in left-basis <m_1, m_2|
         for(n=0;n<nsite;n++)
           for(m=n;m<nsite;m++){
@@ -30,7 +30,7 @@ hamil::hamil(basis &sector,double _d) {
             if(i&mask==mask && m!=n){
               // b is the rest electon positions
               b=i^mask;
-              long nt,mt,it,mask_ut,occ_ut;
+              long nt,mt,mask_ut,occ_ut;
               nsignu=0;
               // perform translation
               for(t=0;t<nsite;t++){
@@ -60,9 +60,9 @@ hamil::hamil(basis &sector,double _d) {
                     long q_x,q_y;
                     q_y=nt;
                     complex<double> V_uu=0;
-                    for(q_x=0;q_x<L;q_x++)
+                    for(q_x=0;q_x<nsite;q_x++)
                       if(q_y!=0&&q_x!=0)
-                        V_uu+=Coulomb_interaction(0,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
+                        V_uu+=Coulomb_interaction(0,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/nphi),sin((n-m+t)*q_x*2.0*M_PI/nphi))/(4.0*M_PI*nphi);
                     it=col_indices.find(k*nbasis_down+j);
                     if(it==col_indices.end())
                       col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
@@ -72,10 +72,10 @@ hamil::hamil(basis &sector,double _d) {
                   }
                 // two electrons are occupied, and to be crossed next
                 else if(occ_ut==mask_ut)
-                  signu+=2;
+                  nsignu+=2;
                  // one electron is occupied, and to be crossed next
                 else if(occ_ut!=0 && occ_ut!=mask_ut)
-                  signu++;
+                  nsignu++;
                 }
                }
 
@@ -84,7 +84,7 @@ hamil::hamil(basis &sector,double _d) {
                if(j&mask==mask && m!=n){
                  // b is the rest electon positions
                  b=j^mask;
-                 long nt,mt,jt,mask_dt,occ_dt;
+                 long nt,mt,mask_dt,occ_dt;
                  nsignd=0;
                  // perform translation
                  for(t=0;t<nsite;t++){
@@ -114,9 +114,9 @@ hamil::hamil(basis &sector,double _d) {
                        long q_x,q_y;
                        q_y=nt;
                        complex<double> V_dd=0;
-                       for(q_x=0;q_x<L;q_x++)
+                       for(q_x=0;q_x<nsite;q_x++)
                          if(q_y!=0&&q_x!=0)
-                           V_dd+=Coulomb_interaction(1,1,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
+                           V_dd+=Coulomb_interaction(1,1,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/nphi),sin((n-m+t)*q_x*2.0*M_PI/nphi))/(4.0*M_PI*nphi);
                        it=col_indices.find(i*nbasis_down+k);
                        if(it==col_indices.end())
                          col_indices.insert(std::pair<long,complex<double> >(i*nbasis_down+k,V_dd*pow(-1,nsignd)));
@@ -126,10 +126,10 @@ hamil::hamil(basis &sector,double _d) {
                      }
                      // two electrons are occupied, and to be crossed next
                    else if(occ_dt==mask_dt)
-                     signd+=2;
+                     nsignd+=2;
                     // one electron is occupied, and to be crossed next
                    else if(occ_dt!=0 && occ_dt!=mask_dt)
-                     signd++;
+                     nsignd++;
                   }
                 }
                 // consider the one electron in the upper layer
@@ -140,7 +140,7 @@ hamil::hamil(basis &sector,double _d) {
                   // b is the rest electon positions for upper-layer electrons
                   b=i^mask_u;
                   p=j^mask_d;
-                  long nt,mt,jt,mask_ut,occ_ut,mask_dt,occ_dt;
+                  long nt,mt,mask_ut,occ_ut,mask_dt,occ_dt;
                   nsignu=0;
                   nsignd=0;
                   // perform translation
@@ -174,21 +174,21 @@ hamil::hamil(basis &sector,double _d) {
                         long q_x,q_y;
                         q_y=nt;
                         complex<double> V_ud=0;
-                        for(q_x=0;q_x<L;q_x++)
+                        for(q_x=0;q_x<nsite;q_x++)
                           if(q_y!=0&&q_x!=0)
-                            V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
+                            V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/nphi),sin((n-m+t)*q_x*2.0*M_PI/nphi))/(4.0*M_PI*nphi);
                         it=col_indices.find(k*nbasis_down+l);
                         if(it==col_indices.end())
-                          col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+l,V_ud*pow(-1,nsignu)));
+                          col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+l,V_ud*pow(-1,nsignu+nsignd)));
                         else
-                          it->second+=V_ud*pow(-1,nsignu);
+                          it->second+=V_ud*pow(-1,nsignu+nsignd);
                         }
                       // two electrons are occupied, and to be crossed next
                       else if(occ_ut==mask_ut && occ_dt==mask_dt)
-                        signu+=2;
+                        nsignu+=2;
                       // one electron is occupied, and to be crossed next
                       else if(occ_ut==0 && occ_dt==mask_dt || occ_dt==0 && occ_ut==mask_ut)
-                        signu++;
+                        nsignu++;
                       }
                     }
                   }
@@ -216,7 +216,7 @@ const hamil & hamil::operator =(const hamil & _gs_hconfig) {
         nHilbert=_gs_hconfig.nHilbert;
         H=_gs_hconfig.H;
         d=_gs_hconfig.d;
-        Nphi=_gs_hconfig.Nphi;
+        nphi=_gs_hconfig.nphi;
         eigenvalues.assign(_gs_hconfig.eigenvalues.begin(),_gs_hconfig.eigenvalues.end());
         psi_0.assign(_gs_hconfig.psi_0.begin(),_gs_hconfig.psi_0.end());
         psi_n0.assign(_gs_hconfig.psi_n0.begin(),_gs_hconfig.psi_n0.end());
@@ -225,7 +225,7 @@ const hamil & hamil::operator =(const hamil & _gs_hconfig) {
 }
 
 double hamil::Coulomb_interaction(int alpha, int beta, int q_x, int q_y){
-  double q=sqrt(q_x*q_x+q_y*q_y)*2*M_PI/L;
+  double q=sqrt(q_x*q_x+q_y*q_y)*2*M_PI/nsite;
   if(alpha==beta)
       return 2.0*M_PI/(q+1e-8)*exp(-q*q/2);
   else
@@ -256,7 +256,7 @@ double hamil::ground_state_energy() {
     vector< complex<double> > psi_t;
     psi_t=H*psi_0;
     for(int i=0; i<nHilbert; i++)
-        E_gs+=conj(psi_t)[i]*psi_0[i];
+        E_gs+=conj(psi_t[i])*psi_0[i];
     return E_gs.real();
 }
 
