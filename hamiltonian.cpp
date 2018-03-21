@@ -1,21 +1,21 @@
 #include"hamiltonian.h"
 hamil::hamil() {}
 
-hamil::hamil(basis &sector,double _t, double _U) {
-    long nsite,nbasis_up,nbasis_down,signu,signd;
-    t=_t;
-    U=_U;
+hamil::hamil(basis &sector,double _d) {
+    long nsite,nbasis_up,nbasis_down;
+    d=_d;
     nsite=sector.nsite;
     nbasis_up=sector.nbasis_up;
     nbasis_down=sector.nbasis_down;
     nHilbert=nbasis_up*nbasis_down;
+    Nphi=L;
     std::vector<long> inner_indices, outer_starts;
     std::vector< complex<double> > matrix_elements;
     std::map<long,complex<double> >::iterator it;
     inner_indices.reserve(nHilbert*nsite);
     matrix_elements.reserve(nHilbert*nsite);
     outer_starts.reserve(nHilbert+1);
-    long b,mask,mask_u,mask_d,p,q,n,m,i,j,k,l,r,s,t,nsignu,nsignd;
+    long mask,mask_u,mask_d,b,p,n,m,i,j,k,l,t,nsignu,nsignd;
     long row=0;
     outer_starts.push_back(0);
     for(i=0; i<nbasis_up; i++) {
@@ -30,7 +30,7 @@ hamil::hamil(basis &sector,double _t, double _U) {
             if(i&mask==mask && m!=n){
               // b is the rest electon positions
               b=i^mask;
-              long nt,mt,it,mask_t,occ_t;
+              long nt,mt,it,mask_ut,occ_ut;
               nsignu=0;
               // perform translation
               for(t=0;t<nsite;t++){
@@ -45,18 +45,18 @@ hamil::hamil(basis &sector,double _t, double _U) {
                   nsignu++;
                 }
                 // the translated two electrons indices
-                mask_t=(1<<nt)+(1<<mt);
+                mask_ut=(1<<nt)+(1<<mt);
                 // occupation of electons on the translated position
-                occ_t=mask_t&b;
+                occ_ut=mask_ut&b;
                 // if there're no electon on the translated position
                 // which is a valid translation, can be applied
-                if(occ_t==0){
+                if(occ_ut==0){
                   // the translated indices
-                  k=mask_t+b;
+                  k=mask_ut+b;
                   // calculate the Coulomb matrix contribution and
                   // add it to the hamiltonian matrix
                   if(k!=i) {
-                    // Coulomb matrix element
+                    // Coulomb matrix element, in Landau gauge
                     long q_x,q_y;
                     q_y=nt;
                     complex<double> V_uu=0;
@@ -65,16 +65,16 @@ hamil::hamil(basis &sector,double _t, double _U) {
                         V_uu+=Coulomb_interaction(0,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
                     it=col_indices.find(k*nbasis_down+j);
                     if(it==col_indices.end())
-                      col_indices.insert(std::pair<long,double>(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
+                      col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
                     else
                       it->second+=V_uu*pow(-1,nsignu);
                     }
                   }
                 // two electrons are occupied, and to be crossed next
-                else if(occ_t==mask_t)
+                else if(occ_ut==mask_ut)
                   signu+=2;
                  // one electron is occupied, and to be crossed next
-                else if(occ_t!=0 && occ_t!=mask_t)
+                else if(occ_ut!=0 && occ_ut!=mask_ut)
                   signu++;
                 }
                }
@@ -84,7 +84,7 @@ hamil::hamil(basis &sector,double _t, double _U) {
                if(j&mask==mask && m!=n){
                  // b is the rest electon positions
                  b=j^mask;
-                 long nt,mt,jt,mask_t,occ_t;
+                 long nt,mt,jt,mask_dt,occ_dt;
                  nsignd=0;
                  // perform translation
                  for(t=0;t<nsite;t++){
@@ -99,18 +99,18 @@ hamil::hamil(basis &sector,double _t, double _U) {
                      nsignd++;
                      }
                    // the translated two electrons indices
-                   mask_t=(1<<nt)+(1<<mt);
+                   mask_dt=(1<<nt)+(1<<mt);
                    // occupation of electons on the translated position
-                   occ_t=mask_t&b;
+                   occ_dt=mask_dt&b;
                    // if there're no electon on the translated position
                    // which is a valid translation, can be applied
-                   if(occ_t==0){
+                   if(occ_dt==0){
                      // the translated indices
-                     k=mask_t+b;
+                     k=mask_dt+b;
                      // calculate the Coulomb matrix contribution and
                      // add it to the hamiltonian matrix
                      if(k!=j) {
-                       // Coulomb matrix element
+                       // Coulomb matrix element, in Landau gauge
                        long q_x,q_y;
                        q_y=nt;
                        complex<double> V_dd=0;
@@ -119,16 +119,16 @@ hamil::hamil(basis &sector,double _t, double _U) {
                            V_dd+=Coulomb_interaction(1,1,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
                        it=col_indices.find(i*nbasis_down+k);
                        if(it==col_indices.end())
-                         col_indices.insert(std::pair<long,double>(i*nbasis_down+k,V_uu*pow(-1,nsignd)));
+                         col_indices.insert(std::pair<long,complex<double> >(i*nbasis_down+k,V_dd*pow(-1,nsignd)));
                        else
-                         it->second+=V_uu*pow(-1,nsignd);
+                         it->second+=V_dd*pow(-1,nsignd);
                        }
                      }
                      // two electrons are occupied, and to be crossed next
-                   else if(occ_t==mask_t)
+                   else if(occ_dt==mask_dt)
                      signd+=2;
                     // one electron is occupied, and to be crossed next
-                   else if(occ_t!=0 && occ_t!=mask_t)
+                   else if(occ_dt!=0 && occ_dt!=mask_dt)
                      signd++;
                   }
                 }
@@ -170,7 +170,7 @@ hamil::hamil(basis &sector,double _t, double _U) {
                       // calculate the Coulomb matrix contribution and
                       // add it to the hamiltonian matrix
                       if(k!=i && l!=j) {
-                        // Coulomb matrix element
+                        // Coulomb matrix element, in Landau gauge
                         long q_x,q_y;
                         q_y=nt;
                         complex<double> V_ud=0;
@@ -179,9 +179,9 @@ hamil::hamil(basis &sector,double _t, double _U) {
                             V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/N_phi),sin((n-m+t)*q_x*2.0*M_PI/N_phi)))/(4.0*M_PI*N_phi);
                         it=col_indices.find(k*nbasis_down+l);
                         if(it==col_indices.end())
-                          col_indices.insert(std::pair<long,double>(k*nbasis_down+l,V_uu*pow(-1,nsignu)));
+                          col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+l,V_ud*pow(-1,nsignu)));
                         else
-                          it->second+=V_uu*pow(-1,nsignu);
+                          it->second+=V_ud*pow(-1,nsignu);
                         }
                       // two electrons are occupied, and to be crossed next
                       else if(occ_ut==mask_ut && occ_dt==mask_dt)
@@ -210,75 +210,13 @@ hamil::hamil(basis &sector,double _t, double _U) {
 
 hamil::~hamil() {}
 
-void hamil::init(basis &sector,double _t,double _U){
-    long nsite,nbasis_up,nbasis_down,signu,signd;
-    t=_t;
-    U=_U;
-    nsite=sector.nsite;
-    nbasis_up=sector.nbasis_up;
-    nbasis_down=sector.nbasis_down;
-    nHilbert=nbasis_up*nbasis_down;
-    std::vector<long> inner_indices, outer_starts;
-    std::vector<double> matrix_elements;
-    std::map<long,double>::iterator it;
-    inner_indices.reserve(nHilbert*nsite);
-    matrix_elements.reserve(nHilbert*nsite);
-    outer_starts.reserve(nHilbert+1);
-    long n,m,i,j,k,l,s,nsignu,nsignd;
-    long row=0;
-    outer_starts.push_back(0);
-    for(i=0; i<nbasis_up; i++) {
-        for(j=0; j<nbasis_down; j++) {
-            std::map<long,double> col_indices;
-            for(n=0; n<nsite; n++) {
-                if(n+1>=nsite) {
-                    signu=pow(-1,sector.nel_up-1);
-                    signd=pow(-1,sector.nel_down-1);
-                }
-                else {
-                    signu=1;
-                    signd=1;
-                }
-                m=n+1;
-                k=sector.hopping_up(i,n,m);
-                if(k!=i) {
-                    it=col_indices.find(k*nbasis_down+j);
-                    if(it==col_indices.end())
-                        col_indices.insert(std::pair<long,double>(k*nbasis_down+j,-t*signu));
-                    else
-                        it->second+=-t*signu;
-                }
-                if(sector.potential(i,j,n)) {
-                    it=col_indices.find(i*nbasis_down+j);
-                    if(it==col_indices.end())
-                        col_indices.insert(std::pair<long,double>(i*nbasis_down+j,U));
-                    else
-                        it->second+=U;
-                }
-            }
-            for(it=col_indices.begin(); it!=col_indices.end(); it++) {
-                inner_indices.push_back(it->first);
-                matrix_elements.push_back(it->second);
-            }
-
-            row+=col_indices.size();
-            outer_starts.push_back(row);
-            col_indices.clear();
-        }
-    }
-    H.init(outer_starts,inner_indices,matrix_elements);
-    outer_starts.clear();
-    inner_indices.clear();
-    matrix_elements.clear();
-}
-
 const hamil & hamil::operator =(const hamil & _gs_hconfig) {
     if(this !=&_gs_hconfig) {
         seed=_gs_hconfig.seed;
         nHilbert=_gs_hconfig.nHilbert;
         H=_gs_hconfig.H;
-        t=_gs_hconfig.t;
-        U=_gs_hconfig.U;
+        d=_gs_hconfig.d;
+        Nphi=_gs_hconfig.Nphi;
         eigenvalues.assign(_gs_hconfig.eigenvalues.begin(),_gs_hconfig.eigenvalues.end());
         psi_0.assign(_gs_hconfig.psi_0.begin(),_gs_hconfig.psi_0.end());
         psi_n0.assign(_gs_hconfig.psi_n0.begin(),_gs_hconfig.psi_n0.end());
@@ -292,22 +230,21 @@ double hamil::Coulomb_interaction(int alpha, int beta, int q_x, int q_y){
       return 2.0*M_PI/(q+1e-8)*exp(-q*q/2);
   else
       return 2.0*M_PI/(q+1e-8)*exp(-q*q/2-q*d);
-
 }
 
-double hamil::spectral_function(vector<double> &O_phi_0,double omega,double _E0, double eta, int annil) {
+double hamil::spectral_function(vector<complex<double> > &O_phi_0,double omega,double _E0, double eta, int annil) {
     complex<double> E;
     complex<double> G=0;
     for(int i=0; i<nHilbert; i++)
         // set annil==1, which gives hole-sector
         if(annil==1){
             E=complex<double>(omega,eta);
-            G+=pow(psi_n0[i]*O_phi_0[i],2)/(E+eigenvalues[i]-_E0);
+            G+=pow(conj(psi_n0[i])*O_phi_0[i],2)/(E+eigenvalues[i]-_E0);
           }
         // else particle-sector
         else{
             E=complex<double>(omega,eta);
-            G+=pow(psi_n0[i]*O_phi_0[i],2)/(E+_E0-eigenvalues[i]);
+            G+=pow(conj(psi_n0[i])*O_phi_0[i],2)/(E+_E0-eigenvalues[i]);
           }
 
     return -G.imag()/M_PI;
@@ -315,23 +252,23 @@ double hamil::spectral_function(vector<double> &O_phi_0,double omega,double _E0,
 
 double hamil::ground_state_energy() {
     if(psi_0.size()==0) return 0;
-    double E_gs=0;
-    vector<double> psi_t;
+    complex<double> E_gs=0;
+    vector< complex<double> > psi_t;
     psi_t=H*psi_0;
     for(int i=0; i<nHilbert; i++)
-        E_gs+=psi_t[i]*psi_0[i];
-    return E_gs;
+        E_gs+=conj(psi_t)[i]*psi_0[i];
+    return E_gs.real();
 }
 
 void hamil::diag() {
     int i,idx;
-    double *hamiltonian=new double[nHilbert*nHilbert];
+    complex<double> *hamiltonian=new complex<double>[nHilbert*nHilbert];
     double *en=new double[nHilbert];
-    memset(hamiltonian,0,sizeof(double)*nHilbert*nHilbert);
+    memset(hamiltonian,0,sizeof(complex<double> )*nHilbert*nHilbert);
     for(i=0; i<H.outer_starts.size()-1; i++)
         for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
             hamiltonian[i*nHilbert+H.inner_indices[idx]]=H.value[idx];
-    diag_dsyev(hamiltonian,en,nHilbert);
+    diag_zheev(hamiltonian,en,nHilbert);
     psi_0.assign(nHilbert,0);
     psi_n0.assign(nHilbert,0);
     eigenvalues.assign(nHilbert,0);

@@ -85,7 +85,7 @@ double Vec::normalize() {
     complex<double> norm = 0;
     #pragma omp parallel for reduction(+:norm)
     for(i = 0; i < size; i++)
-        norm += value[i] * value[i];
+        norm += conj(value[i]) * value[i];
     double normsq = norm.norm();
     #pragma omp parallel for schedule(static)
     for(i = 0; i < size; i++)
@@ -164,12 +164,20 @@ Vec Vec::operator*(const double &rhs) {
     return rt;
 }
 
-double Vec::operator*(const Vec &rhs) {
+Vec Vec::operator*(const complex<double> &rhs) {
+    Vec rt(size);
+    #pragma omp parallel for schedule(static)
+    for(int i = 0; i < size; i++)
+        rt.value[i] = value[i]* rhs;
+    return rt;
+}
+
+complex<double> Vec::operator*(const Vec &rhs) {
     if(size != rhs.size) return 0 ;
-    double overlap = 0;
+    complex<double> overlap = 0;
     #pragma omp parallel for reduction(+:overlap)
     for(int i = 0; i < size; i++)
-        overlap += value[i] * (rhs.value)[i];
+        overlap += conj(value[i]) * (rhs.value)[i];
     return overlap;
 }
 

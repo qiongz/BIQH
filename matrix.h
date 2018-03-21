@@ -47,8 +47,9 @@ public:
     Vec operator+(const Vec &);
     Vec operator-(const Vec &);
     Vec operator*(const double &);
+    Vec operator*(const complex<double> &);
     Vec operator/(const double &);
-    double operator*(const Vec &);
+    complex<double> operator*(const Vec &);
     friend ostream & operator<<(ostream & os, const Vec &);
 };
 
