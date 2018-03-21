@@ -23,7 +23,7 @@ void hamil::set_hamil(basis & sector, double _d){
         std::map<long,complex<double> > col_indices;
         // select two electrons in left-basis <m_1, m_2|
         for(n=0;n<nsite;n++)
-          for(m=0;m<nsite;m++){
+          for(m=n;m<nsite;m++){
             mask=(1<<n)+(1<<m);
             // consider the upper-layer two electrons
             // if there're two electrons on n and m;
@@ -223,6 +223,7 @@ void hamil::set_hamil(basis & sector, double _d){
     inner_indices.clear();
     matrix_elements.clear();
 }
+
 hamil::~hamil() {}
 
 const hamil & hamil::operator =(const hamil & _gs_hconfig) {
@@ -239,7 +240,7 @@ const hamil & hamil::operator =(const hamil & _gs_hconfig) {
     return *this;
 }
 
-double hamil::Coulomb_interaction(int alpha, int beta, int q_x, int q_y){
+double hamil::Coulomb_interaction(int alpha, int beta, int q_x,int q_y){
   double q=sqrt(q_x*q_x+q_y*q_y)*2*M_PI/nsite;
   if(alpha==beta)
       return 2.0*M_PI/(q+1e-10)*exp(-q*q/2);
