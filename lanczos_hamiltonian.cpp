@@ -59,15 +59,15 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
     lx=_lx;
     ly=_ly;
     nphi=_nphi;
-    off_head=sqrt(nphi)*2;
+    off_head=nphi/2;
     dim_n=dim_m=off_head*2+1;
     nbasis_up=sector.nbasis_up;
     nbasis_down=sector.nbasis_down;
     nHilbert=nbasis_up*nbasis_down;
     std::vector<long> inner_indices, outer_starts;
-    std::vector< complex<double> > matrix_elements;
-    std::map<long,complex<double> > ::iterator it;
-    std::map<long,complex<double> > col_indices;
+    std::vector<double> matrix_elements;
+    std::map<long,double> ::iterator it;
+    std::map<long,double> col_indices;
     inner_indices.reserve(nHilbert*nsite);
     matrix_elements.reserve(nHilbert*nsite);
     outer_starts.reserve(nHilbert+1);
@@ -89,19 +89,31 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
                         b=sector.id_up[i]^mask;
                         long nt,mt,mask_ut,occ_ut;
                         nsignu=0;
-                        // perform translation
-                        for(t=1; t<nsite; t++) {
+                        // perform translation along x-direction,
+                        for(t=-off_head; t<off_head; t++) {
                             // PBC, if one electron cross left boundary, sign change with -1
                             if(n-t<0) {
-                                nt=n-t+nsite;
-                                nsignu++;
+                                nt=n-t+nphi;
+                                // crossing boundary= crossing all rest electrons
+                                nsignu+=sector.nel_up-1;
+                            }
+                            else if(n-t>=nphi){
+                                nt=n-t+nphi;
+                                // crossing boundary= crossing all rest electrons
+                                nsignu+=sector.nel_up-1;
                             }
                             else
                                 nt=n-t;
                             // PBC, if one electron cross right boundary, sign change with -1
-                            if(m+t>=nsite) {
-                                mt=m+t-nsite;
-                                nsignu++;
+                            if(m+t>=nphi) {
+                                mt=m+t-nphi;
+                                // crossing boundary= crossing all rest electrons
+                                nsignu+=sector.nel_up-1;
+                            }
+                            else if(m+t<0){
+                                mt=m+t+nphi;
+                                // crossing boundary= crossing all rest electrons
+                                nsignu+=sector.nel_up-1;
                             }
                             else
                                 mt=m+t;
@@ -122,17 +134,17 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
                                 if(k!=i) {
                                     long q_x,q_y;
                                     q_y=t;
-                                    complex<double> V_uu=0;
-                                    for(q_x=0; q_x<dim_m; q_x++)
-                                        if(q_y!=off_head&&q_x!=off_head){
-                                            // Coulomb matrix element in Landau gauge
-                                            //V_uu+=Coulomb_interaction(0,0,q_x,q_y)*complex<double>(cos((n-m-t)*q_x*2.0*M_PI/nphi),sin((n-m-t)*q_x*2.0*M_PI/nphi))/(2.0*nphi);
+                                    double V_uu=0;
+                                    // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
+                                    for(q_x=0; q_x<off_head; q_x++)
+                                        // q=0 is the uniform background charge, which is canceled out
+                                        if(q_y!=0&& q_x!=0){
                                             // Coulomb matrix element in symmetric gauge
-                                            V_uu+=Coulomb_interaction(0,0,q_x-off_head,q_y-off_head)*complex<double>(cos(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi),sin(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi));
+                                            V_uu+=Coulomb_interaction(0,0,q_x,q_y)*cos(-2.0*M_PI*q_x*q_y/nphi+2.0*M_PI*(m-n)*q_x/nphi);
                                           }
                                     it=col_indices.find(k*nbasis_down+j);
                                     if(it==col_indices.end())
-                                        col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
+                                        col_indices.insert(std::pair<long,double>(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
                                     else
                                         it->second+=V_uu*pow(-1,nsignu);
                                 }
@@ -153,19 +165,27 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
                         b=sector.id_down[j]^mask;
                         long nt,mt,mask_dt,occ_dt;
                         nsignd=0;
-                        // perform translation
-                        for(t=1; t<nsite; t++) {
+                        // perform translation in x-direction
+                        for(t=-off_head; t<off_head; t++) {
                             // PBC, if one electron cross left boundary, sign change with -1
                             if(n-t<0) {
-                                nt=n-t+nsite;
-                                nsignd++;
+                                nt=n-t+nphi;
+                                nsignd+=sector.nel_down-1;
+                            }
+                            else if(n-t>=nphi){
+                                nt=n-t-nphi;
+                                nsignd+=sector.nel_down-1;
                             }
                             else
                                 nt=n-t;
                             // PBC, if one electron cross right boundary, sign change with -1
-                            if(m+t>=nsite) {
-                                mt=m+t-nsite;
-                                nsignd++;
+                            if(m+t>=nphi) {
+                                mt=m+t-nphi;
+                                nsignd+=sector.nel_down-1;
+                            }
+                            else if(m+t<0){
+                                 mt=m+t+nphi;
+                                 nsignd+=sector.nel_down-1;
                             }
                             else
                                 mt=m+t;
@@ -187,15 +207,16 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
                                 if(l!=j) {
                                     long q_x,q_y;
                                     q_y=t;
-                                    complex<double> V_dd=0;
-                                    for(q_x=0; q_x<dim_m; q_x++)
-                                        if(q_y!=off_head&&q_x!=off_head){
-                                            //V_dd+=Coulomb_interaction(1,1,q_x,q_y)*complex<double>(cos((n-m-t)*q_x*2.0*M_PI/nphi),sin((n-m-t)*q_x*2.0*M_PI/nphi))/(2.0*nphi);
-                                            V_dd+=Coulomb_interaction(1,1,q_x-off_head,q_y-off_head)*complex<double>(cos(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi),sin(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi));
+                                    double V_dd=0;
+                                    // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
+                                    for(q_x=0; q_x<off_head; q_x++)
+                                        // q=0 is the uniform background charge, which is canceled out
+                                        if(q_y!=0&&q_x!=0){
+                                            V_dd+=Coulomb_interaction(1,1,q_x,q_y)*cos(-2.0*M_PI*q_x*q_y/nphi+2.0*M_PI*(m-n)*q_x/nphi);
                                           }
                                     it=col_indices.find(i*nbasis_down+k);
                                     if(it==col_indices.end())
-                                        col_indices.insert(std::pair<long,complex<double> >(i*nbasis_down+l,V_dd*pow(-1,nsignd)));
+                                        col_indices.insert(std::pair<long,double>(i*nbasis_down+l,V_dd*pow(-1,nsignd)));
                                     else
                                         it->second+=V_dd*pow(-1,nsignd);
                                 }
@@ -221,19 +242,27 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
                         long nt,mt,mask_ut,occ_ut,mask_dt,occ_dt;
                         nsignu=0;
                         nsignd=0;
-                        // perform translation
-                        for(t=1; t<nsite; t++) {
+                        // perform translation along x-direction
+                        for(t=-off_head; t<off_head; t++) {
                             // PBC, if one electron cross left boundary, sign change with -1
                             if(n-t<0) {
-                                nt=n-t+nsite;
-                                nsignu++;
+                                nt=n-t+nphi;
+                                nsignu+=sector.nel_up-1;
+                            }
+                            else if(n-t>=nphi){
+                                nt=n-t-nphi;
+                                nsignu+=sector.nel_up-1;
                             }
                             else
                                 nt=n-t;
                             // PBC, if one electron cross right boundary, sign change with -1
-                            if(m+t>=nsite) {
-                                mt=m+t-nsite;
-                                nsignd++;
+                            if(m+t>=nphi) {
+                                mt=m+t-nphi;
+                                nsignd+=sector.nel_down-1;
+                            }
+                            else if(m+t<0){
+                                mt=m+t+nphi;
+                                nsignd+=sector.nel_down-1;
                             }
                             else
                                 mt=m+t;
@@ -260,19 +289,15 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
                                 if(k!=i&& l!=j) {
                                     long q_x,q_y;
                                     q_y=t;
-                                    complex<double> V_ud=0;
-                                    for(q_x=0; q_x<dim_m; q_x++)
-                                        if(q_y!=off_head&&q_x!=off_head) {
-                                            // Coulomb matrix element, in Landau gauge
-                                            //V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m-t)*q_x*2.0*M_PI/nphi),sin((n-m-t)*q_x*2.0*M_PI/nphi))/(2.0*nphi);
+                                    double V_ud=0;
+                                    for(q_x=0; q_x<off_head; q_x++)
+                                        if(q_y!=0&&q_x!=0) {
                                             // Coulomb matrix element, in symmetric gauge
-                                            V_ud+=Coulomb_interaction(1,0,q_x-off_head,q_y-off_head)*complex<double>(cos(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi),sin(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi));
-                                            //cout<<"q:="<<sqrt(q_x*q_x+q_y*q_y)*2.0*M_PI/nsite<<endl;
-                                            //cout<<"Coulomb interaction:="<<Coulomb_interaction(1,0,q_x,q_y)<<endl;
+                                            V_ud+=Coulomb_interaction(1,0,q_x,q_y)*cos(-2.0*M_PI*q_x*q_y/nphi+2.0*M_PI*(m-n)*q_x/nphi);
                                         }
                                     it=col_indices.find(k*nbasis_down+l);
                                     if(it==col_indices.end())
-                                        col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+l,V_ud*pow(-1,nsignu+nsignd)));
+                                        col_indices.insert(std::pair<long,double>(k*nbasis_down+l,V_ud*pow(-1,nsignu+nsignd)));
                                     else
                                         it->second+=V_ud*pow(-1,nsignu+nsignd);
                                     //cout<<"("<<sector.id_up[k]<<","<<sector.id_down[l]<<")="<<V_ud*pow(-1,nsignu+nsignd)<<endl;
@@ -301,8 +326,6 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
     inner_indices.clear();
     matrix_elements.clear();
 }
-
-
 
 void lhamil::coeff_update() {
     double eigenvalues_0=1;
@@ -346,12 +369,12 @@ void lhamil::coeff_explicit_update()
     double eigenvalues_0=1;
     double epsilon=1e-8;
 
-    complex<double> norm_factor,overlap_factor;
-    complex<double> *phi_0,*phi_1,*phi_2,*phi_t,*phi_s;
-    phi_0=new complex<double>[nHilbert];
-    phi_1=new complex<double>[nHilbert];
-    phi_2=new complex<double>[nHilbert];
-    phi_t=new complex<double>[nHilbert];
+    double norm_factor,overlap_factor;
+    double *phi_0,*phi_1,*phi_2,*phi_t,*phi_s;
+    phi_0=new double[nHilbert];
+    phi_1=new double[nHilbert];
+    phi_2=new double[nHilbert];
+    phi_t=new double[nHilbert];
 
     norm.assign(lambda+1,0);
     overlap.assign(lambda,0);
@@ -360,97 +383,97 @@ void lhamil::coeff_explicit_update()
     #if __cplusplus > 199711L
     std::mt19937 rng(seed);
     for(i=0; i<nHilbert; i++)
-        phi_0[i]=complex<double>(rng()*1.0/rng.max()-0.5,rng()*1.0/rng.max()-0.5);
+        phi_0[i]=rng()*1.0/rng.max()-0.5;
     #else
     init_genrand64(seed);
     for(i=0; i<nHilbert; i++)
-        phi_0[i]=complex<double>(genrand64_real3()-0.5,genrand64_real3()-0.5);
+        phi_0[i]=genrand64_real3()-0.5;
     #endif
 
     norm_factor=0;
-    //#pragma omp parallel for reduction(+:norm_factor)
+    #pragma omp parallel for reduction(+:norm_factor)
     for(i=0; i<nHilbert; i++)
-        norm_factor+=conj(phi_0[i])*phi_0[i];
-    norm_factor=abs(norm_factor);
+        norm_factor+=phi_0[i]*phi_0[i];
+    norm_factor=sqrt(norm_factor);
 
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
-        phi_0[i]/=norm_factor.real();
+        phi_0[i]/=norm_factor;
     norm[0]=1;
 
     // phi_1=H*phi_0;
-    memset(phi_1,0,sizeof(complex<double> )*nHilbert);
-    //#pragma omp parallel for schedule(static)
+    memset(phi_1,0,sizeof(double )*nHilbert);
+    #pragma omp parallel for schedule(static)
     for(i=0; i<H.outer_starts.size()-1; i++) {
-        //#pragma ivdep
+        #pragma ivdep
         for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
             phi_1[i]+=H.value[idx]*phi_0[H.inner_indices[idx]];
     }
 
     //overlap[0] = phi_0 * phi_1;
     overlap_factor=0;
-    //#pragma omp parallel for reduction(+:overlap_factor)
+    #pragma omp parallel for reduction(+:overlap_factor)
     for(i=0; i<nHilbert; i++)
-        overlap_factor+=conj(phi_1[i])*phi_0[i];
+        overlap_factor+=phi_1[i]*phi_0[i];
     overlap[0]=overlap_factor;
 
     //phi_1 -= phi_0 * overlap[0];
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
         phi_1[i]-=phi_0[i]*overlap_factor;
 
     //norm[1] = phi_1.normalize();
     norm_factor=0;
-    //#pragma omp parallel for reduction(+:norm_factor)
+    #pragma omp parallel for reduction(+:norm_factor)
     for(i=0; i<nHilbert; i++)
-        norm_factor+=conj(phi_1[i])*phi_1[i];
-    norm_factor=abs(norm_factor);
+        norm_factor+=phi_1[i]*phi_1[i];
+    norm_factor=sqrt(norm_factor);
 
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
-        phi_1[i]/=norm_factor.real();
-    norm[1]=norm_factor.real();
+        phi_1[i]/=norm_factor;
+    norm[1]=norm_factor;
 
     for(j= 1; j < lambda; j++) {
-        memset(phi_2,0,sizeof(complex<double>)*nHilbert);
-        //#pragma omp parallel for schedule(static)
+        memset(phi_2,0,sizeof(double)*nHilbert);
+        #pragma omp parallel for schedule(static)
         for(i=0; i<H.outer_starts.size()-1; i++) {
-            //#pragma ivdep
+            #pragma ivdep
             for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
                 phi_2[i]+=H.value[idx]*phi_1[H.inner_indices[idx]];
         }
 
         //overlap[j] = phi_1 * phi_2;
         overlap_factor=0;
-        //#pragma omp parallel for reduction(+:overlap_factor)
+        #pragma omp parallel for reduction(+:overlap_factor)
         for(i=0; i<nHilbert; i++)
-            overlap_factor+=conj(phi_1[i])*phi_2[i];
+            overlap_factor+=phi_1[i]*phi_2[i];
         overlap[j]=overlap_factor;
 
         //phi_2 -= phi_1 * overlap[j] + phi_0 * norm[j];
-        //#pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_t[i]=phi_0[i]*norm[j];
 
-        //#pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_t[i]+=phi_1[i]*overlap_factor;
 
-        //#pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_2[i]-=phi_t[i];
 
         //norm[j+1] = phi_2.normalize();
         norm_factor=0;
-        //#pragma omp parallel for reduction(+:norm_factor)
+        #pragma omp parallel for reduction(+:norm_factor)
         for(i=0; i<nHilbert; i++)
-            norm_factor+=conj(phi_2[i])*phi_2[i];
-        norm_factor=abs(norm_factor);
+            norm_factor+=phi_2[i]*phi_2[i];
+        norm_factor=sqrt(norm_factor);
 
-        //#pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
-            phi_2[i]/=norm_factor.real();
-        norm[j+1]=norm_factor.real();
+            phi_2[i]/=norm_factor;
+        norm[j+1]=norm_factor;
 
         phi_s=phi_0;
         phi_0=phi_1;
@@ -475,18 +498,18 @@ void lhamil::coeff_explicit_update()
 }
 
 //Lanczos update version for spectral function calculation
-void lhamil::coeff_update_wopt(vector<complex<double> > O_phi_0)
+void lhamil::coeff_update_wopt(vector<double> O_phi_0)
 {
     int i,j,idx;
     double eigenvalues_0=1;
     double epsilon=1e-8;
 
-    complex<double> norm_factor,overlap_factor;
-    complex<double> *phi_0,*phi_1,*phi_2,*phi_t,*phi_s;
-    phi_0=new complex<double>[nHilbert];
-    phi_1=new complex<double>[nHilbert];
-    phi_2=new complex<double>[nHilbert];
-    phi_t=new complex<double>[nHilbert];
+    double norm_factor,overlap_factor;
+    double *phi_0,*phi_1,*phi_2,*phi_t,*phi_s;
+    phi_0=new double[nHilbert];
+    phi_1=new double[nHilbert];
+    phi_2=new double[nHilbert];
+    phi_t=new double[nHilbert];
 
     norm.assign(lambda+1,0);
     overlap.assign(lambda,0);
@@ -495,19 +518,19 @@ void lhamil::coeff_update_wopt(vector<complex<double> > O_phi_0)
         phi_0[i]=O_phi_0[i];
 
     norm_factor=0;
-    //#pragma omp parallel for reduction(+:norm_factor)
+    #pragma omp parallel for reduction(+:norm_factor)
     for(i=0; i<nHilbert; i++)
-        norm_factor+=conj(phi_0[i])*phi_0[i];
-    norm_factor=abs(norm_factor)+1e-24;
-    //#pragma omp parallel for schedule(static)
+        norm_factor+=phi_0[i]*phi_0[i];
+    norm_factor=sqrt(norm_factor)+1e-24;
+    #pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
-        phi_0[i]/=norm_factor.real();
+        phi_0[i]/=norm_factor;
 
     norm[0]=1;
 
     // phi_1=H*phi_0;
-    memset(phi_1,0,sizeof(complex<double> )*nHilbert);
-    //#pragma omp parallel for schedule(static)
+    memset(phi_1,0,sizeof(double )*nHilbert);
+    #pragma omp parallel for schedule(static)
     for(i=0; i<H.outer_starts.size()-1; i++) {
         #pragma ivdep
         for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
@@ -516,31 +539,31 @@ void lhamil::coeff_update_wopt(vector<complex<double> > O_phi_0)
 
     //overlap[0] = phi_0 * phi_1;
     overlap_factor=0;
-    //#pragma omp parallel for reduction(+:overlap_factor)
+    #pragma omp parallel for reduction(+:overlap_factor)
     for(i=0; i<nHilbert; i++)
-        overlap_factor+=conj(phi_1[i])*phi_0[i];
+        overlap_factor+=phi_1[i]*phi_0[i];
     overlap[0]=overlap_factor;
 
     //phi_1 -= phi_0 * overlap[0];
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
         phi_1[i]-=phi_0[i]*overlap_factor;
 
     //norm[1] = phi_1.normalize();
     norm_factor=0;
-    //#pragma omp parallel for reduction(+:norm_factor)
+    #pragma omp parallel for reduction(+:norm_factor)
     for(i=0; i<nHilbert; i++)
-        norm_factor+=conj(phi_1[i])*phi_1[i];
-    norm_factor=abs(norm_factor);
+        norm_factor+=phi_1[i]*phi_1[i];
+    norm_factor=sqrt(norm_factor);
 
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
-        phi_1[i]/=norm_factor.real();
-    norm[1]=norm_factor.real();
+        phi_1[i]/=norm_factor;
+    norm[1]=norm_factor;
 
     for(j= 1; j < lambda; j++) {
         memset(phi_2,0,sizeof(double)*nHilbert);
-        //#pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(static)
         for(i=0; i<H.outer_starts.size()-1; i++) {
             #pragma ivdep
             for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
@@ -549,35 +572,35 @@ void lhamil::coeff_update_wopt(vector<complex<double> > O_phi_0)
 
         //overlap[j] = phi_1 * phi_2;
         overlap_factor=0;
-        //#pragma omp parallel for reduction(+:overlap_factor)
+        #pragma omp parallel for reduction(+:overlap_factor)
         for(i=0; i<nHilbert; i++)
-            overlap_factor+=conj(phi_1[i])*phi_2[i];
+            overlap_factor+=phi_1[i]*phi_2[i];
         overlap[j]=overlap_factor;
 
         //phi_2 -= phi_1 * overlap[j] + phi_0 * norm[j];
-        //#pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_t[i]=phi_0[i]*norm[j];
 
-        //#pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_t[i]+=phi_1[i]*overlap_factor;
 
-        //#pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_2[i]-=phi_t[i];
 
         //norm[j+1] = phi_2.normalize();
         norm_factor=0;
-        //#pragma omp parallel for reduction(+:norm_factor)
+        #pragma omp parallel for reduction(+:norm_factor)
         for(i=0; i<nHilbert; i++)
-            norm_factor+=conj(phi_2[i])*phi_2[i];
-        norm_factor=abs(norm_factor);
+            norm_factor+=phi_2[i]*phi_2[i];
+        norm_factor=sqrt(norm_factor);
 
-        //#pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
-            phi_2[i]/=norm_factor.real();
-        norm[j+1]=norm_factor.real();
+            phi_2[i]/=norm_factor;
+        norm[j+1]=norm_factor;
 
         phi_s=phi_0;
         phi_0=phi_1;
@@ -606,15 +629,15 @@ void lhamil::diag()
     if(norm.size()==0) coeff_update();
     int l=lambda;
     double *e = new double[l];
-    complex<double> *h = new complex<double> [l * l];
-    memset(h, 0, sizeof(complex<double>)*l*l);
+    double *h = new double [l * l];
+    memset(h, 0, sizeof(double)*l*l);
     for(int i = 0; i < l-1; i++) {
         h[i *l + i + 1] = norm[i+1];
         h[(i + 1)*l + i] = norm[i+1];
         h[i * l + i] = overlap[i];
     }
     h[(l - 1)*l + l - 1] = overlap[l - 1];
-    diag_zheev(h,e,l);
+    diag_dsyev(h,e,l);
 
     psi_0.assign(l,0);
     psi_n0.assign(l,0);
@@ -632,15 +655,15 @@ void lhamil::diag(int l)
 {
     if(norm.size()==0) coeff_update();
     double *e = new double[l];
-    complex<double> *h = new complex<double> [l * l];
-    memset(h, 0, sizeof(complex<double>)*l*l);
+    double *h = new double [l * l];
+    memset(h, 0, sizeof(double)*l*l);
     for(int i = 0; i < l-1; i++) {
         h[i *l + i + 1] = norm[i+1];
         h[(i + 1)*l + i] = norm[i+1];
         h[i * l + i] = overlap[i];
     }
     h[(l - 1)*l + l - 1] = overlap[l - 1];
-    diag_zheev(h,e,l);
+    diag_dsyev(h,e,l);
     eigenvalues.assign(l,0);
     psi_0.assign(l,0);
     psi_n0.assign(l,0);
@@ -655,7 +678,7 @@ void lhamil::diag(int l)
 // given the seed of phi_0, generate the Lanczos basis again, and transform the eigenstate to the desired eigenstate representation
 void lhamil::eigenstates_reconstruction() {
     int l,n;
-    complex<double> Norm=0;
+    double Norm=0;
     Vec phi_0,phi_1,phi_2;
     E0=eigenvalues[0];
     // repeat the iteration, but with normalization and overlap values at hand
@@ -665,31 +688,32 @@ void lhamil::eigenstates_reconstruction() {
     phi_1 /= norm[1];
     psir_0.assign(nHilbert,0);
     for(n=0; n<nHilbert; n++)
-        psir_0[n]+=conj(psi_0[0])*phi_0.value[n]+conj(psi_0[1])*phi_1.value[n];
+        psir_0[n]+=psi_0[0]*phi_0.value[n]+psi_0[1]*phi_1.value[n];
 
     for(l=2; l<overlap.size(); l++) {
         phi_2 = H * phi_1;
         phi_2 -= phi_1 * overlap[l-1] + phi_0*norm[l-1];
         phi_2/= norm[l];
         for(n=0; n<nHilbert; n++)
-            psir_0[n]+=conj(psi_0[l])*phi_2.value[n];
+            psir_0[n]+=psi_0[l]*phi_2.value[n];
         swap(&phi_0,&phi_1,&phi_2);
     }
     for(n=0; n<nHilbert; n++)
-        Norm+=conj(psir_0[n])*psir_0[n];
+        Norm+=psir_0[n]*psir_0[n];
+    Norm=sqrt(Norm);
     for(n=0; n<nHilbert; n++)
-        psir_0[n]/=abs(Norm);
+        psir_0[n]/=Norm;
 }
 
 double lhamil::ground_state_energy() {
-    vector<complex<double> > H_psir0;
-    complex<double> overlap=0;
+    vector<double> H_psir0;
+    double overlap=0;
     if(psir_0.size()!=0) {
         H_psir0=H*psir_0;
         for(int i=0; i<nHilbert; i++)
             overlap+=psir_0[i]*H_psir0[i];
     }
-    return overlap.real();
+    return overlap;
 }
 
 

@@ -10,15 +10,15 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly,int _nphi, double _
     lx=_lx;
     ly=_ly;
     nphi=_nphi;
-    off_head=sqrt(nphi*2.0);
+    off_head=nphi/2;
     dim_n=dim_m=off_head*2+1;
     nbasis_up=sector.nbasis_up;
     nbasis_down=sector.nbasis_down;
     nHilbert=nbasis_up*nbasis_down;
     std::vector<long> inner_indices, outer_starts;
-    std::vector< complex<double> > matrix_elements;
-    std::map<long,complex<double> > ::iterator it;
-    std::map<long,complex<double> > col_indices;
+    std::vector<double> matrix_elements;
+    std::map<long,double> ::iterator it;
+    std::map<long,double> col_indices;
     inner_indices.reserve(nHilbert*nsite);
     matrix_elements.reserve(nHilbert*nsite);
     outer_starts.reserve(nHilbert+1);
@@ -40,19 +40,31 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly,int _nphi, double _
                         b=sector.id_up[i]^mask;
                         long nt,mt,mask_ut,occ_ut;
                         nsignu=0;
-                        // perform translation
-                        for(t=1; t<nsite; t++) {
+                        // perform translation along x-direction,
+                        for(t=-off_head; t<off_head; t++) {
                             // PBC, if one electron cross left boundary, sign change with -1
                             if(n-t<0) {
-                                nt=n-t+nsite;
-                                nsignu++;
+                                nt=n-t+nphi;
+                                // crossing boundary= crossing all rest electrons
+                                nsignu+=sector.nel_up-1;
+                            }
+                            else if(n-t>=nphi){
+                                nt=n-t+nphi;
+                                // crossing boundary= crossing all rest electrons
+                                nsignu+=sector.nel_up-1;
                             }
                             else
                                 nt=n-t;
                             // PBC, if one electron cross right boundary, sign change with -1
-                            if(m+t>=nsite) {
-                                mt=m+t-nsite;
-                                nsignu++;
+                            if(m+t>=nphi) {
+                                mt=m+t-nphi;
+                                // crossing boundary= crossing all rest electrons
+                                nsignu+=sector.nel_up-1;
+                            }
+                            else if(m+t<0){
+                                mt=m+t+nphi;
+                                // crossing boundary= crossing all rest electrons
+                                nsignu+=sector.nel_up-1;
                             }
                             else
                                 mt=m+t;
@@ -73,17 +85,17 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly,int _nphi, double _
                                 if(k!=i) {
                                     long q_x,q_y;
                                     q_y=t;
-                                    complex<double> V_uu=0;
-                                    for(q_x=0; q_x<dim_m; q_x++)
-                                        if(q_y!=off_head&&q_x!=off_head){
-                                            // Coulomb matrix element in Landau gauge
-                                            //V_uu+=Coulomb_interaction(0,0,q_x,q_y)*complex<double>(cos((n-m-t)*q_x*2.0*M_PI/nphi),sin((n-m-t)*q_x*2.0*M_PI/nphi))/(2.0*nphi);
+                                    double V_uu=0;
+                                    // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
+                                    for(q_x=0; q_x<off_head; q_x++)
+                                        // q=0 is the uniform background charge, which is canceled out
+                                        if(q_y!=0&& q_x!=0){
                                             // Coulomb matrix element in symmetric gauge
-                                            V_uu+=Coulomb_interaction(0,0,q_x-off_head,q_y-off_head)*complex<double>(cos(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi),sin(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi));
+                                            V_uu+=Coulomb_interaction(0,0,q_x,q_y)*cos(-2.0*M_PI*q_x*q_y/nphi+2.0*M_PI*(m-n)*q_x/nphi);
                                           }
                                     it=col_indices.find(k*nbasis_down+j);
                                     if(it==col_indices.end())
-                                        col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
+                                        col_indices.insert(std::pair<long,double>(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
                                     else
                                         it->second+=V_uu*pow(-1,nsignu);
                                 }
@@ -104,19 +116,27 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly,int _nphi, double _
                         b=sector.id_down[j]^mask;
                         long nt,mt,mask_dt,occ_dt;
                         nsignd=0;
-                        // perform translation
-                        for(t=1; t<nsite; t++) {
+                        // perform translation in x-direction
+                        for(t=-off_head; t<off_head; t++) {
                             // PBC, if one electron cross left boundary, sign change with -1
                             if(n-t<0) {
-                                nt=n-t+nsite;
-                                nsignd++;
+                                nt=n-t+nphi;
+                                nsignd+=sector.nel_down-1;
+                            }
+                            else if(n-t>=nphi){
+                                nt=n-t-nphi;
+                                nsignd+=sector.nel_down-1;
                             }
                             else
                                 nt=n-t;
                             // PBC, if one electron cross right boundary, sign change with -1
-                            if(m+t>=nsite) {
-                                mt=m+t-nsite;
-                                nsignd++;
+                            if(m+t>=nphi) {
+                                mt=m+t-nphi;
+                                nsignd+=sector.nel_down-1;
+                            }
+                            else if(m+t<0){
+                                 mt=m+t+nphi;
+                                 nsignd+=sector.nel_down-1;
                             }
                             else
                                 mt=m+t;
@@ -138,15 +158,16 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly,int _nphi, double _
                                 if(l!=j) {
                                     long q_x,q_y;
                                     q_y=t;
-                                    complex<double> V_dd=0;
-                                    for(q_x=0; q_x<dim_m; q_x++)
-                                        if(q_y!=off_head&&q_x!=off_head){
-                                            //V_dd+=Coulomb_interaction(1,1,q_x,q_y)*complex<double>(cos((n-m-t)*q_x*2.0*M_PI/nphi),sin((n-m-t)*q_x*2.0*M_PI/nphi))/(2.0*nphi);
-                                            V_dd+=Coulomb_interaction(1,1,q_x-off_head,q_y-off_head)*complex<double>(cos(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi),sin(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi));
+                                    double V_dd=0;
+                                    // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
+                                    for(q_x=0; q_x<off_head; q_x++)
+                                        // q=0 is the uniform background charge, which is canceled out
+                                        if(q_y!=0&&q_x!=0){
+                                            V_dd+=Coulomb_interaction(1,1,q_x,q_y)*cos(-2.0*M_PI*q_x*q_y/nphi+2.0*M_PI*(m-n)*q_x/nphi);
                                           }
                                     it=col_indices.find(i*nbasis_down+k);
                                     if(it==col_indices.end())
-                                        col_indices.insert(std::pair<long,complex<double> >(i*nbasis_down+l,V_dd*pow(-1,nsignd)));
+                                        col_indices.insert(std::pair<long,double>(i*nbasis_down+l,V_dd*pow(-1,nsignd)));
                                     else
                                         it->second+=V_dd*pow(-1,nsignd);
                                 }
@@ -172,19 +193,27 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly,int _nphi, double _
                         long nt,mt,mask_ut,occ_ut,mask_dt,occ_dt;
                         nsignu=0;
                         nsignd=0;
-                        // perform translation
-                        for(t=1; t<nsite; t++) {
+                        // perform translation along x-direction
+                        for(t=-off_head; t<off_head; t++) {
                             // PBC, if one electron cross left boundary, sign change with -1
                             if(n-t<0) {
-                                nt=n-t+nsite;
-                                nsignu++;
+                                nt=n-t+nphi;
+                                nsignu+=sector.nel_up-1;
+                            }
+                            else if(n-t>=nphi){
+                                nt=n-t-nphi;
+                                nsignu+=sector.nel_up-1;
                             }
                             else
                                 nt=n-t;
                             // PBC, if one electron cross right boundary, sign change with -1
-                            if(m+t>=nsite) {
-                                mt=m+t-nsite;
-                                nsignd++;
+                            if(m+t>=nphi) {
+                                mt=m+t-nphi;
+                                nsignd+=sector.nel_down-1;
+                            }
+                            else if(m+t<0){
+                                mt=m+t+nphi;
+                                nsignd+=sector.nel_down-1;
                             }
                             else
                                 mt=m+t;
@@ -211,19 +240,15 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly,int _nphi, double _
                                 if(k!=i&& l!=j) {
                                     long q_x,q_y;
                                     q_y=t;
-                                    complex<double> V_ud=0;
-                                    for(q_x=0; q_x<dim_m; q_x++)
-                                        if(q_y!=off_head&&q_x!=off_head) {
-                                            // Coulomb matrix element, in Landau gauge
-                                            //V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m-t)*q_x*2.0*M_PI/nphi),sin((n-m-t)*q_x*2.0*M_PI/nphi))/(2.0*nphi);
+                                    double V_ud=0;
+                                    for(q_x=0; q_x<off_head; q_x++)
+                                        if(q_y!=0&&q_x!=0) {
                                             // Coulomb matrix element, in symmetric gauge
-                                            V_ud+=Coulomb_interaction(1,0,q_x-off_head,q_y-off_head)*complex<double>(cos(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi),sin(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi));
-                                            //cout<<"q:="<<sqrt(q_x*q_x+q_y*q_y)*2.0*M_PI/nsite<<endl;
-                                            //cout<<"Coulomb interaction:="<<Coulomb_interaction(1,0,q_x,q_y)<<endl;
+                                            V_ud+=Coulomb_interaction(1,0,q_x,q_y)*cos(-2.0*M_PI*q_x*q_y/nphi+2.0*M_PI*(m-n)*q_x/nphi);
                                         }
                                     it=col_indices.find(k*nbasis_down+l);
                                     if(it==col_indices.end())
-                                        col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+l,V_ud*pow(-1,nsignu+nsignd)));
+                                        col_indices.insert(std::pair<long,double>(k*nbasis_down+l,V_ud*pow(-1,nsignu+nsignd)));
                                     else
                                         it->second+=V_ud*pow(-1,nsignu+nsignd);
                                     //cout<<"("<<sector.id_up[k]<<","<<sector.id_down[l]<<")="<<V_ud*pow(-1,nsignu+nsignd)<<endl;
@@ -273,24 +298,24 @@ double hamil::Coulomb_interaction(int alpha, int beta,int q_x, int q_y) {
     double q=sqrt(q_x*q_x/(lx*lx)+q_y*q_y/(ly*ly))*2.0*M_PI;
     if(alpha==beta)
         // symmetric gauge
-        return 1.0/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi);
+        return 2.0*M_PI/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi);
     else
-        return 1.0/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi-q*d);
+        return 2.0*M_PI/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi-q*d);
 }
 
-double hamil::spectral_function(vector<complex<double> > &O_phi_0,double omega,double _E0, double eta, int annil) {
+double hamil::spectral_function(vector<double > &O_phi_0,double omega,double _E0, double eta, int annil) {
     complex<double> E;
     complex<double> G=0;
     for(int i=0; i<nHilbert; i++)
         // set annil==1, which gives hole-sector
         if(annil==1) {
             E=complex<double>(omega,eta);
-            G+=pow(conj(psi_n0[i])*O_phi_0[i],2)/(E+eigenvalues[i]-_E0);
+            G+=pow(psi_n0[i]*O_phi_0[i],2)/(E+eigenvalues[i]-_E0);
         }
     // else particle-sector
         else {
             E=complex<double>(omega,eta);
-            G+=pow(conj(psi_n0[i])*O_phi_0[i],2)/(E+_E0-eigenvalues[i]);
+            G+=pow(psi_n0[i]*O_phi_0[i],2)/(E+_E0-eigenvalues[i]);
         }
 
     return -G.imag()/M_PI;
@@ -298,23 +323,23 @@ double hamil::spectral_function(vector<complex<double> > &O_phi_0,double omega,d
 
 double hamil::ground_state_energy() {
     if(psi_0.size()==0) return 0;
-    complex<double> E_gs=0;
-    vector< complex<double> > psi_t;
+    double E_gs=0;
+    vector<double> psi_t;
     psi_t=H*psi_0;
     for(int i=0; i<nHilbert; i++)
-        E_gs+=conj(psi_t[i])*psi_0[i];
-    return E_gs.real()/nsite;
+        E_gs+=psi_t[i]*psi_0[i];
+    return E_gs/nsite;
 }
 
 void hamil::diag() {
     int i,idx;
-    complex<double> *hamiltonian=new complex<double>[nHilbert*nHilbert];
+    double *hamiltonian=new double[nHilbert*nHilbert];
     double *en=new double[nHilbert];
-    memset(hamiltonian,0,sizeof(complex<double> )*nHilbert*nHilbert);
+    memset(hamiltonian,0,sizeof(double)*nHilbert*nHilbert);
     for(i=0; i<H.outer_starts.size()-1; i++)
         for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
             hamiltonian[i*nHilbert+H.inner_indices[idx]]=H.value[idx];
-    diag_zheev(hamiltonian,en,nHilbert);
+    diag_dsyev(hamiltonian,en,nHilbert);
     psi_0.assign(nHilbert,0);
     psi_n0.assign(nHilbert,0);
     eigenvalues.assign(nHilbert,0);

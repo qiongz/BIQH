@@ -15,9 +15,9 @@ public:
     /** Eigenvalues of the hamiltonian */
     std::vector<double> eigenvalues;
     /** Ground state wave function */
-    std::vector< complex<double> > psi_0;
+    std::vector<double> psi_0;
     /** First element of all wave functions */
-    std::vector< complex<double> > psi_n0;
+    std::vector<double> psi_n0;
 
     hamil();
     ~hamil();
@@ -34,7 +34,7 @@ public:
     double Coulomb_interaction(int alpha,int beta,int q_x, int q_y);
     void diag();
 
-    double spectral_function(vector< complex<double> > & O_phi_0,double omega,double _E0,double eta, int annil); //!< Spectral moments with spin
+    double spectral_function(vector<double> & O_phi_0,double omega,double _E0,double eta, int annil); //!< Spectral moments with spin
     /** Print the hamiltonian matrix */
     void print_hamil();
     /** Print the eigenvalues of the system */
