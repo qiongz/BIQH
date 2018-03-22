@@ -9,8 +9,8 @@ public:
     unsigned seed;  //!< Seed for RNGs
     long nHilbert;  //!< Hilbert space size
     long lambda;    //!< Lanczos update steps
-    int nsite,nphi;
-    double d,E0;      //!< Ground state eigen energy
+    int nsite;
+    double d,E0,nphi;      //!< Ground state eigen energy
     basis sector;   //!< Basis
     Mat H;  //!< Hamiltonian matrix in CSR format
     //Mat O;  //!< Operator matrix in CSR format
