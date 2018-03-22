@@ -271,6 +271,7 @@ void Mat::print() {
     std::cout<<" ]"<<std::endl;
 }
 
+/*
 void diag_zheev(complex<double> *hamiltonian, double *energy, int l){
     char jobz,uplo;
     int info;
@@ -282,4 +283,15 @@ void diag_zheev(complex<double> *hamiltonian, double *energy, int l){
     zheev_(&jobz, &uplo, &l, hamiltonian, &l, energy, work, &lwork, rwork, &info);
     delete [] work;
     delete [] rwork;
+}
+*/
+
+// diagonalization wrapper for mkl zheevd
+void diag_zheev(complex<double> *hamiltonian, double *energy, int l){
+    char jobz,uplo;
+    int info,lda;
+    jobz = 'V';
+    uplo = 'U';
+    lda=l;
+    info=LAPACKE_zheevd(LAPACK_COL_MAJOR,jobz, uplo, l,hamiltonian,lda, energy);
 }

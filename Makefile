@@ -1,7 +1,7 @@
 CC =  icpc
 #CFLAGS = -qopenmp -std=c++11
 CFLAGS = -openmp
-LIBS= -llapack -lpthread
+LIBS= -lpthread -mkl
 
 check:check.cpp basis.o matrix.o init.o lanczos_hamiltonian.o hamiltonian.o mt19937-64.o
 	$(CC) $(CFLAGS) $^ -O2 -o $@ ${LIBS} $(CFLAGS) -lgsl
@@ -10,7 +10,7 @@ basis.o:basis.cpp basis.h
 	$(CC) $(CFLAGS) -c basis.cpp
 
 matrix.o:matrix.cpp matrix.h mt19937-64.h
-	$(CC) $(CFLAGS) -c matrix.cpp -o $@
+	$(CC) $(CFLAGS) -c matrix.cpp -o $@ -mkl
 
 init.o:init.cpp init.h
 	$(CC) $(CFLAGS) -c init.cpp

@@ -10,6 +10,8 @@
 #include<cstring>
 #include<vector>
 #include<omp.h>
+#define MKL_Complex16 std::complex<double>
+#include"mkl.h"
 
 #if __cplusplus > 199711L
 #include<random>
@@ -18,7 +20,8 @@
 #endif
 using namespace std;
 
-extern "C" int zheev_(char *, char *, int *,complex<double>*,int *, double *,complex<double>*, int *, double *, int *);
+// for LAPACK zheev usage
+//extern "C" int zheev_(char *, char *, int *,complex<double>*,int *, double *,complex<double>*, int *, double *, int *);
 void diag_zheev(complex<double> *hamiltonian, double *energy, int l);
 
 class Vec {
@@ -56,7 +59,7 @@ public:
 
 class Mat {
 public:
-    // doublehe compressed Sparse Row (CSR) Data Structure
+    // compressed Sparse Row (CSR) Data Structure
     std::vector<long> outer_starts,inner_indices;
     std::vector< complex<double> > value;
 

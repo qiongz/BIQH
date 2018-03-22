@@ -12,7 +12,7 @@ lhamil::lhamil(basis &_sector,double _d,long _lambda,unsigned _seed) {
     sector=_sector;
     lambda=_lambda;
     seed=_seed;
-    set_hamil(sector,_d);
+    d=_d;
 }
 
 lhamil::~lhamil() {
@@ -22,7 +22,6 @@ void lhamil::init(basis &_sector,double _d,long _lambda,unsigned _seed) {
     sector=_sector;
     lambda=_lambda;
     seed=_seed;
-    set_hamil(sector,_d);
 }
 const lhamil & lhamil::operator =(const lhamil & _config) {
     if(this !=&_config) {
@@ -42,20 +41,26 @@ const lhamil & lhamil::operator =(const lhamil & _config) {
 }
 
 double lhamil::Coulomb_interaction(int alpha, int beta, int q_x, int q_y){
-  double q=sqrt(q_x*q_x+q_y*q_y)*2*M_PI/nsite;
+  double q=sqrt(q_x*q_x/(lx*lx)+q_y*q_y/(ly*ly))*2.0*M_PI;
   if(alpha==beta)
-      return 1.0/(q+1e-8)*exp(-q*q/2);
+        return 1.0/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi);
   else
-      return 1.0/(q+1e-8)*exp(-q*q/2-q*d);
+        return 1.0/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi-q*d);
 }
 
-void lhamil::set_hamil(basis &_sector, double _d)
+void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double _d)
 {
+    // No. of k-points
+    long dim_n,dim_m,off_head;
     long nbasis_up,nbasis_down;
     d=_d;
     sector=_sector;
     nsite=sector.nsite;
-    nphi=nsite*nsite/(2.0*M_PI);
+    lx=_lx;
+    ly=_ly;
+    nphi=_nphi;
+    off_head=sqrt(nphi)*2;
+    dim_n=dim_m=off_head*2+1;
     nbasis_up=sector.nbasis_up;
     nbasis_down=sector.nbasis_down;
     nHilbert=nbasis_up*nbasis_down;
@@ -73,8 +78,8 @@ void lhamil::set_hamil(basis &_sector, double _d)
         for(j=0; j<nbasis_down; j++) {
             // start of new row of nonzero elements
             // select two electrons in left-basis <m_1, m_2|
-            for(n=0; n<nsite; n++)
-                for(m=0; m<nsite; m++) {
+            for(n=0; n<nsite-1; n++)
+                for(m=n; m<nsite; m++) {
                     mask=(1<<n)+(1<<m);
                     // consider the upper-layer two electrons
                     // looking up the corresponding basis in id_up
@@ -114,14 +119,17 @@ void lhamil::set_hamil(basis &_sector, double _d)
                                     k=i;
                                 // calculate the Coulomb matrix contribution and
                                 // add it to the hamiltonian matrix
-                                // Coulomb matrix element, in Landau gauge
                                 if(k!=i) {
                                     long q_x,q_y;
                                     q_y=t;
                                     complex<double> V_uu=0;
-                                    for(q_x=0; q_x<nsite; q_x++)
-                                        if(q_y!=0&&q_x!=0)
-                                            V_uu+=Coulomb_interaction(0,0,q_x,q_y)*complex<double>(cos((n-m-t)*q_x*2.0*M_PI/nphi),sin((n-m-t)*q_x*2.0*M_PI/nphi))/(2.0*nphi);
+                                    for(q_x=0; q_x<dim_m; q_x++)
+                                        if(q_y!=off_head&&q_x!=off_head){
+                                            // Coulomb matrix element in Landau gauge
+                                            //V_uu+=Coulomb_interaction(0,0,q_x,q_y)*complex<double>(cos((n-m-t)*q_x*2.0*M_PI/nphi),sin((n-m-t)*q_x*2.0*M_PI/nphi))/(2.0*nphi);
+                                            // Coulomb matrix element in symmetric gauge
+                                            V_uu+=Coulomb_interaction(0,0,q_x-off_head,q_y-off_head)*complex<double>(cos(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi),sin(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi));
+                                          }
                                     it=col_indices.find(k*nbasis_down+j);
                                     if(it==col_indices.end())
                                         col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
@@ -180,9 +188,11 @@ void lhamil::set_hamil(basis &_sector, double _d)
                                     long q_x,q_y;
                                     q_y=t;
                                     complex<double> V_dd=0;
-                                    for(q_x=0; q_x<nsite; q_x++)
-                                        if(q_y!=0&&q_x!=0)
-                                            V_dd+=Coulomb_interaction(1,1,q_x,q_y)*complex<double>(cos((n-m-t)*q_x*2.0*M_PI/nphi),sin((n-m-t)*q_x*2.0*M_PI/nphi))/(2.0*nphi);
+                                    for(q_x=0; q_x<dim_m; q_x++)
+                                        if(q_y!=off_head&&q_x!=off_head){
+                                            //V_dd+=Coulomb_interaction(1,1,q_x,q_y)*complex<double>(cos((n-m-t)*q_x*2.0*M_PI/nphi),sin((n-m-t)*q_x*2.0*M_PI/nphi))/(2.0*nphi);
+                                            V_dd+=Coulomb_interaction(1,1,q_x-off_head,q_y-off_head)*complex<double>(cos(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi),sin(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi));
+                                          }
                                     it=col_indices.find(i*nbasis_down+k);
                                     if(it==col_indices.end())
                                         col_indices.insert(std::pair<long,complex<double> >(i*nbasis_down+l,V_dd*pow(-1,nsignd)));
@@ -247,14 +257,18 @@ void lhamil::set_hamil(basis &_sector, double _d)
                                     l=j;
                                 // calculate the Coulomb matrix contribution and
                                 // add it to the hamiltonian matrix
-                                // Coulomb matrix element, in Landau gauge
                                 if(k!=i&& l!=j) {
                                     long q_x,q_y;
                                     q_y=t;
                                     complex<double> V_ud=0;
-                                    for(q_x=0; q_x<nsite; q_x++)
-                                        if(q_y!=0&&q_x!=0) {
-                                            V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m-t)*q_x*2.0*M_PI/nphi),sin((n-m-t)*q_x*2.0*M_PI/nphi))/(2.0*nphi);
+                                    for(q_x=0; q_x<dim_m; q_x++)
+                                        if(q_y!=off_head&&q_x!=off_head) {
+                                            // Coulomb matrix element, in Landau gauge
+                                            //V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m-t)*q_x*2.0*M_PI/nphi),sin((n-m-t)*q_x*2.0*M_PI/nphi))/(2.0*nphi);
+                                            // Coulomb matrix element, in symmetric gauge
+                                            V_ud+=Coulomb_interaction(1,0,q_x-off_head,q_y-off_head)*complex<double>(cos(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi),sin(-2.0*M_PI*(q_x-off_head)*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*(q_x-off_head)/nphi));
+                                            //cout<<"q:="<<sqrt(q_x*q_x+q_y*q_y)*2.0*M_PI/nsite<<endl;
+                                            //cout<<"Coulomb interaction:="<<Coulomb_interaction(1,0,q_x,q_y)<<endl;
                                         }
                                     it=col_indices.find(k*nbasis_down+l);
                                     if(it==col_indices.end())
@@ -287,6 +301,7 @@ void lhamil::set_hamil(basis &_sector, double _d)
     inner_indices.clear();
     matrix_elements.clear();
 }
+
 
 
 void lhamil::coeff_update() {
@@ -802,20 +817,20 @@ void lhamil::read_from_file(const char* filename) {
     idf.close();
 }
 
-void lhamil::print_hamil() {
+void lhamil::print_hamil(int range) {
     int i,j,count;
-    for(i=0; i<nHilbert; i++) {
+    for(i=0; i<range; i++) {
         if(i==0)
             cout<<"[[";
         else cout<<" [";
         count=0;
-        for(j=0; j<nHilbert; j++) {
+        for(j=0; j<range; j++) {
             if(j==H.inner_indices[H.outer_starts[i]+count])
                 cout<<H.value[H.outer_starts[i]+count++]<<",";
             else
                 cout<<0<<",";
         }
-        if(i==nHilbert-1)
+        if(i==range-1)
             cout<<"]]"<<endl;
         else cout<<"]"<<endl;
     }
@@ -826,13 +841,13 @@ void lhamil::print_lhamil(int range) {
         if(i==0)
             cout<<"[[";
         else cout<<" [";
-        for(int j=0; j<nHilbert; j++) {
+        for(int j=0; j<range; j++) {
             if(j==i+1)
                 cout<<norm[j]<<",";
             else if(j==i-1)
                 cout<<norm[i]<<",";
             else if(j==i)
-                cout<<overlap[i]<<",";
+                cout<<abs(overlap[i])<<",";
             else
                 cout<<0<<",";
         }

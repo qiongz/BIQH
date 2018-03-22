@@ -8,8 +8,8 @@ public:
     long nHilbert;
     /** seed for the RNGs */
     unsigned seed;
-    long nsite;
-    double d,nphi;
+    long nphi,nsite;
+    double lx,ly,d;
     /** Hamiltonian matrix in CSR format */
     Mat H;
     /** Eigenvalues of the hamiltonian */
@@ -26,12 +26,12 @@ public:
      \param t hopping strength,
      \param U onsite replusive interaction strength
      */
-    void set_hamil(basis & sector, double _d);
+    void set_hamil(basis & sector, double _lx, double _ly, int nphi, double _d);
     const hamil & operator=(const hamil &);
     /** Return the ground state energy of the system */
     double ground_state_energy();
     /** Diagonalize the full hamiltonian */
-    double Coulomb_interaction(int alpha,int beta, int q_x, int q_y);
+    double Coulomb_interaction(int alpha,int beta,int q_x, int q_y);
     void diag();
 
     double spectral_function(vector< complex<double> > & O_phi_0,double omega,double _E0,double eta, int annil); //!< Spectral moments with spin

@@ -9,8 +9,8 @@ public:
     unsigned seed;  //!< Seed for RNGs
     long nHilbert;  //!< Hilbert space size
     long lambda;    //!< Lanczos update steps
-    int nsite;
-    double d,E0,nphi;      //!< Ground state eigen energy
+    long nsite,nphi;
+    double lx,ly,d,E0;      //!< Ground state eigen energy
     basis sector;   //!< Basis
     Mat H;  //!< Hamiltonian matrix in CSR format
     //Mat O;  //!< Operator matrix in CSR format
@@ -39,7 +39,7 @@ public:
     const lhamil & operator=(const lhamil &);
     /** \param _sector Basis sector
     */
-    void set_hamil(basis & _sector ,double d);  //!< Initialize hamiltonian matrix
+    void set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,double _d);  //!< Initialize hamiltonian matrix
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays
     void coeff_update_wopt(vector< complex<double> > O_phi_0);
@@ -50,7 +50,7 @@ public:
     double Coulomb_interaction(int alpha,int beta, int q_x, int q_y);
     double ground_state_energy();    //!< Ground state energy
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version
-    void print_hamil(); //!< print the full hamiltonian matrix
+    void print_hamil(int n); //!< print the full hamiltonian matrix
     void print_lhamil(int n);  //!< print the Lanczos hamiltonian matrix with first n x n elements
     void print_eigen(int n);  //!< print the first n eigenvalues
     void save_to_file(const char* filename);  //!< save object to file "filename"
