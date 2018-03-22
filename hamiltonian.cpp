@@ -12,6 +12,7 @@ void hamil::set_hamil(basis & sector, double _d){
     std::vector<long> inner_indices, outer_starts;
     std::vector< complex<double> > matrix_elements;
     std::map<long,complex<double> > ::iterator it;
+    std::map<long,complex<double> > col_indices;
     inner_indices.reserve(nHilbert*nsite);
     matrix_elements.reserve(nHilbert*nsite);
     outer_starts.reserve(nHilbert+1);
@@ -20,20 +21,20 @@ void hamil::set_hamil(basis & sector, double _d){
     outer_starts.push_back(0);
     for(i=0; i<nbasis_up; i++) {
       for(j=0; j<nbasis_down; j++) {
-        std::map<long,complex<double> > col_indices;
+        // start of new row of nonzero elements
         // select two electrons in left-basis <m_1, m_2|
         for(n=0;n<nsite;n++)
-          for(m=n;m<nsite;m++){
+          for(m=0;m<nsite;m++){
             mask=(1<<n)+(1<<m);
             // consider the upper-layer two electrons
             // if there're two electrons on n and m;
-            if(i&mask==mask && m!=n){
+            if(sector.id_up[i]&mask==mask && m!=n){
               // b is the rest electon positions
-              b=i^mask;
+              b=sector.id_up[i]^mask;
               long nt,mt,mask_ut,occ_ut;
               nsignu=0;
               // perform translation
-              for(t=0;t<nsite;t++){
+              for(t=1;t<nsite;t++){
                 // PBC, if one electron cross left boundary, sign change with -1
                 if(n-t<0){
                   nt=n-t+nsite;
@@ -56,7 +57,8 @@ void hamil::set_hamil(basis & sector, double _d){
                 // which is a valid translation, can be applied
                 if(occ_ut==0){
                   // the translated indices
-                  k=mask_ut+b;
+                  if(sector.basis_up.find(mask_ut+b)!=sector.basis_up.end())
+                    k=sector.basis_up[mask_ut+b];
                   // calculate the Coulomb matrix contribution and
                   // add it to the hamiltonian matrix
                   if(k!=i) {
@@ -72,7 +74,6 @@ void hamil::set_hamil(basis & sector, double _d){
                       col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+j,V_uu*pow(-1,nsignu)));
                     else
                       it->second+=V_uu*pow(-1,nsignu);
-
                     }
                   }
                 // two electrons are occupied, and to be crossed next
@@ -86,13 +87,13 @@ void hamil::set_hamil(basis & sector, double _d){
 
                // consider the lower-layer two electrons
                // if there're two electrons on n and m;
-               if(j&mask==mask && m!=n){
+               if(sector.id_down[j]&mask==mask && m!=n){
                  // b is the rest electon positions
-                 b=j^mask;
+                 b=sector.id_down[j]^mask;
                  long nt,mt,mask_dt,occ_dt;
                  nsignd=0;
                  // perform translation
-                 for(t=0;t<nsite;t++){
+                 for(t=1;t<nsite;t++){
                    // PBC, if one electron cross left boundary, sign change with -1
                    if(n-t<0){
                      nt=n-t+nsite;
@@ -115,10 +116,11 @@ void hamil::set_hamil(basis & sector, double _d){
                    // which is a valid translation, can be applied
                    if(occ_dt==0){
                      // the translated indices
-                     k=mask_dt+b;
+                     if(sector.basis_down.find(mask_dt+b)!=sector.basis_down.end())
+                        l=sector.basis_down[mask_dt+b];
                      // calculate the Coulomb matrix contribution and
                      // add it to the hamiltonian matrix
-                     if(k!=j) {
+                     if(l!=j) {
                        // Coulomb matrix element, in Landau gauge
                        long q_x,q_y;
                        q_y=t;
@@ -128,7 +130,7 @@ void hamil::set_hamil(basis & sector, double _d){
                            V_dd+=Coulomb_interaction(1,1,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/nphi),sin((n-m+t)*q_x*2.0*M_PI/nphi))/(4.0*M_PI*nphi);
                        it=col_indices.find(i*nbasis_down+k);
                        if(it==col_indices.end())
-                         col_indices.insert(std::pair<long,complex<double> >(i*nbasis_down+k,V_dd*pow(-1,nsignd)));
+                         col_indices.insert(std::pair<long,complex<double> >(i*nbasis_down+l,V_dd*pow(-1,nsignd)));
                        else
                          it->second+=V_dd*pow(-1,nsignd);
                        }
@@ -147,15 +149,15 @@ void hamil::set_hamil(basis & sector, double _d){
                 mask_d=(1<<m);
                 // if there is one electron at site n in upper-layer
                 // and one electron at site m in lower-layer
-                if(i&mask_u==mask_u && j&mask_d==mask_d){
+                if(sector.id_up[i]&mask_u==mask_u && sector.id_down[j]&mask_d==mask_d){
                   // b is the rest electon positions for upper-layer electrons
-                  b=i^mask_u;
-                  p=j^mask_d;
+                  b=sector.id_up[i]^mask_u;
+                  p=sector.id_down[j]^mask_d;
                   long nt,mt,mask_ut,occ_ut,mask_dt,occ_dt;
                   nsignu=0;
                   nsignd=0;
                   // perform translation
-                  for(t=0;t<nsite;t++){
+                  for(t=1;t<nsite;t++){
                     // PBC, if one electron cross left boundary, sign change with -1
                     if(n-t<0){
                       nt=n-t+nsite;
@@ -180,25 +182,28 @@ void hamil::set_hamil(basis & sector, double _d){
                     // which is a valid translation, can be applied
                     if(occ_ut==0 && occ_dt==0){
                       // the translated indices
-                      k=mask_ut+b;
-                      l=mask_dt+p;
+                      if(sector.basis_up.find(mask_ut+b)!=sector.basis_up.end())
+                         k=sector.basis_up[mask_ut+b];
+                      if(sector.basis_down.find(mask_d+p)!=sector.basis_down.end())
+                        l=sector.basis_down[mask_dt+p];
                       // calculate the Coulomb matrix contribution and
                       // add it to the hamiltonian matrix
-                      if(k!=i && l!=j) {
-                        // Coulomb matrix element, in Landau gauge
-                        long q_x,q_y;
-                        q_y=t;
-                        complex<double> V_ud=0;
-                        for(q_x=0;q_x<nsite;q_x++)
-                          if(q_y!=0&&q_x!=0){
-                            V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/nphi),sin((n-m+t)*q_x*2.0*M_PI/nphi))/(4.0*M_PI*nphi);
-                          }
-                        it=col_indices.find(k*nbasis_down+l);
-                        if(it==col_indices.end())
-                          col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+l,V_ud*pow(-1,nsignu+nsignd)));
-                        else
-                          it->second+=V_ud*pow(-1,nsignu+nsignd);
-                        }
+                      // Coulomb matrix element, in Landau gauge
+                      long q_x,q_y;
+                      q_y=t;
+                      complex<double> V_ud=0;
+                      for(q_x=0;q_x<nsite;q_x++)
+                        if(q_y!=0&&q_x!=0){
+                          V_ud+=Coulomb_interaction(1,0,q_x,q_y)*complex<double>(cos((n-m+t)*q_x*2.0*M_PI/nphi),sin((n-m+t)*q_x*2.0*M_PI/nphi))/(4.0*M_PI*nphi);
+                         }
+                      it=col_indices.find(k*nbasis_down+l);
+                      if(it==col_indices.end())
+                        col_indices.insert(std::pair<long,complex<double> >(k*nbasis_down+l,V_ud*pow(-1,nsignu+nsignd)));
+                      else
+                        it->second+=V_ud*pow(-1,nsignu+nsignd);
+                      cout<<"("<<i<<","<<j<<")";
+                      cout<<"("<<k<<","<<l<<")="<<V_ud*pow(-1,nsignu+nsignd)<<endl;
+                      }
                       // two electrons are occupied, and to be crossed next
                       else if(occ_ut==mask_ut && occ_dt==mask_dt)
                         nsignu+=2;
@@ -207,7 +212,6 @@ void hamil::set_hamil(basis & sector, double _d){
                         nsignu++;
                       }
                     }
-                  }
                }
               for(it=col_indices.begin(); it!=col_indices.end(); it++) {
                 inner_indices.push_back(it->first);
