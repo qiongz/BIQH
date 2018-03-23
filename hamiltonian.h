@@ -10,6 +10,8 @@ public:
     unsigned seed;
     long nphi,nsite;
     double lx,ly,d;
+    // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
+    vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
     /** Hamiltonian matrix in CSR format */
     Mat H;
     /** Eigenvalues of the hamiltonian */
@@ -31,6 +33,7 @@ public:
     /** Return the ground state energy of the system */
     double ground_state_energy();
     /** Diagonalize the full hamiltonian */
+    void init_Coulomb_matrix();
     double Coulomb_interaction(int alpha,int beta,int q_x, int q_y);
     void diag();
 

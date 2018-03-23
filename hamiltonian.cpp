@@ -1,6 +1,16 @@
 #include"hamiltonian.h"
 hamil::hamil() {}
 
+void hamil::init_Coulomb_matrix(){
+   long off_head=nphi/2;
+   Coulomb_matrix.assign(2*nphi*off_head*nphi*nphi,0);
+   for(int alpha=0;alpha<2;alpha++)
+     for(int q_y=0;q_y<nphi;q_y++)
+       for(int q_x=0;q_x<off_head;q_x++)
+         for(int n=0;n<nphi;n++)
+            for(int m=0;m<nphi;m++)
+               Coulomb_matrix[alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m]=Coulomb_interaction(0,alpha,q_x,q_y-off_head)*cos(-2.0*M_PI*q_x*(q_y-off_head)/nphi+2.0*M_PI*(m-n)*q_x/nphi);
+}
 void hamil::set_hamil(basis & sector, double _lx, double _ly,int _nphi, double _d) {
     // No. of k-points
     long dim_n,dim_m,off_head;
@@ -11,6 +21,7 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly,int _nphi, double _
     ly=_ly;
     nphi=_nphi;
     off_head=nphi/2;
+    init_Coulomb_matrix();
     dim_n=dim_m=off_head*2+1;
     nbasis_up=sector.nbasis_up;
     nbasis_down=sector.nbasis_down;
@@ -91,7 +102,8 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly,int _nphi, double _
                                         // q=0 is the uniform background charge, which is canceled out
                                         if(q_y!=0&& q_x!=0){
                                             // Coulomb matrix element in symmetric gauge
-                                            V_uu+=Coulomb_interaction(0,0,q_x,q_y)*cos(-2.0*M_PI*q_x*q_y/nphi+2.0*M_PI*(m-n)*q_x/nphi);
+                                            //V_uu+=Coulomb_interaction(0,0,q_x,q_y)*cos(-2.0*M_PI*q_x*q_y/nphi+2.0*M_PI*(m-n)*q_x/nphi);
+                                            V_uu+=Coulomb_matrix[(q_y+off_head)*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m];
                                           }
                                     it=col_indices.find(k*nbasis_down+j);
                                     if(it==col_indices.end())
@@ -163,7 +175,8 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly,int _nphi, double _
                                     for(q_x=0; q_x<off_head; q_x++)
                                         // q=0 is the uniform background charge, which is canceled out
                                         if(q_y!=0&&q_x!=0){
-                                            V_dd+=Coulomb_interaction(1,1,q_x,q_y)*cos(-2.0*M_PI*q_x*q_y/nphi+2.0*M_PI*(m-n)*q_x/nphi);
+                                            //V_dd+=Coulomb_interaction(1,1,q_x,q_y)*cos(-2.0*M_PI*q_x*q_y/nphi+2.0*M_PI*(m-n)*q_x/nphi);
+                                            V_dd+=Coulomb_matrix[(q_y+off_head)*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m];
                                           }
                                     it=col_indices.find(i*nbasis_down+k);
                                     if(it==col_indices.end())
@@ -244,7 +257,9 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly,int _nphi, double _
                                     for(q_x=0; q_x<off_head; q_x++)
                                         if(q_y!=0&&q_x!=0) {
                                             // Coulomb matrix element, in symmetric gauge
-                                            V_ud+=Coulomb_interaction(1,0,q_x,q_y)*cos(-2.0*M_PI*q_x*q_y/nphi+2.0*M_PI*(m-n)*q_x/nphi);
+                                            //V_ud+=Coulomb_interaction(1,0,q_x,q_y)*cos(-2.0*M_PI*q_x*q_y/nphi+2.0*M_PI*(m-n)*q_x/nphi);
+                                            V_ud+=Coulomb_matrix[nphi*off_head*nphi*nphi+(q_y+off_head)*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m];
+                                            //cout<<V_ud<<endl;
                                         }
                                     it=col_indices.find(k*nbasis_down+l);
                                     if(it==col_indices.end())
