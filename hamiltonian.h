@@ -8,7 +8,7 @@ public:
     long nHilbert;
     /** seed for the RNGs */
     unsigned seed;
-    long nphi,nsite;
+    long nphi,off_head,nsite;
     double lx,ly,d;
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
@@ -39,7 +39,9 @@ public:
 
     double spectral_function(vector<double> & O_phi_0,double omega,double _E0,double eta, int annil); //!< Spectral moments with spin
     /** Print the hamiltonian matrix */
+    void print_hamil_CSR();
     void print_hamil();
+    void print_hamil(int range);
     /** Print the eigenvalues of the system */
     void print_eigen();
 };
