@@ -53,15 +53,15 @@ double lhamil::Coulomb_interaction(int alpha,int beta, int q_x, int q_y){
 void lhamil::init_Coulomb_matrix(){
     off_head=nphi/2+nphi%2;
     long dim2 = pow(nphi, 2);
-    long dim3 = pow(nphi,3);
+    long dim3 = dim2*(off_head+1);
     long dim4=dim3*(off_head+1);
     Coulomb_matrix.assign(2 * dim4, 0);
     for(int alpha = 0; alpha < 2; alpha++)
         for(int q_y = 0; q_y <= off_head; q_y++)
-            for(int q_x = 0; q_x < nphi; q_x++)
+            for(int q_x = 0; q_x <=off_head; q_x++)
                 for(int n = 0; n < nphi; n++)
                     for(int m = 0; m < nphi; m++)
-                        Coulomb_matrix[alpha * dim4 + q_y * dim3 + q_x * dim2 + n * nphi + m] = Coulomb_interaction(0, alpha, q_x, q_y) * cos(-2.0 * M_PI * q_x * q_y / nphi + 2.0 * M_PI * (m - n) * q_x / nphi)/2.0;
+                        Coulomb_matrix[alpha * dim4 + q_y * dim3 + q_x * dim2 + n * nphi + m] = Coulomb_interaction(0, alpha, q_x, q_y) * cos(-2.0 * M_PI * q_x * q_y / nphi + 2.0 * M_PI * (m - n) * q_x / nphi)/(lx*ly);
 }
 
 void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,double _d){
@@ -91,8 +91,8 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
         for(j = 0; j < nbasis_down; j++) {
             // start of new row of nonzero elements
             // select two electrons in left-basis <m_1, m_2|
-            long dim3 = pow(nphi, 3);
             long dim2 = pow(nphi, 2);
+            long dim3 = dim2* (off_head+1);
             long dim4 = dim3 * (off_head+1);
             for(n = 0; n < nphi; n++)
                 for(m = 0; m < nphi; m++) {
@@ -143,7 +143,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                                 q_y = t;
                                 double V_uu = 0;
                                 // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
-                                for(q_x = 0; q_x < nphi; q_x++)
+                                for(q_x = 0; q_x <= off_head; q_x++)
                                     // q=0 is the uniform background charge, which is canceled out
                                     if( q_y!= 0 && q_x != 0) {
                                         // Coulomb matrix element in symmetric gauge
@@ -208,7 +208,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                                 q_y = t;
                                 double V_uu = 0;
                                 // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
-                                for(q_x = 0; q_x < nphi; q_x++)
+                                for(q_x = 0; q_x <= off_head; q_x++)
                                     // q=0 is the uniform background charge, which is canceled out
                                     if( q_y!= 0 && q_x != 0) {
                                         // Coulomb matrix element in symmetric gauge
@@ -275,7 +275,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                                 q_y = t;
                                 double V_dd = 0;
                                 // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
-                                for(q_x = 0; q_x < nphi; q_x++)
+                                for(q_x = 0; q_x <= off_head; q_x++)
                                     // q=0 is the uniform background charge, which is canceled out
                                     if(q_y != 0 && q_x != 0) {
                                         V_dd += Coulomb_matrix[q_y * dim3 + q_x * dim2 + n * nphi + mt];
@@ -333,7 +333,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                                 q_y = t;
                                 double V_dd = 0;
                                 // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
-                                for(q_x = 0; q_x < nphi; q_x++)
+                                for(q_x = 0; q_x <= off_head; q_x++)
                                     // q=0 is the uniform background charge, which is canceled out
                                     if(q_y != 0 && q_x != 0) {
                                         V_dd += Coulomb_matrix[q_y * dim3 + q_x * dim2 + n * nphi + mt];
@@ -405,7 +405,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                                 long q_x, q_y;
                                 q_y = t;
                                 double V_ud = 0;
-                                for(q_x = 0; q_x < nphi; q_x++)
+                                for(q_x = 0; q_x <= off_head; q_x++)
                                     if(q_y != 0 && q_x != 0) {
                                         // Coulomb matrix element, in symmetric gauge
                                         V_ud += Coulomb_matrix[dim4 + q_y * dim3 + q_x * dim2 + n * nphi + mt];
@@ -474,7 +474,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                                 long q_x, q_y;
                                 q_y = t;
                                 double V_ud = 0;
-                                for(q_x = 0; q_x < nphi; q_x++)
+                                for(q_x = 0; q_x <= off_head; q_x++)
                                     if(q_y != 0 && q_x != 0) {
                                         // Coulomb matrix element, in symmetric gauge
                                         V_ud += Coulomb_matrix[dim4 + q_y * dim3 + q_x * dim2 + n * nphi + mt];
