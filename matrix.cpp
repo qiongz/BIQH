@@ -34,7 +34,7 @@ void Vec::init_random(unsigned seed) {
     #if __cplusplus > 199711L
     std::mt19937 rng(seed);
     for(int i = 0; i < size; i++) {
-        value[i] = rng() * 1.0 / rng.max()-0.5;
+        value[i] = rng() * 1.0 / rng.max()-0.5 ;
         norm += value[i] * value[i];
     }
     #else
@@ -44,10 +44,10 @@ void Vec::init_random(unsigned seed) {
         norm += value[i] * value[i];
     }
     #endif
-    double normsq = sqrt(norm);
+    norm = sqrt(norm);
     #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
-        value[i] /= normsq;
+        value[i] /= norm;
 }
 
 void Vec::init_random(long _size,unsigned seed) {
@@ -57,20 +57,20 @@ void Vec::init_random(long _size,unsigned seed) {
     #if __cplusplus > 199711L
     std::mt19937 rng(seed);
     for(int i = 0; i < size; i++) {
-        value[i] = rng() * 1.0 / rng.max()-0.5;
+        value[i] = rng() * 1.0 / rng.max()-0.5 ;
         norm += value[i] * value[i];
     }
     #else
     init_genrand64(seed);
     for(int i = 0; i < size; i++) {
         value[i]=genrand64_real3()-0.5;
-        norm +=value[i] * value[i];
+        norm += value[i] * value[i];
     }
     #endif
-    double normsq = sqrt(norm);
+    norm = sqrt(norm);
     #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
-        value[i] /= normsq;
+        value[i] /= norm;
 }
 
 void Vec::clear() {
@@ -128,10 +128,9 @@ Vec & Vec::operator*=(const double & rhs) {
 Vec & Vec::operator/=(const double & rhs) {
     #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
-        value[i] /=rhs;
+        value[i] /= rhs;
     return *this;
 }
-
 
 Vec Vec::operator+(const Vec & rhs) {
     Vec rt(rhs.size);
@@ -226,13 +225,13 @@ Vec Mat::operator*(const Vec &rhs)const {
     return phi;
 }
 
-vector<double > Mat::operator*(const vector<double> &rhs)const {
-    vector<double > phi;
+vector<double> Mat::operator*(const vector<double> &rhs)const {
+    vector<double> phi;
     phi.assign(rhs.size(),0);
     if(rhs.size()!=outer_starts.size()-1) return phi;
     #pragma omp parallel for schedule(guided,4)
     for(int i=0; i<outer_starts.size()-1; i++) {
-    #pragma ivdep
+        #pragma ivdep
         for(int idx=outer_starts[i]; idx<outer_starts[i+1]; idx++)
             phi[i]+=value[idx]*rhs[inner_indices[idx]];
     }
@@ -257,7 +256,20 @@ void Mat::print() {
     std::cout<<" ]"<<std::endl;
 }
 
-// diagonalization wrapper for mkl dsyev
+/*
+void diag_dsyev(double *h, double *e, int l) {
+    char jobz, uplo;
+    int info;
+    jobz = 'V';
+    uplo = 'U';
+    int lda = l;
+    int lwork = 3 * l - 1;
+    double *work = new double[lwork];
+    dsyev_(&jobz, &uplo, &l, h, &lda, e, work, &lwork, &info);
+    delete [] work;
+}
+*/
+
 void diag_dsyev(double *hamiltonian, double *energy, int l){
     char jobz,uplo;
     int info,lda;

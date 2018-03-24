@@ -12,7 +12,7 @@ void hamil::init_Coulomb_matrix() {
             for(int q_x = 0; q_x < nphi; q_x++)
                 for(int n = 0; n < nphi; n++)
                     for(int m = 0; m < nphi; m++)
-                        Coulomb_matrix[alpha * dim4 + q_y * dim3 + q_x * dim2 + n * nphi + m] = Coulomb_interaction(0, alpha, q_x, q_y) * cos(-2.0 * M_PI * q_x * q_y / nphi + 2.0 * M_PI * (m - n) * q_x / nphi);
+                        Coulomb_matrix[alpha * dim4 + q_y * dim3 + q_x * dim2 + n * nphi + m] = Coulomb_interaction(0, alpha, q_x, q_y) * cos(-2.0 * M_PI * q_x * q_y / nphi + 2.0 * M_PI * (m - n) * q_x / nphi)/2.0;
 }
 
 void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double _d) {
@@ -112,16 +112,6 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double 
                                     else
                                         it->second += V_uu * pow(-1, nsign);
                                 }
-                                if(i==0 && j==0 && k==1 && l==2){
-                                   cout<<"<"<<bitset<3>(sector.id_up[i]).to_string()<<bitset<3>(sector.id_down[j]).to_string()<<"|V_{LL}|";
-                                   cout<<"|"<<bitset<3>(sector.id_up[k]).to_string()<<bitset<3>(sector.id_down[l]).to_string()<<"> :=";
-                                   cout<<V_uu*pow(-1,nsignu)<<endl;
-                                 }
-                                 if(i==1 && j==2 && k==0 && l==0){
-                                   cout<<"<"<<bitset<3>(sector.id_up[i]).to_string()<<bitset<3>(sector.id_down[j]).to_string()<<"|V_{LL}|";
-                                   cout<<"|"<<bitset<3>(sector.id_up[k]).to_string()<<bitset<3>(sector.id_down[l]).to_string()<<"> :=";
-                                   cout<<V_uu*pow(-1,nsignu)<<endl;
-                                 }
                             }
                             // two electrons are occupied, and to be crossed next
                             else if(occ_ut == mask_ut)
@@ -186,16 +176,6 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double 
                                     else
                                         it->second += V_uu * pow(-1, nsign);
                                 }
-                                if(i==0 && j==0 && k==1 && l==2){
-                                   cout<<"<"<<bitset<3>(sector.id_up[i]).to_string()<<bitset<3>(sector.id_down[j]).to_string()<<"|V_{LL}|";
-                                   cout<<"|"<<bitset<3>(sector.id_up[k]).to_string()<<bitset<3>(sector.id_down[l]).to_string()<<"> :=";
-                                   cout<<V_uu*pow(-1,nsignu)<<endl;
-                                 }
-                                 if(i==1 && j==2 && k==0 && l==0){
-                                   cout<<"<"<<bitset<3>(sector.id_up[i]).to_string()<<bitset<3>(sector.id_down[j]).to_string()<<"|V_{LL}|";
-                                   cout<<"|"<<bitset<3>(sector.id_up[k]).to_string()<<bitset<3>(sector.id_down[l]).to_string()<<"> :=";
-                                   cout<<V_uu*pow(-1,nsignu)<<endl;
-                                 }
                             }
                             // two electrons are occupied, and to be crossed next
                             else if(occ_ut == mask_ut)
@@ -262,16 +242,6 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double 
                                     else
                                         it->second += V_dd * pow(-1, nsign);
                                 }
-                                if(i==0 && j==0 && k==1 && l==2){
-                                   cout<<"<"<<bitset<3>(sector.id_up[i]).to_string()<<bitset<3>(sector.id_down[j]).to_string()<<"|V_{RR}|";
-                                   cout<<"|"<<bitset<3>(sector.id_up[k]).to_string()<<bitset<3>(sector.id_down[l]).to_string()<<"> :=";
-                                   cout<<V_dd*pow(-1,nsignd)<<endl;
-                                 }
-                                 if(i==1 && j==2 && k==0 && l==0){
-                                   cout<<"<"<<bitset<3>(sector.id_up[i]).to_string()<<bitset<3>(sector.id_down[j]).to_string()<<"|V_{RR}|";
-                                   cout<<"|"<<bitset<3>(sector.id_up[k]).to_string()<<bitset<3>(sector.id_down[l]).to_string()<<"> :=";
-                                   cout<<V_dd*pow(-1,nsignd)<<endl;
-                                 }
                             }
                             // two electrons are occupied, and to be crossed next
                             else if(occ_dt == mask_dt)
@@ -405,22 +375,6 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double 
                                     else
                                         it->second += V_ud * pow(-1, nsign);
                                 }
-                                if(i==0 && j==0 && k==1 && l==2){
-                                   cout<<"<"<<bitset<3>(sector.id_up[i]).to_string()<<bitset<3>(sector.id_down[j]).to_string()<<"|V_{LR}";
-                                   cout<<"|"<<bitset<3>(sector.id_up[k]).to_string()<<bitset<3>(sector.id_down[l]).to_string()<<"> :=";
-                                   cout<<V_ud*pow(-1,nsign)<<endl;
-                                   cout<<"nsign:="<<nsign<<",V_ud="<<V_ud<<",";
-                                   if(ncross)
-                                     cout<<"nsign_u:="<<nsignu+sector.nel_up-1<<", ";
-                                   else
-                                     cout<<"nsign_u:="<<nsignu<<", ";
-                                   if(mcross)
-                                     cout<<"nsign_d:="<<nsignd+sector.nel_down-1<<endl;
-                                   else
-                                     cout<<"nsign_d:="<<nsignd<<", ";
-                                   cout<<"(n,m):=("<<n<<","<<m<<")  ,(nt,mt):=("<<nt<<","<<mt<<")  ";
-                                   cout<<"q_y:="<<-q_y<<endl;
-                                 }
                             }
                             // two electrons are occupied, and to be crossed next
                             else if(occ_ut == mask_ut && occ_dt == mask_dt){
@@ -489,31 +443,6 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double 
                                     else
                                         it->second += V_ud * pow(-1, nsign);
                                 }
-                                 if(i==1 && j==2 && k==0 && l==0){
-                                   cout<<"<"<<bitset<3>(sector.id_up[i]).to_string()<<bitset<3>(sector.id_down[j]).to_string()<<"|V_{LR}|";
-                                   cout<<"|"<<bitset<3>(sector.id_up[k]).to_string()<<bitset<3>(sector.id_down[l]).to_string()<<"> :=";
-                                   cout<<V_ud*pow(-1,nsign)<<endl;
-
-                                   q_y = t;
-                                   double V_ud = 0;
-                                   for(q_x = 0; q_x < nphi; q_x++)
-                                    if(q_y != 0 && q_x != 0) {
-                                        // Coulomb matrix element, in symmetric gauge
-                                        V_ud += Coulomb_matrix[dim4 + q_y * dim3 + q_x * dim2 + n * nphi + mt];
-                                      }
-
-                                   cout<<"nsign:="<<nsign<<",V_ud="<<V_ud<<",";
-                                   if(ncross)
-                                     cout<<"nsign_u:="<<nsignu+sector.nel_up-1<<", ";
-                                   else
-                                     cout<<"nsign_u:="<<nsignu<<", ";
-                                   if(mcross)
-                                     cout<<"nsign_d:="<<nsignd+sector.nel_down-1<<endl;
-                                   else
-                                     cout<<"nsign_d:="<<nsignd<<", ";
-                                   cout<<"(n,m):=("<<n<<","<<m<<")  ,(nt,mt):=("<<nt<<","<<mt<<")  ";
-                                   cout<<"q_y:="<<q_y<<endl;
-                                 }
                             }
                             // both electrons are occupied, and to be crossed next
                             else if(occ_ut == mask_ut && occ_dt == mask_dt){

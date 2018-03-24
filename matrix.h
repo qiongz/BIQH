@@ -1,5 +1,5 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#ifndef MAdoubleRIX_H
+#define MAdoubleRIX_H
 #include<cmath>
 #include<complex>
 #include<iostream>
@@ -18,9 +18,8 @@
 #include"mt19937-64.h"
 #endif
 using namespace std;
-
-// for LAPACK zheev usage
-void diag_dsyev(double *hamiltonian, double *energy, int l);
+//extern "C" int dsyev_(char *, char *, int *, double *, int*, double *, double *, int *, int *);
+void diag_dsyev(double *h, double *e, int l);
 
 class Vec {
 public:
@@ -55,7 +54,7 @@ public:
 
 class Mat {
 public:
-    // compressed Sparse Row (CSR) Data Structure
+    // doublehe compressed Sparse Row (CSR) Data Structure
     std::vector<long> outer_starts,inner_indices;
     std::vector<double> value;
 
@@ -65,7 +64,7 @@ public:
     Mat & operator=(const Mat & rhs);
     // the last const means the object is a constant
     Vec operator*(const Vec &)const;
-    vector<double > operator*(const vector<double> &)const;
+    vector<double> operator*(const vector<double> &)const;
     void init(const vector<long> &,const vector<long> &,const vector<double> &);
     void clear();
     void print();

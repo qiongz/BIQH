@@ -9,9 +9,11 @@ public:
     unsigned seed;  //!< Seed for RNGs
     long nHilbert;  //!< Hilbert space size
     long lambda;    //!< Lanczos update steps
-    long nsite,nphi;
+    long nsite,nphi,off_head;
     double lx,ly,d,E0;      //!< Ground state eigen energy
     basis sector;   //!< Basis
+    // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
+    vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
     Mat H;  //!< Hamiltonian matrix in CSR format
     //Mat O;  //!< Operator matrix in CSR format
     std::vector<double> norm; //!< Normalization coefficients vector in Lanczos update
@@ -50,6 +52,7 @@ public:
     double Coulomb_interaction(int alpha,int beta, int q_x, int q_y);
     double ground_state_energy();    //!< Ground state energy
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version
+    void init_Coulomb_matrix();
     void print_hamil(int n); //!< print the full hamiltonian matrix
     void print_lhamil(int n);  //!< print the Lanczos hamiltonian matrix with first n x n elements
     void print_eigen(int n);  //!< print the first n eigenvalues

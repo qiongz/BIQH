@@ -10,7 +10,7 @@ basis.o:basis.cpp basis.h
 	$(CC) $(CFLAGS) -c basis.cpp
 
 matrix.o:matrix.cpp matrix.h mt19937-64.h
-	$(CC) $(CFLAGS) -c matrix.cpp -o $@ -mkl
+	$(CC) $(CFLAGS) -c matrix.cpp -o $@
 
 init.o:init.cpp init.h
 	$(CC) $(CFLAGS) -c init.cpp
@@ -25,9 +25,9 @@ mt19937-64.o:mt19937-64.c mt19937-64.h
 	$(CC) -c mt19937-64.c
 
 .PHONY: all clean remove
-all: clean hubbard check
+all: clean check
 
 clean:
 	rm -f  *.o
 remove:
-	rm hubbard check
+	rm  check
