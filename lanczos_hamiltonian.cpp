@@ -8,10 +8,8 @@ lhamil::lhamil() {}
 
 lhamil::lhamil(const Mat &_H,long _nHilbert,long _lambda, unsigned _seed):H(_H),nHilbert(_nHilbert),lambda(_lambda),seed(_seed) {}
 
-lhamil::lhamil(basis &_sector,double _d, long _lambda,unsigned _seed) {
-    sector=_sector;
+lhamil::lhamil(long _lambda,unsigned _seed) {
     lambda=_lambda;
-    d=_d;
     seed=_seed;
 }
 
@@ -45,13 +43,10 @@ double lhamil::Coulomb_interaction(int alpha,int beta, int q_x, int q_y){
     double q=sqrt(q_x*q_x/(lx*lx)+q_y*q_y/(ly*ly))*2.0*M_PI;
     if(alpha==beta)
         // symmetric gauge
-        //return 2.0*M_PI/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi);
+        return 2.0*M_PI/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi);
         // Landau gauge
-        return 2.0*M_PI/q*exp(-q*q/2.0);
     else
-        //return 2.0*M_PI/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi-q*d);
-        // Landau gauge
-        return 2.0*M_PI/q*exp(-q*q/2.0-q*d);
+        return 2.0*M_PI/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi-q*d);
 }
 
 void lhamil::init_Coulomb_matrix(){
@@ -77,7 +72,6 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
     long nbasis_up, nbasis_down;
     d = _d;
     sector=_sector;
-    nsite = sector.nsite;
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
@@ -88,8 +82,8 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
     nHilbert = nbasis_up * nbasis_down;
     vector<double> matrix_elements;
     H.clear();
-    H.inner_indices.reserve(nHilbert * nsite);
-    H.value.reserve(nHilbert * nsite);
+    H.inner_indices.reserve(nHilbert * nphi);
+    H.value.reserve(nHilbert * nphi);
     H.outer_starts.reserve(nHilbert + 1);
     long mask, mask_u, mask_d, b, p, n, m, i, j, k, l, t, nsignu, nsignd, nsign;
     long row = 0;

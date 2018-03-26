@@ -31,7 +31,6 @@ void hamil::init_Coulomb_matrix() {
 void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double _d) {
     long nbasis_up, nbasis_down;
     d = _d;
-    nsite = sector.nsite;
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
@@ -42,8 +41,8 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double 
     nHilbert = nbasis_up * nbasis_down;
     vector<double> matrix_elements;
     H.clear();
-    H.inner_indices.reserve(nHilbert * nsite);
-    H.value.reserve(nHilbert * nsite);
+    H.inner_indices.reserve(nHilbert * nphi);
+    H.value.reserve(nHilbert * nphi);
     H.outer_starts.reserve(nHilbert + 1);
     long mask, mask_u, mask_d, b, p, n, m, i, j, k, l, t, nsignu, nsignd, nsign;
     long row = 0;
@@ -490,7 +489,7 @@ double hamil::ground_state_energy() {
     psi_t = H * psi_0;
     for(int i = 0; i < nHilbert; i++)
         E_gs += psi_t[i] * psi_0[i];
-    return E_gs / nsite;
+    return E_gs;
 }
 
 void hamil::diag() {

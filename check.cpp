@@ -27,7 +27,7 @@ int main(int argc,char *argv[]) {
     nel_up=1;
     nel_down=1;
     d=1;
-    lambda=100;
+    lambda=200;
 
     init_argv(nphi,nel,nel_up,d,lambda,argc,argv);
     //ly=2.0;
@@ -82,12 +82,22 @@ int main(int argc,char *argv[]) {
     //config.print_eigen(6);
     //config.save_to_file(filename.c_str());
 
-    lhamil lconfig(sector, d, lambda, seed);
+
+    lhamil lconfig(lambda,seed);
+    /*
+    lconfig.set_hamil(sector,lx,ly,nphi,d);
+    lconfig.coeff_explicit_update();
+    lconfig.diag();
+    lconfig.eigenstates_reconstruction();
+    cout<<d<<" "<<lconfig.ground_state_energy()/nel<<endl;
+    */
     /* ground-state energy check */
 
-    for(int i=0;i<30;i++){
+    for(int n=0;n<=20;n++){
       //config.set_hamil(sector,lx,ly,nphi,i*0.2+0.2);
-      lconfig.set_hamil(sector,lx,ly,nphi,i*0.1+0.05);
+      //basis sector(n,n/2,n/2);
+      //sector.init();
+      lconfig.set_hamil(sector,lx,ly,nphi,n*0.1+0.001);
       //lconfig.print_hamil(4);
       //lconfig.coeff_update();
       lconfig.coeff_explicit_update();
@@ -95,11 +105,29 @@ int main(int argc,char *argv[]) {
       lconfig.eigenstates_reconstruction();
       //config.set_hamil(sector,lx,ly,nphi,d);
       //config.print_hamil();
+      //config.set_hamil(sector,lx,ly,nphi,n*0.1+0.05);
       //config.diag();
       //cout<<i*0.2+0.2<<" "<<config.ground_state_energy()<<endl;
       //cout<<d<<" "<<config.ground_state_energy()<<endl;
-      cout<<i*0.1+0.05<<" "<<lconfig.ground_state_energy()/nel<<endl;
+      // long nHilbert=pow(sector.factorial(nel,nel/2),2);
+      // double mem_actual,mem_theory;
+       //mem_theory=(2*nHilbert*nel+5*nHilbert)*8.0/1.0e9;
+      cout<<n*0.1+0.001<<" "<<lconfig.ground_state_energy()/nel<<endl;
+       //mem_actual=(lconfig.H.inner_indices.size()+lconfig.H.value.size()+lconfig.psir_0.size()+lconfig.Coulomb_matrix.size()*4)/1.0e9;
+      //cout<<n*0.1+0.05<<" "<<mem_actual<<" "<<mem_theory<<endl;
     }
+
+
+
+  /*
+    cout<<"# nel    GB"<<endl;
+    for(int n=8;n<=20;n++){
+       long nHilbert=pow(sector.factorial(n,n/2),2);
+       double memsize;
+       memsize=(2*nHilbert*n+5*nHilbert)*8.0/1.0e9;
+       cout<<n<<"  "<<memsize<<endl;
+    }
+    */
 
 
 
