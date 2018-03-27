@@ -2,15 +2,18 @@
 #define LANCZOS_HAMILTONIAN_H
 #include"matrix.h"
 #include"basis.h"
+#include<gsl/gsl_integration.h>
+#include <gsl/gsl_sf_bessel.h>
 void swap(Vec *a,Vec *b,Vec *c);
+
 
 class lhamil {
 public:
     unsigned seed;  //!< Seed for RNGs
     long nHilbert;  //!< Hilbert space size
     long lambda;    //!< Lanczos update steps
-    long nsite,nphi,off_head;
-    double lx,ly,d,E0;      //!< Ground state eigen energy
+    long nphi,off_head;
+    double lx,ly,d,E0,E_cl;      //!< Ground state eigen energy
     basis sector;   //!< Basis
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
@@ -35,7 +38,7 @@ public:
      \param _lambda Lanczos update steps
      \param _seed Seed for RNGs
     */
-    lhamil(basis & _sector,double d,long _lambda,unsigned _seed); //!< Constructor with basis sector as input
+    lhamil(long _lambda,unsigned _seed); //!< Constructor with basis sector as input
     ~lhamil(); //!< Destructor
     void init(basis &_sector,double d, long _lambda,unsigned _seed);
     const lhamil & operator=(const lhamil &);

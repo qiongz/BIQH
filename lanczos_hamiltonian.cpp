@@ -4,6 +4,24 @@ inline void swap(Vec *a,Vec *b,Vec *c) {
     *b=*c;
 }
 
+double func_ExpInt(double t, void *params) {
+    double z = *(double *)params;
+    double ret_value = 1.0/sqrt(t)*exp(-z*t);
+    return ret_value;
+}
+
+double Integrate_ExpInt(double z) {
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(20000);
+    double result,error;
+
+    gsl_function F;
+    F.function = &func_ExpInt;
+    F.params= & z;
+
+    gsl_integration_qagiu(& F,1.0,0, 1e-3, 20000,w, &result, & error);
+    return result;
+}
+
 lhamil::lhamil() {}
 
 lhamil::lhamil(const Mat &_H,long _nHilbert,long _lambda, unsigned _seed):H(_H),nHilbert(_nHilbert),lambda(_lambda),seed(_seed) {}
@@ -65,8 +83,15 @@ void lhamil::init_Coulomb_matrix(){
               // Coulomb matrix elements in symmetric gauge
               //Coulomb_matrix[alpha * dim4 + n * dim3 + m * dim2 + q_y * nphi + q_x] = Coulomb_interaction(0, alpha, q_x, q_y) * cos(-2.0 * M_PI * q_x * q_y / nphi + 2.0 * M_PI * (m - n) * q_x / nphi)/(2.0*lx*ly);
               // Coulomb matrix elements in Landau gauge
-              Coulomb_matrix[alpha * dim4 + n * dim3 + m* dim2 + q_y * dim1 + q_x] = Coulomb_interaction(0, alpha, q_x, q_y) * cos(2.0 * M_PI * (n-m) * q_x / nphi)/(2.0*lx*ly);
+              Coulomb_matrix[alpha * dim4 + n * dim3 + m* dim2 + q_y * dim1 + q_x] = Coulomb_interaction(0, alpha, q_x, q_y) * cos(2.0 * M_PI * (n-m) * q_x / nphi)/(4.0*lx*ly);
+    // initialize classical Coulomb energy
+    E_cl=-2.0/sqrt(2.0*M_PI*nphi);
+    for(int i=0;i<nphi;i++)
+      for(int j=0;j<nphi;j++)
+        if(!(i==0 &&j==0))
+        E_cl+=1.0/sqrt(2.0*M_PI*nphi)*Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
 }
+
 
 void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,double _d){
     long nbasis_up, nbasis_down;
@@ -88,7 +113,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
     long mask, mask_u, mask_d, b, p, n, m, i, j, k, l, t, nsignu, nsignd, nsign;
     long row = 0;
     H.outer_starts.push_back(0);
-    for(i = 0; i < nbasis_up; i++) {
+    for(i = 0; i < nbasis_up; i++)
         for(j = 0; j < nbasis_down; j++) {
             // start of new row of nonzero elements
             matrix_elements.assign(nHilbert,0);
@@ -97,6 +122,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
             long dim2 = dim1* off_head;
             long dim3 = dim2* nphi;
             long dim4 = dim3* nphi;
+            // n=j1, m=j2
             for(n = 0; n < nphi; n++)
                 for(m = 0; m < nphi; m++) {
                     mask = (1 << n) + (1 << m);
@@ -106,8 +132,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                     if((sector.id_up[i]&mask) == mask && m != n) {
                         // b is the rest electon positions
                         b = sector.id_up[i] ^ mask;
-                        //cout<<"#i n m mask b=i^mask b+mask"<<endl;
-                        //cout<<bitset<4>(sector.id_up[i]).to_string()<<" "<<bitset<4>(1<<n).to_string()<<" "<<bitset<4>(1<<m).to_string()<<" "<<bitset<4>(mask).to_string()<<" "<<bitset<4>(b).to_string()<<" "<<bitset<4>(mask+b)<<" "<<endl;
+                        // mt=j3, nt=j4
                         long nt, mt, mask_ut, occ_ut;
                         nsignu = 0;
                         bool ncross=false;
@@ -474,6 +499,9 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                         }
                     }
                 }
+            // diagonal Coulomb classical energy term
+           matrix_elements[i*nbasis_down+j]+=E_cl*(sector.nel_up+sector.nel_down);
+
             long count=0;
             for(k=0;k<nHilbert;k++)
                if(abs(matrix_elements[k])>1e-6){
@@ -483,8 +511,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                }
             row += count;
             H.outer_starts.push_back(row);
-        }
-    }
+          }
     matrix_elements.clear();
 }
 
