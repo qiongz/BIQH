@@ -7,6 +7,7 @@ quantum Hall systems
 *************************************************/
 #ifndef BASIS_H
 #define BASIS_H
+#include<cmath>
 #include<iostream>
 #include<string.h>
 #include<iomanip>
@@ -36,6 +37,7 @@ public:
     void generate(long);
     long creation(long,long);
     long annihilation(long,long);
+    int get_sign(long,long,long,long,long);
     void prlong();
     friend ostream & operator<<(ostream & os, const basis &);
 };
