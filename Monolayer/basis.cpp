@@ -121,86 +121,30 @@ void basis::generate(long a) {
 }
 
 int basis::get_sign(long i,long n, long m, long nt, long mt){
-     long b,mask,mask_n,mask_m,nsign;
+     long b,k,kl,kr,mask,mask_k,nsign;
       mask=(1<<n)+(1<<m);
       // get the rest electrons
      b=id[i]^mask;
      // if there're no crossing between two electrons
-     if(m>n){
-       if(mt>nt && (mt-nt)>=(m-n)){
-        nsign=0;
-        for(int k=nt+1;k<n;k++){
-          mask_n=(1<<k);
-          if((b&mask_n)==mask_n)
+     nsign=0;
+        kl=nt<n?nt:n;
+        kr=nt<n?n:nt;
+        for(k=kl+1;k<kr;k++){
+          mask_k=(1<<k);
+          if((b&mask_k)==mask_k)
              nsign++;
         }
-        for(int k=m+1;k<mt;k++){
-          mask_m=(1<<k);
-          if((b&mask_m)==mask_m)
+        kl=mt<m?mt:m;
+        kr=mt<m?m:mt;
+        for(k=kl+1;k<kr;k++){
+          mask_k=(1<<k);
+          if((b&mask_k)==mask_k)
              nsign++;
         }
-      }
-     // if there're no crossing between two electrons
-      else if(mt>nt && (mt-nt)<(m-n)){
-        nsign=0;
-        for(int k=n+1;k<nt;k++){
-          mask_n=(1<<k);
-          if((b&mask_n)==mask_n)
-             nsign++;
-        }
-        for(int k=mt+1;k<m;k++){
-          mask_m=(1<<k);
-          if((b&mask_m)==mask_m)
-             nsign++;
-        }
-     }
-     // if there're crossings between two electrons
-     else if(nt>mt && nt>=m && n>=mt){
-       nsign=1;
-       for(int k=mt+1;k<nt;k++){
-         mask_n=(1<<k);
-         if((b&mask_n)==mask_n)
-           nsign++;
-       }
-     }
-     // if there're crossings between two electrons
-     else if(nt>mt && nt<m && mt >n){
-       nsign=1;
-       for(int k=n+1;k<m;k++){
-         mask_n=(1<<k);
-         if((b&mask_n)==mask_n)
-           nsign++;
-       }
-     }
-     // if there're crossings between two electrons and crossings of boundary
-     else if(nt<mt && nt<n){
-       nsign=1;
-       for(int k=mt+1;k<m;k++){
-         mask_n=(1<<k);
-         if((b&mask_n)==mask_n)
-           nsign++;
-       }
-       for(int k=nt+1;k<n;k++){
-         mask_n=(1<<k);
-         if((b&mask_n)==mask_n)
-           nsign--;
-     }
-    }
-    // if there're crossings between two electrons and crossings of boundary
-    else if(nt<mt && m<mt){
-       nsign=1;
-       for(int k=n+1;k<nt;k++){
-         mask_n=(1<<k);
-         if((b&mask_n)==mask_n)
-           nsign++;
-       }
-       for(int k=m+1;k<mt;k++){
-         mask_n=(1<<k);
-         if((b&mask_n)==mask_n)
-           nsign--;
-     }
-    }
-    }
+        // if there're crossings between two electrons
+        if(nt>mt && m>n || mt>nt && m<n)
+          nsign++;
+
      return pow(-1,nsign);
 }
 

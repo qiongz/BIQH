@@ -55,7 +55,8 @@ void lhamil::init_Coulomb_matrix(){
           for(int q_y = 0; q_y < off_head; q_y++)
             for(int q_x = 0; q_x < off_head; q_x++)
               // Coulomb matrix elements in Landau gauge
-              Coulomb_matrix[ n * dim3 + m* dim2 + q_y * dim1 + q_x] = Coulomb_interaction( q_x, q_y) * cos(2.0 * M_PI * (n-m) * q_x / nphi)/(4.0*lx*ly);
+              // factor of 1/4 is cancelled by 2*cos(q_x)*2cos(q_y)
+              Coulomb_matrix[ n * dim3 + m* dim2 + q_y * dim1 + q_x] = Coulomb_interaction( q_x, q_y) * cos(2.0 * M_PI * (n-m) * q_x / nphi)/(lx*ly);
     // initialize classical Coulomb energy
     E_cl=-2.0/sqrt(lx*ly);
     for(int i=0;i<nphi;i++)
@@ -90,8 +91,8 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi) {
             long dim2 = dim1* off_head;
             long dim3 = dim2* nphi;
             // n=j1, m=j2
-            for(n = 0; n < nphi-1; n++)
-                for(m = n+1; m < nphi; m++) {
+            for(n = 0; n < nphi; n++)
+                for(m = 0; m < nphi; m++) {
                     mask = (1 << n) + (1 << m);
                     // looking up the corresponding basis in id
                     // if there're two electrons on n and m;
@@ -158,7 +159,6 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi) {
                                 k = sector.basis_set[mask_t + b];
                                 long q_x, q_y;
                                 // t>off_head corresponds to q_y= -Pi
-                                //q_y=nphi-t;
                                 q_y=t;
                                 double V = 0;
                                 // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
@@ -173,6 +173,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi) {
                     }
                 }
             // diagonal Coulomb classical energy term
+
             matrix_elements[i]+=E_cl*sector.nel;
             long count=0;
             for(k=0;k<nHilbert;k++)
