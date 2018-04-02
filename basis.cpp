@@ -4,12 +4,16 @@ using namespace std;
 basis::basis() {
 }
 
-basis::basis(long _nsite,long _nel_up, long _nel_down):nsite(_nsite),nel_up(_nel_up),nel_down(_nel_down) {
+basis::basis(long _nphi,long _nel_up, long _nel_down):nphi(_nphi),nel_up(_nel_up),nel_down(_nel_down) {
+  K=-1;
+}
+
+basis::basis(long _nphi,long _nel_up, long _nel_down, long _K):nphi(_nphi),nel_up(_nel_up),nel_down(_nel_down),K(_K) {
 }
 
 const basis & basis::operator =(const basis & _basis) {
     if(this !=&_basis) {
-        nsite=_basis.nsite;
+        nphi=_basis.nphi;
         nel_up=_basis.nel_up;
         nel_down=_basis.nel_down;
         nbasis_up=_basis.nbasis_up;
@@ -38,8 +42,8 @@ long basis::factorial(long N, long m) {
 
 void basis::init() {
     long i,config_init;
-    nbasis_up=factorial(nsite,nel_up);
-    nbasis_down=factorial(nsite,nel_down);
+    nbasis_up=factorial(nphi,nel_up);
+    nbasis_down=factorial(nphi,nel_down);
     config_init=0;
     for(i=0; i<nel_up; i++)
         config_init+=(1<<i);
@@ -66,8 +70,8 @@ void basis::init() {
         basis_down[id_down[i]]=i;
 }
 
-void basis::init(long _nsite, long _nel_up, long _nel_down){
-   nsite=_nsite;
+void basis::init(long _nphi, long _nel_up, long _nel_down){
+   nphi=_nphi;
    nel_up=_nel_up;
    nel_down=_nel_down;
    init();
@@ -75,8 +79,8 @@ void basis::init(long _nsite, long _nel_up, long _nel_down){
 
 long basis::interlayer_hopping(long i,long n,long m) {
     long mask,K,L,b;
-    if(m<0) m+=nsite;
-    else if (m>=nsite) m-=nsite;
+    if(m<0) m+=nphi;
+    else if (m>=nphi) m-=nphi;
 
     mask=(1<<n)+(1<<m);
     K=mask&id_up[i];
@@ -105,6 +109,90 @@ long basis::onsite_potential(long i,long j,long n) {
         return 0;
 }
 
+int basis::get_signu(long i,long n, long m, long nt, long mt){
+     long b,k,kl,kr,mask,mask_k,nsign;
+     mask=(1<<n)+(1<<m);
+      // get the rest electrons
+     b=id_up[i]^mask;
+     // if there're no crossing between two electrons
+     nsign=0;
+        kl=nt<n?nt:n;
+        kr=nt<n?n:nt;
+        for(k=kl+1;k<kr;k++){
+          mask_k=(1<<k);
+          if((b&mask_k)==mask_k)
+             nsign++;
+        }
+        kl=mt<m?mt:m;
+        kr=mt<m?m:mt;
+        for(k=kl+1;k<kr;k++){
+          mask_k=(1<<k);
+          if((b&mask_k)==mask_k)
+             nsign++;
+        }
+        // if there're crossings between two electrons
+        if(nt>mt && m>n || mt>nt && m<n)
+          nsign++;
+
+     return pow(-1,nsign);
+}
+
+int basis::get_signd(long j,long n, long m, long nt, long mt){
+     long b,k,kl,kr,mask,mask_k,nsign;
+     mask=(1<<n)+(1<<m);
+      // get the rest electrons
+     b=id_down[j]^mask;
+     // if there're no crossing between two electrons
+     nsign=0;
+        kl=nt<n?nt:n;
+        kr=nt<n?n:nt;
+        for(k=kl+1;k<kr;k++){
+          mask_k=(1<<k);
+          if((b&mask_k)==mask_k)
+             nsign++;
+        }
+        kl=mt<m?mt:m;
+        kr=mt<m?m:mt;
+        for(k=kl+1;k<kr;k++){
+          mask_k=(1<<k);
+          if((b&mask_k)==mask_k)
+             nsign++;
+        }
+        // if there're crossings between two electrons
+        if(nt>mt && m>n || mt>nt && m<n)
+          nsign++;
+
+     return pow(-1,nsign);
+}
+
+int basis::get_signud(long i,long j,long n, long m, long nt, long mt){
+     long b,p,k,kl,kr,mask,mask_k,nsign;
+     mask=(1<<n)+(1<<m);
+      // get the rest electrons
+     b=id_up[i]^mask;
+     p=id_up[j]^mask;
+     // if there're no crossing between two electrons
+     nsign=0;
+        kl=nt<n?nt:n;
+        kr=nt<n?n:nt;
+        for(k=kl+1;k<kr;k++){
+          mask_k=(1<<k);
+          if((b&mask_k)==mask_k)
+             nsign++;
+        }
+        kl=mt<m?mt:m;
+        kr=mt<m?m:mt;
+        for(k=kl+1;k<kr;k++){
+          mask_k=(1<<k);
+          if((p&mask_k)==mask_k)
+             nsign++;
+        }
+        // if there're crossings between two electrons
+        if(nt>mt && m>n || mt>nt && m<n)
+          nsign++;
+
+     return pow(-1,nsign);
+}
 
 long basis::creation(long s,long n)
 {
@@ -139,8 +227,8 @@ void basis::generate_up(long a) {
 #else
     basis_up[a]=a;
 #endif
-    for(long i=0; i<nsite; i++) {
-        j=(i+1>=nsite)?i+1-nsite:i+1;
+    for(long i=0; i<nphi; i++) {
+        j=(i+1>=nphi)?i+1-nphi:i+1;
         mask=(1<<i)+(1<<j);
         K=mask&a;
         L=K^mask;
@@ -162,8 +250,8 @@ void basis::generate_down(long a) {
 #else
     basis_down[a]=a;
 #endif
-    for(long i=0; i<nsite-1; i++) {
-        j=(i+1>=nsite)?i+1-nsite:i+1;
+    for(long i=0; i<nphi-1; i++) {
+        j=(i+1>=nphi)?i+1-nphi:i+1;
         mask=(1<<i)+(1<<j);
         K=mask&a;
         L=K^mask;
