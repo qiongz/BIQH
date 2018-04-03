@@ -8,13 +8,12 @@ public:
     /** Size of the Hilbert space */
     long nHilbert;
     /** seed for the RNGs */
-    unsigned seed;
     long nphi,off_head;
     double lx,ly,E_cl;
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
     /** Hamiltonian matrix in CSR format */
-    Mat H;
+    double *hamiltonian;
     /** Eigenvalues of the hamiltonian */
     std::vector<double> eigenvalues;
     /** Ground state wave function */
@@ -37,13 +36,10 @@ public:
     void init_Coulomb_matrix();
     double Coulomb_interaction(int q_x, int q_y);
     void diag();
-
     double spectral_function(vector<double> & O_phi_0,double omega,double _E0,double eta, int annil); //!< Spectral moments with spin
     /** Print the hamiltonian matrix */
-    void print_hamil_CSR();
-    void print_hamil();
     void print_hamil(int range);
     /** Print the eigenvalues of the system */
-    void print_eigen();
+    void print_eigen(int range);
 };
 #endif
