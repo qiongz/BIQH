@@ -44,14 +44,27 @@ void basis::init() {
         config_init+=(1<<i);
     generate(config_init);
 
+    //cout<<nbasis*4/1.0e9<<endl;
     std::map<long,long>::iterator it;
-    for(it=basis_set.begin(); it!=basis_set.end(); it++)
+    for(it=basis_set.begin(); it!=basis_set.end(); it++){
+      if(K<0)
         id.push_back(it->first);
+      else{
+        long sum_j=0;
+        long c=it->first;
+        for(i=0;i<nphi;i++)
+           if((c>>i)%2==1)
+             sum_j+=i;
+         if(sum_j%nphi==K)
+            id.push_back(it->first);
+      }
+    }
 
     sort(id.begin(),id.end());
     basis_set.clear();
-    for(i=0; i<nbasis; i++)
+    for(i=0; i<id.size(); i++)
         basis_set[id[i]]=i;
+    nbasis=id.size();
 }
 
 void basis::init(long _nphi, long _nel){
@@ -122,7 +135,7 @@ void basis::generate(long a) {
 
 int basis::get_sign(long i,long n, long m, long nt, long mt){
      long b,k,kl,kr,mask,mask_k,nsign;
-      mask=(1<<n)+(1<<m);
+     mask=(1<<n)+(1<<m);
       // get the rest electrons
      b=id[i]^mask;
      // if there're no crossing between two electrons
@@ -148,12 +161,18 @@ int basis::get_sign(long i,long n, long m, long nt, long mt){
      return pow(-1,nsign);
 }
 
-
 void basis::prlong() {
     std::map<long,long>::iterator it;
     cout<<"---------------------------------------"<<endl;
-    for(it=basis_set.begin(); it!=basis_set.end(); it++)
+    for(it=basis_set.begin(); it!=basis_set.end(); it++){
+        long c=it->first;
+        for(int n=0;n<nphi;n++){
+            if((c>>n)%2==1)
+               cout<<n<<" ";
+        }
+        cout<<"   ";
         cout<<bitset<12>(it->first).to_string()<<" "<<setw(6)<<it->first<<" "<<it->second<<endl;
+      }
     cout<<"---------------------------------------"<<endl;
     cout<<"No. basis: "<<setw(6)<<nbasis<<endl;
     /*
