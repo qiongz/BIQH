@@ -42,33 +42,31 @@ const lhamil & lhamil::operator =(const lhamil & _config) {
 double lhamil::Coulomb_interaction(int alpha,int beta, int q_x, int q_y){
     double q=sqrt(q_x*q_x/(lx*lx)+q_y*q_y/(ly*ly))*2.0*M_PI;
     if(alpha==beta)
-        return 2.0*M_PI/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi);
+        return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0);
     else
-        return 2.0*M_PI/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi-q*d);
+        return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0-q*d);
 }
 
 void lhamil::init_Coulomb_matrix(){
-    off_head=nphi;
-    long dim1=off_head;
-    long dim2=dim1*off_head;
-    long dim3 = dim2*nphi;
-    long dim4=dim3*nphi;
-    Coulomb_matrix.assign(2 * dim4, 0);
+    Coulomb_matrix.assign(2 * nphi*nphi, 0);
     for(int alpha = 0; alpha < 2; alpha++)
       // n=j_1, m=_j3
-      for(int n = 0; n < nphi; n++)
-        for(int m = 0; m < nphi; m++)
-          for(int q_y = 0; q_y < off_head; q_y++)
-            for(int q_x = 0; q_x < off_head; q_x++)
+      for(int s = 0; s < nphi; s++)
+          for(int q_y = 0; q_y < nphi; q_y++){
+            double V=0;
+            for(int q_x = 0; q_x < lx/2; q_x++)
+                if(!(q_x==0 && q_y==0))
+                  V+=2.0*Coulomb_interaction(0,alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
               // Coulomb matrix elements in Landau gauge
-              Coulomb_matrix[alpha * dim4 + n * dim3 + m* dim2 + q_y * dim1 + q_x] = Coulomb_interaction(0, alpha, q_x, q_y) * cos(2.0 * M_PI * (n-m) * q_x / nphi)/(lx*ly);
-
+              Coulomb_matrix[alpha*nphi*nphi+s*nphi+q_y]=V;
+            }
     // initialize classical Coulomb energy
-    E_cl=-2.0/sqrt(lx*ly);
+    E_cl=-2.0;
     for(int i=0;i<nphi;i++)
       for(int j=0;j<nphi;j++)
         if(!(i==0 &&j==0))
-        E_cl+=1.0/sqrt(lx*ly)*Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
+        E_cl+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
+    E_cl/=sqrt(lx*ly);
 }
 
 
@@ -79,7 +77,6 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
-    off_head=nphi;
     init_Coulomb_matrix();
     nbasis_up = sector.nbasis_up;
     nbasis_down = sector.nbasis_down;
@@ -89,7 +86,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
     H.inner_indices.reserve(nHilbert * nphi);
     H.value.reserve(nHilbert * nphi);
     H.outer_starts.reserve(nHilbert + 1);
-    long mask, mask_u, mask_d, b, p, n, m, i, j, k, l, t,sign;
+    long mask, mask_u, mask_d, b, p, n, m, i, j, k, l, s,t,sign;
     long row = 0;
     H.outer_starts.push_back(0);
     for(i = 0; i < nbasis_up; i++)
@@ -97,10 +94,6 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
             // start of new row of nonzero elements
             matrix_elements.assign(nHilbert,0);
             // select two electrons in left-basis <m_1, m_2|
-            long dim1= off_head;
-            long dim2 = dim1* off_head;
-            long dim3 = dim2* nphi;
-            long dim4 = dim3* nphi;
             // n=j1, m=j2
             for(n = 0; n < nphi; n++)
                 for(m = 0; m < nphi; m++) {
@@ -114,17 +107,17 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                         // mt=j3, nt=j4
                         long nt, mt, mask_ut, occ_ut;
                         // perform translation along x-direction (q_y), positive q_y
-                        for(t = 0; t < off_head; t++) {
-                            // PBC, if one electron cross left boundary, sign change with -1
+                        for(t = 0; t < nphi; t++) {
                             if(n + t >=nphi)
                                 nt = n + t - nphi;
                             else
                                 nt = n + t;
-                            // PBC, if one electron cross right boundary, sign change with -1
                             if(m - t <0)
                                 mt = m - t + nphi;
                             else
                                 mt = m - t;
+
+                            s=fabs(mt-n);
                             // the translated two electrons indices
                             mask_ut = (1 << nt) + (1 << mt);
                             // occupation of electons on the translated position
@@ -135,49 +128,8 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                             if(occ_ut == 0 && sector.basis_up.find(mask_ut + b) != sector.basis_up.end())
                             {
                                 k = sector.basis_up[mask_ut + b];
-                                long q_x, q_y;
-                                q_y = t;
-                                double V_uu = 0;
-                                // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
-                                for(q_x = 0; q_x < off_head; q_x++)
-                                    if(!(q_x==0 && q_y==0))
-                                        V_uu += Coulomb_matrix[n * dim3 + mt* dim2 + q_y * dim1 + q_x];
-
                                 sign=sector.get_signu(i,n,m,nt,mt);
-                                matrix_elements[k*nbasis_down+j]+=V_uu*sign;
-                            }
-                        }
-                        for(t = 1; t < off_head; t++) {
-                            // PBC, if one electron cross left boundary, sign change with -1
-                            if(n - t <0)
-                                nt = n - t + nphi;
-                            else
-                                nt = n - t;
-                            // PBC, if one electron cross right boundary, sign change with -1
-                            if(m + t >=nphi)
-                                mt = m + t - nphi;
-                            else
-                                mt = m + t;
-                            // the translated two electrons indices
-                            mask_ut = (1 << nt) + (1 << mt);
-                            // occupation of electons on the translated position
-                            occ_ut = mask_ut & b;
-                            // if there're no electon on the translated position
-                            // which is a valid translation, can be applied
-                            // looking up Lin's table, and find the corresponding index
-                            if(occ_ut == 0 && sector.basis_up.find(mask_ut + b) != sector.basis_up.end())
-                            {
-                                k = sector.basis_up[mask_ut + b];
-                                long q_x, q_y;
-                                q_y = t;
-                                double V_uu = 0;
-                                // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
-                                for(q_x = 0; q_x < off_head; q_x++)
-                                    if(!(q_x==0 && q_y==0))
-                                        V_uu += Coulomb_matrix[n * dim3 + mt* dim2 + q_y * dim1 + q_x];
-
-                                sign=sector.get_signu(i,n,m,nt,mt);
-                                matrix_elements[k*nbasis_down+j]+=V_uu*sign;
+                                matrix_elements[k*nbasis_down+j]+=Coulomb_matrix[s*nphi+t]*sign;
                             }
                         }
                     }
@@ -188,17 +140,16 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                         b = sector.id_down[j] ^ mask;
                         long nt, mt, mask_dt, occ_dt;
                         // perform translation in x-direction, negative q_y
-                        for(t = 0; t < off_head; t++) {
-                            // PBC, if one electron cross left boundary, sign change with -1
+                        for(t = 0; t < nphi; t++) {
                             if(n + t >=nphi)
                                 nt = n + t - nphi;
                             else
                                 nt = n + t;
-                            // PBC, if one electron cross right boundary, sign change with -1
                             if(m - t <0)
                                 mt = m - t + nphi;
                             else
                                 mt = m - t;
+                            s=fabs(mt-n);
                             // the translated two electrons indices
                             mask_dt = (1 << nt) + (1 << mt);
                             // occupation of electons on the translated position
@@ -207,51 +158,8 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                             // which is a valid translation, can be applied
                             if(occ_dt == 0 && sector.basis_down.find(mask_dt + b) != sector.basis_down.end()) {
                                 l = sector.basis_down[mask_dt + b];
-                                long q_x, q_y;
-                                // t=-off_head corresponds to q_y= -Pi
-                                // t= off_head corresponds to q_y= +Pi
-                                q_y = t;
-                                double V_dd = 0;
-                                // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
-                                for(q_x = 0; q_x < off_head; q_x++)
-                                    if(!(q_x==0 && q_y==0))
-                                        V_dd += Coulomb_matrix[n * dim3 + mt* dim2 + q_y * dim1 + q_x];
-
                                 sign=sector.get_signd(j,n,m,nt,mt);
-                                matrix_elements[i*nbasis_down+l]+=V_dd*sign;
-                            }
-                        }
-                        for(t = 1; t < off_head; t++) {
-                            // PBC, if one electron cross left boundary, sign change with -1
-                            if(n - t <0)
-                                nt = n - t + nphi;
-                            else
-                                nt = n - t;
-                            // PBC, if one electron cross right boundary, sign change with -1
-                            if(m + t >=nphi)
-                                mt = m + t - nphi;
-                            else
-                                mt = m + t;
-                            // the translated two electrons indices
-                            mask_dt = (1 << nt) + (1 << mt);
-                            // occupation of electons on the translated position
-                            occ_dt = mask_dt & b;
-                            // if there're no electon on the translated position
-                            // which is a valid translation, can be applied
-                            if(occ_dt == 0 && sector.basis_down.find(mask_dt + b) != sector.basis_down.end()) {
-                                l = sector.basis_down[mask_dt + b];
-                                long q_x, q_y;
-                                // t=-off_head corresponds to q_y= -Pi
-                                // t= off_head corresponds to q_y= +Pi
-                                q_y = t;
-                                double V_dd = 0;
-                                // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
-                                for(q_x = 0; q_x < off_head; q_x++)
-                                    if(!(q_x==0 && q_y==0))
-                                        V_dd += Coulomb_matrix[n * dim3 + mt* dim2 + q_y * dim1 + q_x];
-
-                                sign=sector.get_signd(j,n,m,nt,mt);
-                                matrix_elements[i*nbasis_down+l]+=V_dd*sign;
+                                matrix_elements[i*nbasis_down+l]+=Coulomb_matrix[s*nphi+t]*sign;
                             }
                         }
                     }
@@ -267,17 +175,16 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                         p = sector.id_down[j] ^ mask_d;
                         long nt, mt, mask_ut, occ_ut, mask_dt, occ_dt;
                         // perform translation along x-direction
-                        for(t = 0; t < off_head ; t++) {
-                            // PBC, if one electron cross left boundary, sign change with -1
+                        for(t = 0; t < nphi ; t++) {
                             if(n + t>=nphi)
                                 nt = n + t - nphi;
                             else
                                 nt = n + t;
-                            // PBC, if one electron cross right boundary, sign change with -1
                             if(m - t <0)
                                 mt = m - t + nphi;
                             else
                                 mt = m - t;
+                            s=fabs(mt-n);
                             // the translated upper electron index
                             mask_ut = (1 << nt);
                             mask_dt = (1 << mt);
@@ -290,49 +197,8 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                             if(occ_ut == 0 && occ_dt == 0 && sector.basis_up.find(mask_ut + b) != sector.basis_up.end() && sector.basis_down.find(mask_dt + p) != sector.basis_down.end()) {
                                 k = sector.basis_up[mask_ut + b];
                                 l = sector.basis_down[mask_dt + p];
-                                long q_x, q_y;
-                                q_y = t;
-                                double V_ud = 0;
-                                for(q_x = 0; q_x < off_head; q_x++)
-                                    if(!(q_x==0 && q_y==0))
-                                        V_ud += Coulomb_matrix[dim4 + n * dim3 + mt* dim2 + q_y * dim1 + q_x];
-
                                 sign=sector.get_signud(i,j,n,m,nt,mt);
-                                matrix_elements[k*nbasis_down+l]+=V_ud*sign;
-                            }
-                        }
-                        for(t = 1; t < off_head ; t++) {
-                            // PBC, if one electron cross left boundary, sign change with -1
-                            if(n - t<0)
-                                nt = n - t + nphi;
-                            else
-                                nt = n - t;
-                            // PBC, if one electron cross right boundary, sign change with -1
-                            if(m + t >= nphi)
-                                mt = m + t - nphi;
-                            else
-                                mt = m + t;
-                            // the translated upper electron index
-                            mask_ut = (1 << nt);
-                            mask_dt = (1 << mt);
-                            // occupation of electons on the translated position
-                            occ_ut = mask_ut & b;
-                            occ_dt = mask_dt & p;
-                            // if there're no electon on the translated position
-                            // which is a valid translation, can be applied
-                            // the translated indices
-                            if(occ_ut == 0 && occ_dt == 0 && sector.basis_up.find(mask_ut + b) != sector.basis_up.end() && sector.basis_down.find(mask_dt + p) != sector.basis_down.end()) {
-                                k = sector.basis_up[mask_ut + b];
-                                l = sector.basis_down[mask_dt + p];
-                                long q_x, q_y;
-                                q_y = t;
-                                double V_ud = 0;
-                                for(q_x = 0; q_x < off_head; q_x++)
-                                    if(!(q_x==0 && q_y==0))
-                                        V_ud += Coulomb_matrix[dim4 + n * dim3 + mt* dim2 + q_y * dim1 + q_x];
-
-                                sign=sector.get_signud(i,j,n,m,nt,mt);
-                                matrix_elements[k*nbasis_down+l]+=V_ud*sign;
+                                matrix_elements[k*nbasis_down+l]+=Coulomb_matrix[nphi*nphi+s*nphi+t]*sign;
                             }
                         }
                     }
@@ -342,7 +208,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
 
           long count=0;
           for(k=0;k<nHilbert;k++)
-               if(abs(matrix_elements[k])>1e-6){
+               if(abs(matrix_elements[k])>1e-8){
                  H.inner_indices.push_back(k);
                  H.value.push_back(matrix_elements[k]);
                  count++;

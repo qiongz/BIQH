@@ -5,10 +5,11 @@ basis::basis() {
 }
 
 basis::basis(long _nphi,long _nel_up, long _nel_down):nphi(_nphi),nel_up(_nel_up),nel_down(_nel_down) {
-  K=-1;
+  K_up=-1;
+  K_down=-1;
 }
 
-basis::basis(long _nphi,long _nel_up, long _nel_down, long _K):nphi(_nphi),nel_up(_nel_up),nel_down(_nel_down),K(_K) {
+basis::basis(long _nphi,long _nel_up, long _nel_down, long _K_up,long _K_down):nphi(_nphi),nel_up(_nel_up),nel_down(_nel_down),K_up(_K_up),K_down(_K_down){
 }
 
 const basis & basis::operator =(const basis & _basis) {
@@ -22,6 +23,8 @@ const basis & basis::operator =(const basis & _basis) {
         basis_down=_basis.basis_down;
         id_up=_basis.id_up;
         id_down=_basis.id_down;
+        K_up=_basis.K_up;
+        K_down=_basis.K_down;
     }
     return *this;
 }
@@ -48,26 +51,48 @@ void basis::init() {
     for(i=0; i<nel_up; i++)
         config_init+=(1<<i);
     generate_up(config_init);
+    std::map<long,long>::iterator it;
+    for(it=basis_up.begin(); it!=basis_up.end(); it++){
+        if(K_up<0)
+           id_up.push_back(it->first);
+        else{
+          long sum_j=0;
+          long c=it->first;
+          for(i=0;i<nphi;i++)
+             if((c>>i)%2==1)
+               sum_j+=i;
+           if(sum_j%nphi==K_up)
+          id_up.push_back(it->first);
+         }
+    }
+    sort(id_up.begin(),id_up.end());
+    basis_up.clear();
+    for(i=0; i<nbasis_up; i++)
+        basis_up[id_up[i]]=i;
+    nbasis_up=basis_up.size();
 
     config_init=0;
     for(i=0; i<nel_down; i++)
         config_init+=(1<<i);
     generate_down(config_init);
-
-    std::map<long,long>::iterator it;
-    for(it=basis_up.begin(); it!=basis_up.end(); it++)
-        id_up.push_back(it->first);
-    for(it=basis_down.begin(); it!=basis_down.end(); it++)
-        id_down.push_back(it->first);
-
-    sort(id_up.begin(),id_up.end());
+    for(it=basis_down.begin(); it!=basis_down.end(); it++){
+        if(K_down<0)
+           id_down.push_back(it->first);
+        else{
+         long sum_j=0;
+          long c=it->first;
+          for(i=0;i<nphi;i++)
+             if((c>>i)%2==1)
+               sum_j+=i;
+           if(sum_j%nphi==K_down)
+          id_down.push_back(it->first);
+         }
+    }
     sort(id_down.begin(),id_down.end());
-    basis_up.clear();
     basis_down.clear();
-    for(i=0; i<nbasis_up; i++)
-        basis_up[id_up[i]]=i;
     for(i=0; i<nbasis_down; i++)
         basis_down[id_down[i]]=i;
+    nbasis_down=basis_down.size();
 }
 
 void basis::init(long _nphi, long _nel_up, long _nel_down){
@@ -222,11 +247,11 @@ long basis::annihilation(long s,long n)
 
 void basis::generate_up(long a) {
     long mask,K,L,b,j;
-#if __cplusplus > 199711L
+    #if __cplusplus > 199711L
     basis_up.emplace(a,a);
-#else
+    #else
     basis_up[a]=a;
-#endif
+    #endif
     for(long i=0; i<nphi; i++) {
         j=(i+1>=nphi)?i+1-nphi:i+1;
         mask=(1<<i)+(1<<j);
@@ -245,11 +270,11 @@ void basis::generate_up(long a) {
 
 void basis::generate_down(long a) {
     long mask,K,L,b,j;
-#if __cplusplus > 199711L
+    #if __cplusplus > 199711L
     basis_down.emplace(a,a);
-#else
+    #else
     basis_down[a]=a;
-#endif
+    #endif
     for(long i=0; i<nphi-1; i++) {
         j=(i+1>=nphi)?i+1-nphi:i+1;
         mask=(1<<i)+(1<<j);
@@ -263,6 +288,7 @@ void basis::generate_down(long a) {
                 return;
         }
     }
+    return;
 }
 
 void basis::prlong() {
