@@ -10,6 +10,7 @@
 #include<cstring>
 #include<vector>
 #include<omp.h>
+#define MKL_Complex16 std::complex<double>
 #include"mkl.h"
 #include<gsl/gsl_integration.h>
 
@@ -21,6 +22,7 @@
 using namespace std;
 //extern "C" int dsyev_(char *, char *, int *, double *, int*, double *, double *, int *, int *);
 void diag_dsyev(double *h, double *e, int l);
+void diag_zheev(complex<double> *h, double *e, int l);
 double func_ExpInt(double t, void *params);
 double Integrate_ExpInt(double z) ;
 

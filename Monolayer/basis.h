@@ -37,7 +37,7 @@ public:
     void generate(long);
     long creation(long,long);
     long annihilation(long,long);
-    int get_sign(long,long,long,long,long);
+    int get_sign(long i ,long n ,long m,long nt,long mt);
     void prlong();
     friend ostream & operator<<(ostream & os, const basis &);
 };

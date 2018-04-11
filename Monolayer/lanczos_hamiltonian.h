@@ -9,9 +9,9 @@ public:
     unsigned seed;  //!< Seed for RNGs
     long nHilbert;  //!< Hilbert space size
     long lambda;    //!< Lanczos update steps
-    long nphi,off_head;
+    long nphi;
+    long off_head;
     double lx,ly,E0,E_cl;      //!< Ground state eigen energy
-    basis sector;   //!< Basis
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
     Mat H;  //!< Hamiltonian matrix in CSR format
@@ -37,7 +37,6 @@ public:
     */
     lhamil(long _lambda,unsigned _seed); //!< Constructor with basis sector as input
     ~lhamil(); //!< Destructor
-    void init(basis &_sector, long _lambda,unsigned _seed);
     const lhamil & operator=(const lhamil &);
     /** \param _sector Basis sector
     */
@@ -53,6 +52,7 @@ public:
     double ground_state_energy();    //!< Ground state energy
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version
     void init_Coulomb_matrix();
+    void print_hamil_CSR(); //!< print the full hamiltonian matrix
     void print_hamil(int n); //!< print the full hamiltonian matrix
     void print_lhamil(int n);  //!< print the Lanczos hamiltonian matrix with first n x n elements
     void print_eigen(int n);  //!< print the first n eigenvalues
