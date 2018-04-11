@@ -16,15 +16,9 @@ lhamil::lhamil(long _lambda,unsigned _seed) {
 lhamil::~lhamil() {
 }
 
-void lhamil::init(basis &_sector,long _lambda,unsigned _seed) {
-    sector=_sector;
-    lambda=_lambda;
-    seed=_seed;
-}
 const lhamil & lhamil::operator =(const lhamil & _config) {
     if(this !=&_config) {
         nHilbert=_config.nHilbert;
-        sector=_config.sector;
         H=_config.H;
         seed=_config.seed;
         lambda=_config.lambda;
@@ -38,41 +32,35 @@ const lhamil & lhamil::operator =(const lhamil & _config) {
     return *this;
 }
 
-double lhamil::Coulomb_interaction(int q_x, int q_y){
-    double q=sqrt(q_x*q_x/(lx*lx)+q_y*q_y/(ly*ly))*2.0*M_PI;
-    return 2.0*M_PI/(q+1e-30)*exp(-M_PI*(q_x*q_x*ly*1.0/lx+q_y*q_y*lx*1.0/ly)/nphi);
+double lhamil::Coulomb_interaction(int k_x, int k_y){
+    double q=sqrt(k_x*k_x/(lx*lx)+k_y*k_y/(ly*ly))*2.0*M_PI;
+    return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0);
 }
 
 void lhamil::init_Coulomb_matrix(){
-    off_head=nphi/2+nphi%2;
-    //off_head=nphi;
-    long dim1=off_head;
-    long dim2=dim1*off_head;
-    long dim3 = dim2*nphi;
-    Coulomb_matrix.assign(dim3*nphi, 0);
-    for(int n = 0; n < nphi; n++)
-        for(int m = 0; m < nphi; m++)
-          for(int q_y = 0; q_y < off_head; q_y++)
-            for(int q_x = 0; q_x < off_head; q_x++)
-              // Coulomb matrix elements in Landau gauge
-              // factor of 1/4 is cancelled by 2*cos(q_x)*2cos(q_y)
-              Coulomb_matrix[ n * dim3 + m* dim2 + q_y * dim1 + q_x] = Coulomb_interaction( q_x, q_y) * cos(2.0 * M_PI * (n-m) * q_x / nphi)/(lx*ly);
+    Coulomb_matrix.assign(nphi*nphi, 0);
+    for(int s = 0; s < nphi; s++)
+      for(int k_y = 0; k_y <nphi; k_y++){
+        double V=0;
+        for(int k_x=-nphi/2;k_x<=nphi/2;k_x++)
+          if(!(k_y==0 && k_x==0))
+            V+=Coulomb_interaction(k_x,k_y)*cos(2.0*M_PI*s*k_x/nphi)/(2.0*lx*ly);
+        Coulomb_matrix[s*nphi+k_y]=V;
+      }
     // initialize classical Coulomb energy
-    E_cl=-2.0/sqrt(lx*ly);
+    E_cl=-2.0;
     for(int i=0;i<nphi;i++)
       for(int j=0;j<nphi;j++)
         if(!(i==0 &&j==0))
-        E_cl+=1.0/sqrt(lx*ly)*Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
+        E_cl+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
+    E_cl/=sqrt(lx*ly);
 }
 
 
-void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi) {
-    sector=_sector;
+void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi) {
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
-    off_head=nphi/2+nphi%2;
-    //off_head=nphi;
     init_Coulomb_matrix();
     nHilbert = sector.nbasis;
     vector<double> matrix_elements;
@@ -80,19 +68,16 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi) {
     H.inner_indices.reserve(nHilbert * nphi);
     H.value.reserve(nHilbert * nphi);
     H.outer_starts.reserve(nHilbert + 1);
-    long mask, b, n, m, i, k, t, sign;
+    long mask, b, n, m, i, k, s,t, sign;
     long row = 0;
     H.outer_starts.push_back(0);
     for(i = 0; i < nHilbert; i++){
             // start of new row of nonzero elements
             matrix_elements.assign(nHilbert,0);
             // select two electrons in left-basis <m_1, m_2|
-            long dim1 = off_head;
-            long dim2 = dim1* off_head;
-            long dim3 = dim2* nphi;
             // n=j1, m=j2
-            for(n = 0; n < nphi; n++)
-                for(m = 0; m < nphi; m++) {
+            for(n = 0; n < nphi-1; n++)
+                for(m = n+1; m < nphi; m++) {
                     mask = (1 << n) + (1 << m);
                     // looking up the corresponding basis in id
                     // if there're two electrons on n and m;
@@ -102,17 +87,20 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi) {
                         // mt=j3, nt=j4
                         long nt, mt, mask_t, occ_t;
                         // perform translation along x-direction (q_y), positive q_y
-                        for(t = 0; t < off_head; t++) {
-                            // PBC, if one electron cross left boundary, sign change with -1
+                        for(t = -nphi/2; t<=nphi/2; t++) {
                             if(n + t >=nphi)
                                 nt = n + t - nphi;
+                            else if(n+t<0)
+                                nt = n + t + nphi;
                             else
                                 nt = n + t;
-                            // PBC, if one electron cross right boundary, sign change with -1
                             if(m - t <0)
                                 mt = m - t + nphi;
+                            else if (m-t>=nphi)
+                                mt = m - t - nphi;
                             else
                                 mt = m - t;
+                            s=abs(n-mt);
                             // the translated two electrons indices
                             mask_t = (1 << nt) + (1 << mt);
                             // occupation of electons on the translated position
@@ -123,61 +111,16 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi) {
                             if(occ_t == 0 && sector.basis_set.find(mask_t + b) != sector.basis_set.end())
                             {
                                 k = sector.basis_set[mask_t + b];
-                                long q_x, q_y;
-                                q_y=t;
-                                // t>off_head corresponds to q_y= -Pi
-                                double V = 0;
-                                // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
-                                for(q_x = 0; q_x < off_head; q_x++)
-                                    if(!(q_x==0 && q_y==0))
-                                        V += Coulomb_matrix[n * dim3 + mt* dim2 + q_y * dim1 + q_x];
-
                                 sign=sector.get_sign(i,n,m,nt,mt);
-                                matrix_elements[k]+=V*sign;
-                            }
-                        }
-                        for(t = 1; t < off_head; t++) {
-                            // PBC, if one electron cross left boundary, sign change with -1
-                            if(n - t <0)
-                                nt = n - t + nphi;
-                            else
-                                nt = n - t;
-                            // PBC, if one electron cross right boundary, sign change with -1
-                            if(m + t >=nphi)
-                                mt = m + t - nphi;
-                            else
-                                mt = m + t;
-                            // the translated two electrons indices
-                            mask_t = (1 << nt) + (1 << mt);
-                            // occupation of electons on the translated position
-                            occ_t = mask_t & b;
-                            // if there're no electon on the translated position
-                            // which is a valid translation, can be applied
-                            // looking up Lin's table, and find the corresponding index
-                            if(occ_t == 0 && sector.basis_set.find(mask_t + b) != sector.basis_set.end())
-                            {
-                                k = sector.basis_set[mask_t + b];
-                                long q_x, q_y;
-                                // t>off_head corresponds to q_y= -Pi
-                                q_y=t;
-                                double V = 0;
-                                // only positive part of q_x is added, q_x-> -q_x reflection gives cosine term
-                                for(q_x = 0; q_x < off_head; q_x++)
-                                    if(!(q_x==0 && q_y==0))
-                                        V += Coulomb_matrix[n * dim3 + mt* dim2 + q_y * dim1 + q_x];
-
-                                sign=sector.get_sign(i,n,m,nt,mt);
-                                matrix_elements[k]+=V*sign;
+                                matrix_elements[k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign;
                             }
                         }
                     }
                 }
-            // diagonal Coulomb classical energy term
-
             matrix_elements[i]+=E_cl*sector.nel;
             long count=0;
             for(k=0;k<nHilbert;k++)
-               if(abs(matrix_elements[k])>1e-8){
+               if(abs(matrix_elements[k])>1e-10){
                  H.inner_indices.push_back(k);
                  H.value.push_back(matrix_elements[k]);
                  count++;
@@ -211,21 +154,6 @@ void lhamil::coeff_update() {
         phi_2 -= phi_1 * overlap[i] + phi_0 * norm[i];
         norm[i+1] = phi_2.normalize();
         swap(&phi_0,&phi_1,&phi_2);
-
-        // checking if the iteration is converged
-        /*
-        if(i>10 and i%5==0) {
-            diag(i);
-            if(abs((eigenvalues[0]-eigenvalues_0)/(abs(eigenvalues_0)+1e-8))<epsilon) {
-                lambda=i;
-                break;
-            }
-            else
-                eigenvalues_0=eigenvalues[0];
-                //cout<<i<<" "<<eigenvalues_0<<endl;
-        }
-        */
-
     }
     phi_0.clear();
     phi_1.clear();
@@ -349,21 +277,6 @@ void lhamil::coeff_explicit_update()
         phi_1=phi_2;
         phi_2=phi_s;
 
-        // checking if the iteration is converged
-        // the overhead of diagonalization is small
-         /*
-        if(j>10 and j%5==0){
-          diag(j);
-          if(abs((eigenvalues[0]-eigenvalues_0)/(abs(eigenvalues_0)+1e-8))<epsilon){
-              lambda=j+1;
-              break;
-          }
-          else
-             eigenvalues_0=eigenvalues[0];
-             //cout<<j<<" "<<eigenvalues_0<<endl;
-        }
-        */
-
     }
     delete phi_0,phi_1,phi_2,phi_t;
 }
@@ -477,20 +390,6 @@ void lhamil::coeff_update_wopt(vector<double> O_phi_0)
         phi_0=phi_1;
         phi_1=phi_2;
         phi_2=phi_s;
-
-        // checking if the iteration is converged
-        // the overhead of diagonalization is small
-        /*
-        if(j>10 and j%5==0){
-          diag(j);
-          if(abs((eigenvalues[0]-eigenvalues_0)/(abs(eigenvalues_0)+1e-8))<epsilon){
-              lambda=j+1;
-              break;
-          }
-          else
-             eigenvalues_0=eigenvalues[0];
-        }
-        */
     }
     delete phi_0,phi_1,phi_2,phi_t;
 }
