@@ -16,6 +16,24 @@ lhamil::lhamil(long _lambda,unsigned _seed) {
 lhamil::~lhamil() {
 }
 
+void lhamil::clear(){
+    H.clear();
+    if(psir_0.size()!=0)
+      psir_0.clear();
+    if(psi_n0.size()!=0)
+      psi_n0.clear();
+    if(psi_0.size()!=0)
+      psi_0.clear();
+    if(eigenvalues.size()!=0)
+      eigenvalues.clear();
+    if(Coulomb_matrix.size()!=0)
+       Coulomb_matrix.clear();
+    if(norm.size()!=0)
+       norm.clear();
+    if(overlap.size()!=0)
+       overlap.clear();
+}
+
 const lhamil & lhamil::operator =(const lhamil & _config) {
     if(this !=&_config) {
         nHilbert=_config.nHilbert;
@@ -192,6 +210,8 @@ void lhamil::coeff_explicit_update()
     for(i=0; i<nHilbert; i++)
         norm_factor+=phi_0[i]*phi_0[i];
     norm_factor=sqrt(norm_factor);
+    if(norm_factor<1e-30)
+       norm_factor+=1e-30;
 
     #pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
@@ -225,6 +245,8 @@ void lhamil::coeff_explicit_update()
     for(i=0; i<nHilbert; i++)
         norm_factor+=phi_1[i]*phi_1[i];
     norm_factor=sqrt(norm_factor);
+    if(norm_factor<1e-30)
+       norm_factor+=1e-30;
 
     #pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
@@ -266,6 +288,8 @@ void lhamil::coeff_explicit_update()
         for(i=0; i<nHilbert; i++)
             norm_factor+=phi_2[i]*phi_2[i];
         norm_factor=sqrt(norm_factor);
+        if(norm_factor<1e-30)
+          norm_factor+=1e-30;
 
         #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
@@ -486,6 +510,7 @@ double lhamil::ground_state_energy() {
             overlap+=psir_0[i]*H_psir0[i];
     }
     return overlap;
+    H_psir0.clear();
 }
 
 

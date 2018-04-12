@@ -24,6 +24,13 @@ const basis & basis::operator =(const basis & _basis) {
 
 basis::~basis() {}
 
+void basis::clear(){
+   if(nbasis!=0){
+     basis_set.clear();
+     id.clear();
+   }
+}
+
 long basis::factorial(long N, long m) {
     unsigned long num,denum;
     long i;
@@ -53,8 +60,16 @@ void basis::init() {
 void basis::init(long _nphi, long _nel){
    nphi=_nphi;
    nel=_nel;
+   K=-1;
    init();
 }
+
+void basis::init(long _nphi, long _nel, long _K){
+   nphi=_nphi;
+   nel=_nel;
+   K=_K;
+   init();
+ }
 
 
 long basis::onsite_potential(long i,long n) {

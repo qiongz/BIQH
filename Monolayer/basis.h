@@ -34,11 +34,13 @@ public:
     long factorial(long,long);
     void init();
     void init(long,long);
+    void init(long,long,long);
     void generate(long,long,long,long);
     long creation(long,long);
     long annihilation(long,long);
     int get_sign(long i ,long n ,long m,long nt,long mt);
     void prlong();
+    void clear();
     void for_sum(long &a, int count,int index,int range, int n);
     friend ostream & operator<<(ostream & os, const basis &);
 };

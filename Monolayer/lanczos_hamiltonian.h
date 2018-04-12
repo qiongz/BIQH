@@ -38,6 +38,7 @@ public:
     lhamil(long _lambda,unsigned _seed); //!< Constructor with basis sector as input
     ~lhamil(); //!< Destructor
     const lhamil & operator=(const lhamil &);
+    void clear();
     /** \param _sector Basis sector
     */
     void set_hamil(basis & _sector ,double _lx, double _ly, long _nphi);  //!< Initialize hamiltonian matrix
