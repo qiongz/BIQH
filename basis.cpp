@@ -31,6 +31,13 @@ const basis & basis::operator =(const basis & _basis) {
 
 basis::~basis() {}
 
+void basis::clear(){
+   basis_up.clear();
+   basis_down.clear();
+   id_up.clear();
+   id_down.clear();
+}
+
 long basis::factorial(long N, long m) {
     unsigned long num,denum;
     long i;
@@ -44,54 +51,27 @@ long basis::factorial(long N, long m) {
 }
 
 void basis::init() {
-    long i,config_init;
-    nbasis_up=factorial(nphi,nel_up);
-    nbasis_down=factorial(nphi,nel_down);
-    config_init=0;
-    for(i=0; i<nel_up; i++)
-        config_init+=(1<<i);
-    generate_up(config_init);
+    long i,j,Ki,count,config;
     std::map<long,long>::iterator it;
-    for(it=basis_up.begin(); it!=basis_up.end(); it++){
-        if(K_up<0)
-           id_up.push_back(it->first);
-        else{
-          long sum_j=0;
-          long c=it->first;
-          for(i=0;i<nphi;i++)
-             if((c>>i)%2==1)
-               sum_j+=i;
-           if(sum_j%nphi==K_up)
-          id_up.push_back(it->first);
-         }
-    }
-    sort(id_up.begin(),id_up.end());
-    basis_up.clear();
-    for(i=0; i<nbasis_up; i++)
-        basis_up[id_up[i]]=i;
-    nbasis_up=basis_up.size();
+    count=j=config=Ki=0;
+    generate_up(count,j,Ki,config);
+    count=j=config=Ki=0;
+    generate_down(count,j,Ki,config);
 
-    config_init=0;
-    for(i=0; i<nel_down; i++)
-        config_init+=(1<<i);
-    generate_down(config_init);
-    for(it=basis_down.begin(); it!=basis_down.end(); it++){
-        if(K_down<0)
-           id_down.push_back(it->first);
-        else{
-         long sum_j=0;
-          long c=it->first;
-          for(i=0;i<nphi;i++)
-             if((c>>i)%2==1)
-               sum_j+=i;
-           if(sum_j%nphi==K_down)
-          id_down.push_back(it->first);
-         }
-    }
+    for(it=basis_up.begin(); it!=basis_up.end(); it++)
+        id_up.push_back(it->first);
+    for(it=basis_down.begin(); it!=basis_down.end(); it++)
+        id_down.push_back(it->first);
+
+    sort(id_up.begin(),id_up.end());
     sort(id_down.begin(),id_down.end());
+    basis_up.clear();
     basis_down.clear();
-    for(i=0; i<nbasis_down; i++)
+    for(i=0; i<id_up.size(); i++)
+        basis_up[id_up[i]]=i;
+    for(i=0; i<id_down.size(); i++)
         basis_down[id_down[i]]=i;
+    nbasis_up=basis_up.size();
     nbasis_down=basis_down.size();
 }
 
@@ -245,50 +225,48 @@ long basis::annihilation(long s,long n)
 }
 
 
-void basis::generate_up(long a) {
-    long mask,K,L,b,j;
-    #if __cplusplus > 199711L
-    basis_up.emplace(a,a);
-    #else
-    basis_up[a]=a;
-    #endif
-    for(long i=0; i<nphi; i++) {
-        j=(i+1>=nphi)?i+1-nphi:i+1;
-        mask=(1<<i)+(1<<j);
-        K=mask&a;
-        L=K^mask;
-        if(L!=0 && L!=mask) {
-            b=a-K+L;
-            if(basis_up.find(b)==basis_up.end())
-                generate_up(b);
-            if(basis_up.size()==nbasis_up)
-                return;
-        }
+void basis::generate_up(long count,long j, long Ki, long config) {
+  long i,id,k,c;
+  count++;
+  config=(count==1?0:config);
+  j=(count==1?0:j+1);
+  for(i=j;i<nphi-(nel_up-count);i++){
+    // total sum of k
+    k=Ki+i;
+    c=config+(1<<i);
+    if(count<nel_up){
+       generate_up(count,i,k,c);
+     }
+    else{
+      //cout<<count<<" "<<i<<" "<<j<<" "<<c<<" "<<bitset<12>(c).to_string()<<endl;
+      if(K_up<0)
+        basis_up[c]=c;
+      else if(k%nphi==K_up)
+        basis_up[c]=c;
     }
-    return;
+  }
 }
 
-void basis::generate_down(long a) {
-    long mask,K,L,b,j;
-    #if __cplusplus > 199711L
-    basis_down.emplace(a,a);
-    #else
-    basis_down[a]=a;
-    #endif
-    for(long i=0; i<nphi-1; i++) {
-        j=(i+1>=nphi)?i+1-nphi:i+1;
-        mask=(1<<i)+(1<<j);
-        K=mask&a;
-        L=K^mask;
-        if(L!=0 && L!=mask) {
-            b=a-K+L;
-            if(basis_down.find(b)==basis_down.end())
-                generate_down(b);
-            if(basis_down.size()==nbasis_down)
-                return;
-        }
+void basis::generate_down(long count, long j, long Ki, long config) {
+  long i,id,k,c;
+  count++;
+  config=(count==1?0:config);
+  j=(count==1?0:j+1);
+  for(i=j;i<nphi-(nel_down-count);i++){
+    // total sum of k
+    k=Ki+i;
+    c=config+(1<<i);
+    if(count<nel_down){
+       generate_down(count,i,k,c);
+     }
+    else{
+      //cout<<count<<" "<<i<<" "<<j<<" "<<c<<" "<<bitset<12>(c).to_string()<<endl;
+      if(K_down<0)
+        basis_down[c]=c;
+      else if(k%nphi==K_down)
+        basis_down[c]=c;
     }
-    return;
+  }
 }
 
 void basis::prlong() {

@@ -35,9 +35,10 @@ public:
     long onsite_potential(long,long,long);
     long factorial(long,long);
     void init();
+    void clear();
     void init(long,long,long);
-    void generate_up(long);
-    void generate_down(long);
+    void generate_up(long,long,long,long);
+    void generate_down(long,long,long,long);
     long creation(long,long);
     long annihilation(long,long);
     int get_signu(long i ,long n ,long m,long nt,long mt);
