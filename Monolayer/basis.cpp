@@ -37,29 +37,12 @@ long basis::factorial(long N, long m) {
 }
 
 void basis::init() {
-    long i,config_init;
-    nbasis=factorial(nphi,nel);
-    config_init=0;
-    for(i=0; i<nel; i++)
-        config_init+=(1<<i);
-    generate(config_init);
-
-    //cout<<nbasis*4/1.0e9<<endl;
+    long i,j,Ki,config,count;
+    count=j=config=Ki=0;
+    generate(count,j,Ki,config);
     std::map<long,long>::iterator it;
-    for(it=basis_set.begin(); it!=basis_set.end(); it++){
-      if(K<0)
+    for(it=basis_set.begin(); it!=basis_set.end(); it++)
         id.push_back(it->first);
-      else{
-        long sum_j=0;
-        long c=it->first;
-        for(i=0;i<nphi;i++)
-           if((c>>i)%2==1)
-             sum_j+=i;
-         if(sum_j%nphi==K)
-            id.push_back(it->first);
-      }
-    }
-
     sort(id.begin(),id.end());
     basis_set.clear();
     for(i=0; i<id.size(); i++)
@@ -109,30 +92,6 @@ long basis::annihilation(long s,long n)
         return s;
 }
 
-
-void basis::generate(long a) {
-    long mask,K,L,b,j;
-    #if __cplusplus > 199711L
-    basis_set.emplace(a,a);
-    #else
-    basis_set[a]=a;
-    #endif
-    for(long i=0; i<nphi; i++) {
-        j=(i+1>=nphi)?i+1-nphi:i+1;
-        mask=(1<<i)+(1<<j);
-        K=mask&a;
-        L=K^mask;
-        if(L!=0 && L!=mask) {
-            b=a-K+L;
-            if(basis_set.find(b)==basis_set.end())
-                generate(b);
-            if(basis_set.size()==nbasis)
-                return;
-        }
-    }
-    return;
-}
-
 int basis::get_sign(long i,long n, long m, long nt, long mt){
      long b,k,kl,kr,mask,mask_k,nsign;
      mask=(1<<n)+(1<<m);
@@ -161,6 +120,46 @@ int basis::get_sign(long i,long n, long m, long nt, long mt){
      return pow(-1,nsign);
 }
 
+// for loop with range and number of iterations as an argument
+void basis::for_sum(long &a,int count,int index,int range,int n_iter){
+  int i,j,id;
+  count++;
+  j=(count==1?index%range:index%range+1);
+  for(i=j;i<range-(n_iter-count);i++){
+    id=i+index*range;
+    if(count<n_iter){
+       for_sum(a,count,id,range,n_iter);
+     }
+    else{
+      a+=id;
+      //cout<<"sum: "<<i<<" "<<j<<" "<<id<<endl;
+    }
+  }
+}
+
+
+void  basis::generate(long count,long j,long Ki, long config){
+  int i,id,k,c;
+  count++;
+  config=(count==1?0:config);
+  j=(count==1?0:j+1);
+  for(i=j;i<nphi-(nel-count);i++){
+    // total sum of k
+    k=Ki+i;
+    c=config+(1<<i);
+    if(count<nel){
+       generate(count,i,k,c);
+     }
+    else{
+      //cout<<count<<" "<<i<<" "<<j<<" "<<c<<" "<<bitset<12>(c).to_string()<<endl;
+      if(K<0)
+        basis_set[c]=c;
+      else if(k%nphi==K)
+        basis_set[c]=c;
+    }
+  }
+}
+
 void basis::prlong() {
     std::map<long,long>::iterator it;
     cout<<"---------------------------------------"<<endl;
@@ -171,7 +170,7 @@ void basis::prlong() {
                cout<<n<<" ";
         }
         cout<<"   ";
-        cout<<bitset<12>(it->first).to_string()<<" "<<setw(6)<<it->first<<" "<<it->second<<endl;
+        cout<<bitset<20>(it->first).to_string()<<" "<<setw(6)<<it->first<<" "<<it->second<<endl;
       }
     cout<<"---------------------------------------"<<endl;
     cout<<"No. basis: "<<setw(6)<<nbasis<<endl;
