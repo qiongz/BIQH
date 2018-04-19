@@ -61,7 +61,7 @@ void lhamil::init_Coulomb_matrix(){
       for(int k_y = 0; k_y <nphi; k_y++){
         double V=0;
         for(int k_x=-nphi/2;k_x<=nphi/2;k_x++)
-          if(!(k_y==0 && k_x==0))
+        if(!(k_y==0 && k_x==0))
             V+=Coulomb_interaction(k_x,k_y)*cos(2.0*M_PI*s*k_x/nphi)/(2.0*lx*ly);
         Coulomb_matrix[s*nphi+k_y]=V;
       }
@@ -75,7 +75,7 @@ void lhamil::init_Coulomb_matrix(){
 }
 
 
-void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi) {
+void lhamil::set_hamil(basis & sector ,double _lx, double _ly,long _nphi) {
     lx = _lx;
     ly = _ly;
     nphi = _nphi;

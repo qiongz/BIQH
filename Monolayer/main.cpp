@@ -14,6 +14,7 @@ using namespace std;
 int main(int argc,char *argv[]) {
     int nphi,nel,J,lambda;
     double lx,ly;
+    int kx;
     unsigned seed;
     // aspect ratio lx/ly
     double gamma;
@@ -21,10 +22,11 @@ int main(int argc,char *argv[]) {
     nphi=4;
     nel=2;
     lambda=200;
+    kx=-1;
     J=-1;
     gamma=1;
 
-    init_argv(nphi,nel,J,gamma,lambda,argc,argv);
+    init_argv(nphi,nel,J,kx,gamma,lambda,argc,argv);
     // keep lx/ly=nel/4
     gamma=nel/4.0;
     ly=sqrt(2.0*M_PI*nphi/gamma);
@@ -70,18 +72,40 @@ int main(int argc,char *argv[]) {
         }
 */
 
-/*
+
     lhamil lconfig(lambda,seed);
+  //  for(int j=0;j<nel;j++){
+    basis sector(nphi,nel,J,kx);
+    sector.init();
+    sector.prlong();
+
+   // for(int k=0;k<nel;k++){
     lconfig.set_hamil(sector,lx,ly,nphi);
-    cout<<"-----------Lanczos-----------"<<endl;
+    //cout<<"-----------Lanczos-----------"<<endl;
     //lconfig.print_hamil(44);
     lconfig.coeff_explicit_update();
     //lconfig.print_lhamil(10);
     lconfig.diag();
     lconfig.eigenstates_reconstruction();
-    //cout<<"E_gs:="<<setprecision(5)<<lconfig.ground_state_energy()/nel<<endl;
-    cout<<nel*1.0/nphi<<" "<<lconfig.ground_state_energy()/nel<<endl;
+    cout<<"E_gs:="<<setprecision(5)<<lconfig.ground_state_energy()/nel<<endl;
+    /*
+    double K=sqrt(j*j+kx*kx*gamma*gamma)*2.0*M_PI/nphi/gamma;
+    cout<<K<<" ";
+    int i=0;
+    int count=0;
+    do{
+       i++;
+       if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-3) {
+         cout<<lconfig.eigenvalues[i]<<" ";
+         count++;
+      }
+    }while(count<2);
+    cout<<endl;
     */
+  // }
+ //}
+
+
     /*
     cout<<"eigenvalues:= [";
     for(int i=0;i<10;i++)
@@ -100,14 +124,17 @@ int main(int argc,char *argv[]) {
           cout<<"    ";
           cout<<bitset<12>(sector.id[i]).to_string()<<" "<<lconfig.psir_0[i]<<endl;
         }
-
         */
+
+
+
 
 
 
 
     /* ground-state energy check */
 
+/*
     lhamil lconfig(lambda,seed);
     basis sector;
     for(int nphi=nel*4+1;nphi>=nel+1;nphi-=1){
@@ -129,6 +156,7 @@ int main(int argc,char *argv[]) {
         sector.clear();
         lconfig.clear();
     }
+*/
 
 
 

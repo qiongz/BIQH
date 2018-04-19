@@ -5,10 +5,11 @@ basis::basis() {
 }
 
 basis::basis(long _nphi,long _nel):nphi(_nphi),nel(_nel){
+  J=-1;
   K=-1;
 }
 
-basis::basis(long _nphi,long _nel, long _K):nphi(_nphi),nel(_nel),K(_K) {
+basis::basis(long _nphi,long _nel, long _J,long _K):nphi(_nphi),nel(_nel),J(_J),K(_K) {
 }
 
 const basis & basis::operator =(const basis & _basis) {
@@ -43,10 +44,20 @@ long basis::factorial(long N, long m) {
     return num/denum;
 }
 
+long basis::common_divisor(long n, long m){
+    long N=1;
+    for(int i=1;i<=n;i++)
+      if(n%i==0 && m%i==0)
+         N=i;
+    return N;
+}
+
 void basis::init() {
-    long i,j,Ki,config,count;
-    count=j=config=Ki=0;
-    generate(count,j,Ki,config);
+    long i,j,Ji,config,count;
+    C=common_divisor(nel,nphi);
+    long q=nphi/C;
+    count=j=config=Ji=0;
+    generate(count,j,Ji,config);
     std::map<long,long>::iterator it;
     for(it=basis_set.begin(); it!=basis_set.end(); it++)
         id.push_back(it->first);
@@ -60,13 +71,15 @@ void basis::init() {
 void basis::init(long _nphi, long _nel){
    nphi=_nphi;
    nel=_nel;
+   J=-1;
    K=-1;
    init();
 }
 
-void basis::init(long _nphi, long _nel, long _K){
+void basis::init(long _nphi, long _nel, long _J,long _K){
    nphi=_nphi;
    nel=_nel;
+   J=_J;
    K=_K;
    init();
  }
@@ -153,23 +166,23 @@ void basis::for_sum(long &a,int count,int index,int range,int n_iter){
 }
 
 
-void  basis::generate(long count,long j,long Ki, long config){
+void  basis::generate(long count,long j,long Ji, long config){
   int i,id,k,c;
   count++;
   config=(count==1?0:config);
   j=(count==1?0:j+1);
   for(i=j;i<nphi-(nel-count);i++){
     // total sum of k
-    k=Ki+i;
+    k=Ji+i;
     c=config+(1<<i);
     if(count<nel){
        generate(count,i,k,c);
      }
     else{
       //cout<<count<<" "<<i<<" "<<j<<" "<<c<<" "<<bitset<12>(c).to_string()<<endl;
-      if(K<0)
+      if(J<0)
         basis_set[c]=c;
-      else if(k%nphi==K)
+      else if(k%nphi==J)
         basis_set[c]=c;
     }
   }
