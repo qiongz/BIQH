@@ -16,16 +16,9 @@ lhamil::lhamil(long _lambda,unsigned _seed) {
 lhamil::~lhamil() {
 }
 
-void lhamil::init(basis &_sector,double _d, long _lambda,unsigned _seed) {
-    sector=_sector;
-    lambda=_lambda;
-    seed=_seed;
-    d=_d;
-}
 const lhamil & lhamil::operator =(const lhamil & _config) {
     if(this !=&_config) {
         nHilbert=_config.nHilbert;
-        sector=_config.sector;
         H=_config.H;
         seed=_config.seed;
         lambda=_config.lambda;
@@ -54,26 +47,25 @@ void lhamil::init_Coulomb_matrix(){
       for(int s = 0; s < nphi; s++)
           for(int q_y = 0; q_y < nphi; q_y++){
             double V=0;
-            for(int q_x = 0; q_x < lx/2; q_x++)
+            for(int q_x = -nphi/2; q_x <=nphi/2; q_x++)
                 if(!(q_x==0 && q_y==0))
-                  V+=2.0*Coulomb_interaction(0,alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
+                  V+=Coulomb_interaction(0,alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
               // Coulomb matrix elements in Landau gauge
               Coulomb_matrix[alpha*nphi*nphi+s*nphi+q_y]=V;
             }
     // initialize classical Coulomb energy
-    E_cl=-2.0;
+    Ec=-2.0;
     for(int i=0;i<nphi;i++)
       for(int j=0;j<nphi;j++)
         if(!(i==0 &&j==0))
-        E_cl+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
-    E_cl/=sqrt(lx*ly);
+        Ec+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
+    Ec/=sqrt(lx*ly);
 }
 
 
-void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,double _d){
+void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi,double _d){
     long nbasis_up, nbasis_down;
     d = _d;
-    sector=_sector;
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
@@ -107,17 +99,21 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                         // mt=j3, nt=j4
                         long nt, mt, mask_ut, occ_ut;
                         // perform translation along x-direction (q_y), positive q_y
-                        for(t = 0; t < nphi; t++) {
+                        for(t = -nphi/2; t <= nphi/2; t++) {
                             if(n + t >=nphi)
                                 nt = n + t - nphi;
+                            else if (n+t <0)
+                                nt = n + t +nphi;
                             else
                                 nt = n + t;
                             if(m - t <0)
                                 mt = m - t + nphi;
+                            else if (m - t >=nphi)
+                                mt = m - t -nphi;
                             else
                                 mt = m - t;
 
-                            s=fabs(mt-n);
+                            s=fabs(n-mt);
                             // the translated two electrons indices
                             mask_ut = (1 << nt) + (1 << mt);
                             // occupation of electons on the translated position
@@ -129,7 +125,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                             {
                                 k = sector.basis_up[mask_ut + b];
                                 sign=sector.get_signu(i,n,m,nt,mt);
-                                matrix_elements[k*nbasis_down+j]+=Coulomb_matrix[s*nphi+t]*sign;
+                                matrix_elements[k*nbasis_down+j]+=Coulomb_matrix[s*nphi+abs(t)]*sign;
                             }
                         }
                     }
@@ -140,16 +136,20 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                         b = sector.id_down[j] ^ mask;
                         long nt, mt, mask_dt, occ_dt;
                         // perform translation in x-direction, negative q_y
-                        for(t = 0; t < nphi; t++) {
+                        for(t = -nphi/2; t <= nphi/2; t++) {
                             if(n + t >=nphi)
                                 nt = n + t - nphi;
+                            else if (n+t <0)
+                                nt = n + t +nphi;
                             else
                                 nt = n + t;
                             if(m - t <0)
                                 mt = m - t + nphi;
+                            else if (m - t >=nphi)
+                                mt = m - t -nphi;
                             else
                                 mt = m - t;
-                            s=fabs(mt-n);
+                            s=fabs(nt-m);
                             // the translated two electrons indices
                             mask_dt = (1 << nt) + (1 << mt);
                             // occupation of electons on the translated position
@@ -159,7 +159,7 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                             if(occ_dt == 0 && sector.basis_down.find(mask_dt + b) != sector.basis_down.end()) {
                                 l = sector.basis_down[mask_dt + b];
                                 sign=sector.get_signd(j,n,m,nt,mt);
-                                matrix_elements[i*nbasis_down+l]+=Coulomb_matrix[s*nphi+t]*sign;
+                                matrix_elements[i*nbasis_down+l]+=Coulomb_matrix[s*nphi+abs(t)]*sign;
                             }
                         }
                     }
@@ -175,13 +175,17 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                         p = sector.id_down[j] ^ mask_d;
                         long nt, mt, mask_ut, occ_ut, mask_dt, occ_dt;
                         // perform translation along x-direction
-                        for(t = 0; t < nphi ; t++) {
+                        for(t = -nphi/2; t <= nphi/2 ; t++) {
                             if(n + t>=nphi)
                                 nt = n + t - nphi;
+                            else if (n+t <0)
+                                nt = n + t +nphi;
                             else
                                 nt = n + t;
                             if(m - t <0)
                                 mt = m - t + nphi;
+                            else if (m - t >=nphi)
+                                mt = m - t -nphi;
                             else
                                 mt = m - t;
                             s=fabs(mt-n);
@@ -198,17 +202,16 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
                                 k = sector.basis_up[mask_ut + b];
                                 l = sector.basis_down[mask_dt + p];
                                 sign=sector.get_signud(i,j,n,m,nt,mt);
-                                matrix_elements[k*nbasis_down+l]+=Coulomb_matrix[nphi*nphi+s*nphi+t]*sign;
+                                matrix_elements[k*nbasis_down+l]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign;
                             }
                         }
                     }
            }
             // diagonal Coulomb classical energy term
-          //matrix_elements[i*nbasis_down+j]+=E_cl*(sector.nel_up+sector.nel_down);
-
+          matrix_elements[i*nbasis_down+j]+=Ec*(sector.nel_up+sector.nel_down);
           long count=0;
           for(k=0;k<nHilbert;k++)
-               if(abs(matrix_elements[k])>1e-8){
+               if(abs(matrix_elements[k])>1e-10){
                  H.inner_indices.push_back(k);
                  H.value.push_back(matrix_elements[k]);
                  count++;
@@ -218,8 +221,6 @@ void lhamil::set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,doubl
           }
     matrix_elements.clear();
 }
-
-
 
 void lhamil::coeff_update() {
     double eigenvalues_0=1;
@@ -243,21 +244,6 @@ void lhamil::coeff_update() {
         phi_2 -= phi_1 * overlap[i] + phi_0 * norm[i];
         norm[i+1] = phi_2.normalize();
         swap(&phi_0,&phi_1,&phi_2);
-
-        // checking if the iteration is converged
-        /*
-        if(i>10 and i%5==0) {
-            diag(i);
-            if(abs((eigenvalues[0]-eigenvalues_0)/(abs(eigenvalues_0)+1e-8))<epsilon) {
-                lambda=i+1;
-                break;
-            }
-            else
-                eigenvalues_0=eigenvalues[0];
-                //cout<<i<<" "<<eigenvalues_0<<endl;
-        }
-        */
-
     }
     phi_0.clear();
     phi_1.clear();
@@ -267,9 +253,6 @@ void lhamil::coeff_update() {
 void lhamil::coeff_explicit_update()
 {
     int i,j,idx;
-    double eigenvalues_0=1;
-    double epsilon=1e-6;
-
     double norm_factor,overlap_factor;
     double *phi_0,*phi_1,*phi_2,*phi_t,*phi_s;
     phi_0=new double[nHilbert];
@@ -296,6 +279,8 @@ void lhamil::coeff_explicit_update()
     for(i=0; i<nHilbert; i++)
         norm_factor+=phi_0[i]*phi_0[i];
     norm_factor=sqrt(norm_factor);
+    if(norm_factor<1e-30)
+       norm_factor+=1e-30;
 
     #pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
@@ -329,6 +314,8 @@ void lhamil::coeff_explicit_update()
     for(i=0; i<nHilbert; i++)
         norm_factor+=phi_1[i]*phi_1[i];
     norm_factor=sqrt(norm_factor);
+    if(norm_factor<1e-30)
+       norm_factor+=1e-30;
 
     #pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
@@ -370,6 +357,8 @@ void lhamil::coeff_explicit_update()
         for(i=0; i<nHilbert; i++)
             norm_factor+=phi_2[i]*phi_2[i];
         norm_factor=sqrt(norm_factor);
+        if(norm_factor<1e-30)
+         norm_factor+=1e-30;
 
         #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
@@ -380,21 +369,6 @@ void lhamil::coeff_explicit_update()
         phi_0=phi_1;
         phi_1=phi_2;
         phi_2=phi_s;
-
-        // checking if the iteration is converged
-        // the overhead of diagonalization is small
-         /*
-        if(j>10 and j%5==0){
-          diag(j);
-          if(abs((eigenvalues[0]-eigenvalues_0)/(abs(eigenvalues_0)+1e-8))<epsilon){
-              lambda=j+1;
-              break;
-          }
-          else
-             eigenvalues_0=eigenvalues[0];
-             //cout<<j<<" "<<eigenvalues_0<<endl;
-        }
-        */
 
     }
     delete phi_0,phi_1,phi_2,phi_t;
@@ -509,20 +483,6 @@ void lhamil::coeff_update_wopt(vector<double> O_phi_0)
         phi_0=phi_1;
         phi_1=phi_2;
         phi_2=phi_s;
-
-        // checking if the iteration is converged
-        // the overhead of diagonalization is small
-        /*
-        if(j>10 and j%5==0){
-          diag(j);
-          if(abs((eigenvalues[0]-eigenvalues_0)/(abs(eigenvalues_0)+1e-8))<epsilon){
-              lambda=j+1;
-              break;
-          }
-          else
-             eigenvalues_0=eigenvalues[0];
-        }
-        */
     }
     delete phi_0,phi_1,phi_2,phi_t;
 }
@@ -550,30 +510,6 @@ void lhamil::diag()
         psi_0[i]=h[i];
         psi_n0[i]=h[i*l];
         eigenvalues[i]=e[i];
-    }
-    delete h,e;
-}
-
-void lhamil::diag(int l)
-{
-    if(norm.size()==0) coeff_update();
-    double *e = new double[l];
-    double *h = new double [l * l];
-    memset(h, 0, sizeof(double)*l*l);
-    for(int i = 0; i < l-1; i++) {
-        h[i *l + i + 1] = norm[i+1];
-        h[(i + 1)*l + i] = norm[i+1];
-        h[i * l + i] = overlap[i];
-    }
-    h[(l - 1)*l + l - 1] = overlap[l - 1];
-    diag_dsyev(h,e,l);
-    eigenvalues.assign(l,0);
-    psi_0.assign(l,0);
-    psi_n0.assign(l,0);
-    for(int i=0; i<l; i++) {
-        eigenvalues[i]=e[i];
-        psi_0[i]=h[i];
-        psi_n0[i]=h[i*l];
     }
     delete h,e;
 }
@@ -618,9 +554,9 @@ double lhamil::ground_state_energy() {
         for(int i=0; i<nHilbert; i++)
             overlap+=psir_0[i]*H_psir0[i];
     }
+    H_psir0.clear();
     return overlap;
 }
-
 
 // spectral function continued fraction version
 double lhamil::spectral_function(double omega, double eta) {

@@ -13,8 +13,8 @@ public:
     long nHilbert;  //!< Hilbert space size
     long lambda;    //!< Lanczos update steps
     long nphi,off_head;
-    double lx,ly,d,E0,E_cl;      //!< Ground state eigen energy
-    basis sector;   //!< Basis
+    double lx,ly,d;
+    double E0,Ec;      //!< Ground state eigen energy
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
     Mat H;  //!< Hamiltonian matrix in CSR format
@@ -40,7 +40,6 @@ public:
     */
     lhamil(long _lambda,unsigned _seed); //!< Constructor with basis sector as input
     ~lhamil(); //!< Destructor
-    void init(basis &_sector,double d, long _lambda,unsigned _seed);
     const lhamil & operator=(const lhamil &);
     /** \param _sector Basis sector
     */
@@ -49,7 +48,6 @@ public:
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays
     void coeff_update_wopt(vector<double> O_phi_0);
     void diag();  //!< Diagonalize the full Lanczos hamiltonian
-    void diag(int l); //!< Diagonalize the Lanczos hamiltonain with first lxl elements
 
     void eigenstates_reconstruction(); //!< Transform |psi_0> to |psir_0>
     double Coulomb_interaction(int alpha,int beta, int q_x, int q_y);

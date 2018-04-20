@@ -11,6 +11,7 @@
 #include<vector>
 #include<omp.h>
 #include"mkl.h"
+#include<gsl/gsl_integration.h>
 
 #if __cplusplus > 199711L
 #include<random>
@@ -20,6 +21,8 @@
 using namespace std;
 //extern "C" int dsyev_(char *, char *, int *, double *, int*, double *, double *, int *, int *);
 void diag_dsyev(double *h, double *e, int l);
+double func_ExpInt(double t, void *params);
+double Integrate_ExpInt(double z) ;
 
 class Vec {
 public:

@@ -4,7 +4,7 @@ CFLAGS = -openmp
 LIBS= -lpthread -mkl
 
 check:check.cpp basis.o matrix.o init.o lanczos_hamiltonian.o hamiltonian.o mt19937-64.o
-	$(CC) $(CFLAGS) $^ -O2 -o $@ ${LIBS} $(CFLAGS) -lgsl
+	$(CC) $(CFLAGS) $^ -O3 -o $@ ${LIBS} $(CFLAGS) -lgsl
 
 basis.o:basis.cpp basis.h
 	$(CC) $(CFLAGS) -c basis.cpp

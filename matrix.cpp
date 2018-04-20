@@ -278,3 +278,21 @@ void diag_dsyev(double *hamiltonian, double *energy, int l){
     lda=l;
     info=LAPACKE_dsyev(LAPACK_COL_MAJOR,jobz, uplo, l,hamiltonian,lda, energy);
 }
+
+double func_ExpInt(double t, void *params) {
+    double z = *(double *)params;
+    double ret_value = 1.0/sqrt(t)*exp(-z*t);
+    return ret_value;
+}
+
+double Integrate_ExpInt(double z) {
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(20000);
+    double result,error;
+
+    gsl_function F;
+    F.function = &func_ExpInt;
+    F.params= & z;
+
+    gsl_integration_qagiu(& F,1.0,1.0e-8, 1.0e-8, 20000,w, &result, & error);
+    return result;
+}

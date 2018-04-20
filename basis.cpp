@@ -192,9 +192,11 @@ int basis::get_signud(long i,long j,long n, long m, long nt, long mt){
           if((p&mask_k)==mask_k)
              nsign++;
         }
+
         // if there're crossings between two electrons
-        if(nt>mt && m>n || mt>nt && m<n)
-          nsign++;
+        //if(nt>mt && m>n || mt>nt && m<n)
+        //  nsign++;
+
 
      return pow(-1,nsign);
 }

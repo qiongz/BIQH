@@ -5,17 +5,20 @@ void usage(char *target) {
     std::cout<<"  -p                       nphi\n";
     std::cout<<"  -n                       Total No. of electrons in upper-layer\n";
     std::cout<<"  -u                       No. of electrons in upper-layer\n";
+    std::cout<<"  -j                       total J in upper-layer\n";
+    std::cout<<"  -k                       total J in down-layer\n";
+    std::cout<<"  -g                       gamma=lx/ly  aspect ratio\n";
     std::cout<<"  -d                       interlayer distance\n";
     std::cout<<"  -m                       Lambda\n";
     std::cout<<"Default: (l,n,u,d,lambda) = (4,4,2,1,200)\n";
 }
 
-void init_argv(int &nphi, int& nel, int &nel_up, double &d, int &lambda,int argc,char *argv[])
+void init_argv(int &nphi, int& nel, int &nel_up, int &J_up, int &J_down, double &d,double &gamma ,int &lambda,int argc,char *argv[])
 {
     extern char *optarg;
     int ch,errFlag;
     errFlag=0;
-    while((ch=getopt(argc,argv,"p:n:u:d:m:h:"))!=-1) {
+    while((ch=getopt(argc,argv,"p:n:u:d:j:k:g:m:h:"))!=-1) {
         switch(ch) {
         case 'p':
             nphi=atoi(optarg);
@@ -25,6 +28,15 @@ void init_argv(int &nphi, int& nel, int &nel_up, double &d, int &lambda,int argc
             break;
         case 'u':
             nel_up=atoi(optarg);
+            break;
+        case 'j':
+            J_up=atoi(optarg);
+            break;
+        case 'k':
+            J_down=atoi(optarg);
+            break;
+        case 'g':
+            gamma=atof(optarg);
             break;
         case 'd':
             d=atof(optarg);
