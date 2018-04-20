@@ -77,7 +77,7 @@ int main(int argc,char *argv[]) {
   //  for(int j=0;j<nel;j++){
     basis sector(nphi,nel,J,kx);
     sector.init();
-    sector.prlong();
+    //sector.prlong();
 
    // for(int k=0;k<nel;k++){
     lconfig.set_hamil(sector,lx,ly,nphi);
