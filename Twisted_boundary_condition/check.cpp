@@ -66,8 +66,8 @@ int main(int argc,char *argv[]) {
     //config.save_to_file(filename.c_str());
 
     /* ground-state energy check */
-    for(int i=0;i<40;i++){
-      config.set_hamil(sector,lx,ly,nphi,i*0.1+0.01);
+    //for(int i=0;i<40;i++){
+      lconfig.set_hamil(sector,lx,ly,nphi,d);
       //lconfig.set_hamil(sector,lx,ly,nphi,d);
       //lconfig.print_hamil(4);
       //lconfig.coeff_explicit_update();
@@ -75,13 +75,13 @@ int main(int argc,char *argv[]) {
       //lconfig.diag();
       //lconfig.eigenstates_reconstruction();
       //config.set_hamil(sector,lx,ly,nphi,d);
-      //config.print_hamil();
-      config.diag();
+      lconfig.print_hamil(lconfig.nHilbert);
+      //config.diag();
       //cout<<i*0.1+0.01<<" "<<lconfig.ground_state_energy()/nsite<<endl;
-      cout<<i*0.1+0.01<<" "<<config.ground_state_energy()<<endl;
+     // cout<<i*0.1+0.01<<" "<<config.ground_state_energy()<<endl;
       //cout<<d<<" "<<config.ground_state_energy()<<endl;
       //cout<<d<<" "<<lconfig.ground_state_energy()<<endl;
-    }
+    //}
 
     return 0;
 }

@@ -59,7 +59,7 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
     lx=_lx;
     ly=_ly;
     nphi=_nphi;
-    off_head=sqrt(nphi)*2;
+    off_head=nphi;
     dim_n=dim_m=off_head*2+1;
     nbasis_up=sector.nbasis_up;
     nbasis_down=sector.nbasis_down;
@@ -78,8 +78,8 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
         for(j=0; j<nbasis_down; j++) {
             // start of new row of nonzero elements
             // select two electrons in left-basis <m_1, m_2|
-            for(n=0; n<nsite-1; n++)
-                for(m=n; m<nsite; m++) {
+            for(n=0; n<nsite; n++)
+                for(m=0; m<nsite; m++) {
                     mask=(1<<n)+(1<<m);
                     // consider the upper-layer two electrons
                     // looking up the corresponding basis in id_up
@@ -90,7 +90,7 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
                         long nt,mt,mask_ut,occ_ut;
                         nsignu=0;
                         // perform translation
-                        for(t=1; t<nsite; t++) {
+                        for(t=0; t<nsite; t++) {
                             // PBC, if one electron cross left boundary, sign change with -1
                             if(n-t<0) {
                                 nt=n-t+nsite;
@@ -154,7 +154,7 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
                         long nt,mt,mask_dt,occ_dt;
                         nsignd=0;
                         // perform translation
-                        for(t=1; t<nsite; t++) {
+                        for(t=0; t<nsite; t++) {
                             // PBC, if one electron cross left boundary, sign change with -1
                             if(n-t<0) {
                                 nt=n-t+nsite;
@@ -222,7 +222,7 @@ void lhamil::set_hamil(basis &_sector, double _lx, double _ly, long _nphi,double
                         nsignu=0;
                         nsignd=0;
                         // perform translation
-                        for(t=1; t<nsite; t++) {
+                        for(t=0; t<nsite; t++) {
                             // PBC, if one electron cross left boundary, sign change with -1
                             if(n-t<0) {
                                 nt=n-t+nsite;
