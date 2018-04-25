@@ -53,14 +53,56 @@ long basis::common_divisor(long n, long m){
 }
 
 void basis::init() {
-    long i,j,Ji,config,count;
+    long i,j,n,Ji,config,count;
     C=common_divisor(nel,nphi);
     long q=nphi/C;
     count=j=config=Ji=0;
     generate(count,j,Ji,config);
     std::map<long,long>::iterator it;
+    // shrink to an unique subset L, all other subset could be generated with translation
+    for(it=basis_set.begin(); it!=basis_set.end();){
+      long c=it->first;
+      vector<long> cv;
+      for(n=0;n<nphi;n++)
+         if((c>>n)%2==1)
+           cv.push_back(n);
+      // if translation could generate this configuration, delete it
+      bool delete_flag=false;
+      for(n=1;n<C;n++){
+        config=0;
+        for(i=0;i<cv.size();i++){
+              j=(cv[i]-q<0?cv[i]-q+nphi:cv[i]-q);
+              config+=(1<<j);
+           }
+        if(basis_set.find(config)!=basis_set.end()&& config!=c){
+          delete_flag=true;
+          break; 
+        }
+      }
+      if(delete_flag)
+         basis_set.erase(it++);
+      else
+         ++it;
+    }
+    // translate to the specified kx point
+    if(K>0){
+    for(it=basis_set.begin(); it!=basis_set.end();it++){
+      long c=it->first;
+      vector<long> cv;
+      for(n=0;n<nphi;n++)
+         if((c>>n)%2==1)
+           cv.push_back(n);
+        config=0;
+        for(i=0;i<cv.size();i++){
+              j=(cv[i]+q*K>=nphi?cv[i]+q*K-nphi:cv[i]+q*K);
+              config+=(1<<j);
+           }
+        it->second=config;
+     }
+    }
+
     for(it=basis_set.begin(); it!=basis_set.end(); it++)
-        id.push_back(it->first);
+        id.push_back(it->second);
     sort(id.begin(),id.end());
     basis_set.clear();
     for(i=0; i<id.size(); i++)
@@ -166,7 +208,7 @@ void basis::for_sum(long &a,int count,int index,int range,int n_iter){
 }
 
 
-void  basis::generate(long count,long j,long Ji, long config){
+void  basis::generate(long count,long j,long Ji,long config){
   int i,id,k,c;
   count++;
   config=(count==1?0:config);
