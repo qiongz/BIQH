@@ -41,7 +41,7 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi) {
             // sum over left-basis after translation (k1 index) and right-basis after translation (k2 index)
             long k1,k2;
             for(k1=0;k1<sector.C;k1++){
-            long left_basis=sector.translate(i,k1); 
+            long left_basis=sector.translate(sector.id[i],k1);
             // select two electrons in left-basis <m_1, m_2|
             // n=j1, m=j2
             for(n = 0; n < nphi-1; n++)
@@ -78,9 +78,9 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi) {
                             // if there're no electon on the translated position
                             // which is a valid translation, can be applied
                             // looking up Lin's table, and find the corresponding index
-                            if(occ_t == 0) 
+                            if(occ_t == 0)
                              for(k2=0;k2<sector.C;k2++){
-                                long right_basis=sector.inv_translate(mask_t+b,k2); 
+                                long right_basis=sector.inv_translate(mask_t+b,k2);
                                 if(sector.basis_set.find(right_basis) != sector.basis_set.end())
                                 {
                                 k = sector.basis_set[right_basis];

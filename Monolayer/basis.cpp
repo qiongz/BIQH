@@ -77,7 +77,7 @@ void basis::init() {
            }
         if(basis_set.find(config)!=basis_set.end()&& config!=c){
           delete_flag=true;
-          break; 
+          break;
         }
       }
       if(delete_flag)
@@ -100,7 +100,7 @@ void basis::init() {
               config+=(1<<j);
            }
         it->second=config;
-     } 
+     }
     */
     }
 
@@ -233,20 +233,19 @@ void  basis::generate(long count,long j,long Ji,long config){
   }
 }
 
-long basis::translate(long i, long k){
-     long c,config,n;
+long basis::translate(long c, long k){
+     long config,n;
      vector<long> cv;
-     c=id[i];
      long q=nphi/C;
      for(n=0;n<nphi;n++)
-        if((c<<n)%2==1)
+        if((c>>n)%2==1)
            cv.push_back(n);
      config=0;
      for(n=0;n<cv.size();n++){
       long j=(cv[n]+q*k>=nphi?cv[n]+q*k-nphi:cv[n]+q*k);
       config+=(1<<j);
      }
-     cv.clear(); 
+     cv.clear();
      return config;
 }
 
@@ -255,7 +254,7 @@ long basis::inv_translate(long c, long k){
      vector<long> cv;
      long q=nphi/C;
      for(n=0;n<nphi;n++)
-        if((c<<n)%2==1)
+        if((c>>n)%2==1)
            cv.push_back(n);
      config=0;
      for(n=0;n<cv.size();n++){
