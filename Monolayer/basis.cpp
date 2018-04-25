@@ -60,6 +60,7 @@ void basis::init() {
     generate(count,j,Ji,config);
     std::map<long,long>::iterator it;
     // shrink to an unique subset L, all other subset could be generated with translation
+    if(K>=0){
     for(it=basis_set.begin(); it!=basis_set.end();){
       long c=it->first;
       vector<long> cv;
@@ -71,7 +72,7 @@ void basis::init() {
       for(n=1;n<C;n++){
         config=0;
         for(i=0;i<cv.size();i++){
-              j=(cv[i]-q<0?cv[i]-q+nphi:cv[i]-q);
+              j=(cv[i]+q*n>=nphi?cv[i]+q*n-nphi:cv[i]+q*n);
               config+=(1<<j);
            }
         if(basis_set.find(config)!=basis_set.end()&& config!=c){
@@ -85,7 +86,8 @@ void basis::init() {
          ++it;
     }
     // translate to the specified kx point
-    if(K>0){
+    /*
+    if(K!=0)
     for(it=basis_set.begin(); it!=basis_set.end();it++){
       long c=it->first;
       vector<long> cv;
@@ -98,7 +100,8 @@ void basis::init() {
               config+=(1<<j);
            }
         it->second=config;
-     }
+     } 
+    */
     }
 
     for(it=basis_set.begin(); it!=basis_set.end(); it++)
@@ -229,6 +232,41 @@ void  basis::generate(long count,long j,long Ji,long config){
     }
   }
 }
+
+long basis::translate(long i, long k){
+     long c,config,n;
+     vector<long> cv;
+     c=id[i];
+     long q=nphi/C;
+     for(n=0;n<nphi;n++)
+        if((c<<n)%2==1)
+           cv.push_back(n);
+     config=0;
+     for(n=0;n<cv.size();n++){
+      long j=(cv[n]+q*k>=nphi?cv[n]+q*k-nphi:cv[n]+q*k);
+      config+=(1<<j);
+     }
+     cv.clear(); 
+     return config;
+}
+
+long basis::inv_translate(long c, long k){
+     long config,n;
+     vector<long> cv;
+     long q=nphi/C;
+     for(n=0;n<nphi;n++)
+        if((c<<n)%2==1)
+           cv.push_back(n);
+     config=0;
+     for(n=0;n<cv.size();n++){
+       long j=(cv[n]-q*k<0?cv[n]-q*k+nphi:cv[n]-q*k);
+       config+=(1<<j);
+     }
+
+     cv.clear();
+     return config;
+}
+
 
 void basis::prlong() {
     std::map<long,long>::iterator it;

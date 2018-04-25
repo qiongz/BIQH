@@ -30,12 +30,18 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi) {
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
+    long kx=sector.K;
     init_Coulomb_matrix();
     nHilbert = sector.nbasis;
-    hamiltonian = new double[nHilbert * nHilbert];
-    memset(hamiltonian, 0, sizeof(double)*nHilbert * nHilbert);
+    hamiltonian = new complex<double>[nHilbert * nHilbert];
+    memset(hamiltonian, 0, sizeof(complex<double>)*nHilbert * nHilbert);
     long mask, b, n, m, i, k, s,t, sign;
     for(i = 0; i < nHilbert; i++){
+            // k-space basis is a linear combination of translated basis subset
+            // sum over left-basis after translation (k1 index) and right-basis after translation (k2 index)
+            long k1,k2;
+            for(k1=0;k1<sector.C;k1++){
+            long left_basis=sector.translate(i,k1); 
             // select two electrons in left-basis <m_1, m_2|
             // n=j1, m=j2
             for(n = 0; n < nphi-1; n++)
@@ -43,9 +49,9 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi) {
                     mask = (1 << n) + (1 << m);
                     // looking up the corresponding basis in id
                     // if there're two electrons on n and m;
-                    if((sector.id[i]&mask) == mask && n!=m) {
+                    if((left_basis &mask) == mask && n!=m) {
                         // b is the rest electon positions
-                        b = sector.id[i] ^ mask;
+                        b = left_basis ^ mask;
                         // mt=j3, nt=j4
                         long nt, mt, mask_t, occ_t;
                         // perform translation along x-direction (q_y), positive q_y
@@ -72,15 +78,22 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi) {
                             // if there're no electon on the translated position
                             // which is a valid translation, can be applied
                             // looking up Lin's table, and find the corresponding index
-                            if(occ_t == 0 && sector.basis_set.find(mask_t + b) != sector.basis_set.end())
-                            {
-                                k = sector.basis_set[mask_t + b];
+                            if(occ_t == 0) 
+                             for(k2=0;k2<sector.C;k2++){
+                                long right_basis=sector.inv_translate(mask_t+b,k2); 
+                                if(sector.basis_set.find(right_basis) != sector.basis_set.end())
+                                {
+                                k = sector.basis_set[right_basis];
                                 sign=sector.get_sign(i,n,m,nt,mt);
-                                hamiltonian[i*nHilbert+k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign;
-                            }
+                                complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(k1-k2)/sector.C),sin(2.0*M_PI*kx*(k1-k2)/sector.C))/sector.C;
+                                hamiltonian[i*nHilbert+k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor;
+                               }
+                           }
                         }
                     }
                 }
+
+           }
             // diagonal Coulomb classical energy term
           hamiltonian[i*nHilbert+i]+=E_cl*sector.nel;
           }
@@ -100,19 +113,19 @@ const hamil & hamil::operator =(const hamil & _gs_hconfig) {
 }
 
 
-double hamil::spectral_function(vector<double> &O_phi_0, double omega, double _E0, double eta, int annil) {
+double hamil::spectral_function(vector< complex<double> > &O_phi_0, double omega, double _E0, double eta, int annil) {
     complex<double> E;
     complex<double> G = 0;
     for(int i = 0; i < nHilbert; i++)
         // set annil==1, which gives hole-sector
         if(annil == 1) {
             E = complex<double>(omega, eta);
-            G += pow(psi_n0[i] * O_phi_0[i], 2) / (E + eigenvalues[i] - _E0);
+            G += pow(conj(psi_n0[i]) * O_phi_0[i], 2) / (E + eigenvalues[i] - _E0);
         }
     // else particle-sector
         else {
             E = complex<double>(omega, eta);
-            G += pow(psi_n0[i] * O_phi_0[i], 2) / (E + _E0 - eigenvalues[i]);
+            G += pow( conj(psi_n0[i]) * O_phi_0[i], 2) / (E + _E0 - eigenvalues[i]);
         }
 
     return -G.imag() / M_PI;
@@ -120,26 +133,26 @@ double hamil::spectral_function(vector<double> &O_phi_0, double omega, double _E
 
 double hamil::ground_state_energy(){
     if(psi_0.size() == 0) return 0;
-    double E_gs = 0;
-    vector<double> psi_t;
+    complex<double> E_gs = 0;
+    vector< complex<double> > psi_t;
     psi_t.assign(nHilbert,0);
     for(int i=0;i<nHilbert;i++)
        for(int j=0;j<nHilbert;j++)
         psi_t[i]+=hamiltonian[i*nHilbert+j]*psi_0[j];
     for(int i = 0; i < nHilbert; i++)
-        E_gs += psi_t[i] * psi_0[i];
+        E_gs += conj(psi_t[i]) * psi_0[i];
     psi_t.clear();
-    return E_gs;
+    return E_gs.real();
 }
 
 void hamil::diag() {
     int i, idx;
-    double *h = new double[nHilbert * nHilbert];
+    complex<double> *h = new complex<double>[nHilbert * nHilbert];
     double *en = new double[nHilbert];
-    memset(h, 0, sizeof(double)*nHilbert * nHilbert);
+    memset(h, 0, sizeof(complex<double>)*nHilbert * nHilbert);
     for(i = 0; i <nHilbert*nHilbert; i++)
         h[i]=hamiltonian[i];
-    diag_dsyev(h, en, nHilbert);
+    diag_zheev(h, en, nHilbert);
     psi_0.assign(nHilbert, 0);
     psi_n0.assign(nHilbert, 0);
     eigenvalues.assign(nHilbert, 0);
