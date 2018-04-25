@@ -73,37 +73,45 @@ int main(int argc,char *argv[]) {
 */
 
 
-    lhamil lconfig(lambda,seed);
-  //  for(int j=0;j<nel;j++){
-    basis sector(nphi,nel,J,kx);
+    //lhamil lconfig(lambda,seed);
+    for(int j=0;j<nel;j++){
+    for(int k=0;k<nel;k++){
+    basis sector(nphi,nel,j,k);
     sector.init();
     //sector.prlong();
-
-   // for(int k=0;k<nel;k++){
-    lconfig.set_hamil(sector,lx,ly,nphi);
+    //lconfig.set_hamil(sector,lx,ly,nphi);
+    hamil config;
+    config.set_hamil(sector,lx,ly,nphi);
     //cout<<"-----------Lanczos-----------"<<endl;
     //lconfig.print_hamil(44);
-    lconfig.coeff_explicit_update();
+    //lconfig.coeff_explicit_update();
     //lconfig.print_lhamil(10);
-    lconfig.diag();
-    lconfig.eigenstates_reconstruction();
-    cout<<"E_gs:="<<setprecision(5)<<lconfig.ground_state_energy()/nel<<endl;
+    //lconfig.diag();
+    config.diag();
+    //lconfig.eigenstates_reconstruction();
+    //cout<<"E_gs:="<<setprecision(5)<<lconfig.ground_state_energy()/nel<<endl;
+   // cout<<"E_gs:="<<setprecision(5)<<config.ground_state_energy()/nel<<endl;
+    
+    
+    double K=sqrt(j*j+k*k*gamma*gamma)*2.0*M_PI/nphi/gamma;
     /*
-    double K=sqrt(j*j+kx*kx*gamma*gamma)*2.0*M_PI/nphi/gamma;
     cout<<K<<" ";
     int i=0;
     int count=0;
     do{
        i++;
-       if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-3) {
+       if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-8) {
          cout<<lconfig.eigenvalues[i]<<" ";
          count++;
       }
     }while(count<2);
     cout<<endl;
     */
-  // }
- //}
+    cout<<K<<" "<<config.eigenvalues[0]<<" "<<config.eigenvalues[1]<<endl;
+    
+     
+   }
+ }
 
 
     /*
