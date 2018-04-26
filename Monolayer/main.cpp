@@ -28,7 +28,7 @@ int main(int argc,char *argv[]) {
 
     init_argv(nphi,nel,J,kx,gamma,lambda,argc,argv);
     // keep lx/ly=nel/4
-    //gamma=nel/4.0;
+    gamma=nel/4.0;
     
     ly=sqrt(2.0*M_PI*nphi/gamma);
     lx=ly*gamma;
@@ -102,9 +102,12 @@ int main(int argc,char *argv[]) {
           cout<<bitset<12>(sector.id[i]).to_string()<<" "<<lconfig.psir_0[i]<<endl;
       }
     */
-
-    double j0=0;
-    double k0=0;
+    
+    double j0,k0;
+    if(nel%2==0)
+       j0=k0=nel/2;
+    else
+       j0=k0=0;
 
     for(int j=0;j<nphi;j++){
     for(int k=0;k<nel;k++){
@@ -125,7 +128,7 @@ int main(int argc,char *argv[]) {
     //cout<<"E_gs:="<<setprecision(5)<<lconfig.ground_state_energy()/nel<<endl;
    // cout<<"E_gs:="<<setprecision(5)<<config.ground_state_energy()/nel<<endl;
     
-    double K=sqrt((j%sector.C-j0)*(j%sector.C-j0)+(k%sector.C-k0)*(k%sector.C-k0)*gamma*gamma)*2.0*M_PI/nphi/gamma;
+    double K=sqrt((j%sector.C-j0)*(j%sector.C-j0)+(k%sector.C-k0)*(k%sector.C-k0)*gamma*gamma)*sqrt(2.0*M_PI/nphi/gamma);
 
     /*
     cout<<K<<" ";
