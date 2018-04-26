@@ -39,21 +39,23 @@ int main(int argc,char *argv[]) {
     Timer tmr;
     seed=tmr.nanoseconds();
     #endif
-    //basis sector(nphi,nel,J,kx);
-    //sector.init();
+    basis sector(nphi,nel,J,kx);
+    sector.init();
 
     /* basis check */
     //sector.prlong();
     //sector.generate(count,index,a);
-    /*
+    
     cout<<"nphi: = "<<nphi<<endl;
     cout<<"nel: = "<<nel<<endl;
     cout<<"lx: = "<<lx<<endl;
     cout<<"ly: = "<<ly<<endl;
     cout<<"J: = "<<J<<endl;
-    cout<<"-----------Exact diag---------"<<endl;
-*/
+    cout<<"K: = "<<kx<<endl;
+    cout<<"nHilbert: ="<<sector.nbasis<<endl;
+    cout<<"-----------Lanczos---------"<<endl;
 
+/*
 
     hamil config;
     basis sector(nphi,nel,J,kx);
@@ -64,7 +66,7 @@ int main(int argc,char *argv[]) {
     config.diag();
     config.print_eigen(6);
     cout<<"E_gs:= "<<setprecision(4)<<config.ground_state_energy()/nel<<endl;
-
+*/
     /*
     for(int i=0;i<config.nHilbert;i++)
         if(abs(config.psi_0[i])>0.11){
@@ -79,15 +81,16 @@ int main(int argc,char *argv[]) {
 
    */
 
-
+   //basis sector(nphi,nel,J,kx);
+   //sector.init();
    lhamil lconfig(lambda,seed);
    lconfig.set_hamil(sector,lx,ly,nphi);
-   lconfig.print_hamil(4);
+   //lconfig.print_hamil(4);
    lconfig.coeff_update();
-   lconfig.print_lhamil(4);
+   //lconfig.print_lhamil(4);
    lconfig.diag();
    lconfig.eigenstates_reconstruction();
-   lconfig.print_eigen(6);
+   //lconfig.print_eigen(6);
    cout<<"E_gs(LANCZOS):="<<setprecision(4)<<lconfig.ground_state_energy()/nel<<endl;
 
    /*
