@@ -18,9 +18,9 @@ public:
     //Mat O;  //!< Operator matrix in CSR format
     std::vector<double> norm; //!< Normalization coefficients vector in Lanczos update
     std::vector<double> overlap; //!< Overlap coefficients vector in Lanczos update
-    std::vector<double> psir_0; //!< Ground state wave function in real-space
-    std::vector<double> psi_0; //!<Ground state eigenvector in Krylov subspace
-    std::vector<double> psi_n0; //!<First element of eigenvectors in Krylov subspace
+    std::vector< complex<double> > psir_0; //!< Ground state wave function in real-space
+    std::vector< complex<double> > psi_0; //!<Ground state eigenvector in Krylov subspace
+    std::vector< complex<double> > psi_n0; //!<First element of eigenvectors in Krylov subspace
     std::vector<double> eigenvalues; //!< Eigenvalues
     lhamil();  //!< Empty constructor
     /**
@@ -44,7 +44,7 @@ public:
     void set_hamil(basis  _sector ,double _lx, double _ly, long _nphi);  //!< Initialize hamiltonian matrix
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays
-    void coeff_update_wopt(vector<double> O_phi_0);
+    void coeff_update_wopt(vector<complex<double> > O_phi_0);
     void diag();  //!< Diagonalize the full Lanczos hamiltonian
     void diag(int l); //!< Diagonalize the Lanczos hamiltonain with first lxl elements
 

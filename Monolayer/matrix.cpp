@@ -6,7 +6,7 @@ Vec::Vec(long _size) {
     value.reserve(size);
 }
 
-Vec::Vec(long _size,const double _init) {
+Vec::Vec(long _size,const complex<double> _init) {
     size = _size;
     value.assign(size, _init);
 }
@@ -24,7 +24,7 @@ Vec::~Vec() {
     }
 }
 
-void Vec::assign(long  _size,const double _init) {
+void Vec::assign(long  _size,const complex<double> _init) {
     size=_size;
     value.assign(size,_init);
 }
@@ -34,14 +34,14 @@ void Vec::init_random(unsigned seed) {
     #if __cplusplus > 199711L
     std::mt19937 rng(seed);
     for(int i = 0; i < size; i++) {
-        value[i] = rng() * 1.0 / rng.max()-0.5 ;
-        norm += value[i] * value[i];
+        value[i] = complex<double>(rng() * 1.0 / rng.max()-0.5,rng()*1.0/rng.max()-0.5 );
+        norm += abs(value[i])*abs(value[i]);
     }
     #else
     init_genrand64(seed);
     for(int i = 0; i < size; i++) {
-        value[i]=genrand64_real3()-0.5;
-        norm += value[i] * value[i];
+        value[i]=complex<double>(genrand64_real3()-0.5,genrand64_real3()-0.5);
+        norm += abs(value[i])*abs(value[i]);
     }
     #endif
     norm = sqrt(norm);
@@ -57,14 +57,14 @@ void Vec::init_random(long _size,unsigned seed) {
     #if __cplusplus > 199711L
     std::mt19937 rng(seed);
     for(int i = 0; i < size; i++) {
-        value[i] = rng() * 1.0 / rng.max()-0.5 ;
-        norm += value[i] * value[i];
+        value[i] = complex<double>(rng() * 1.0 / rng.max()-0.5,rng()*1.0/rng.max()-0.5 );
+        norm += abs(value[i]) * abs(value[i]);
     }
     #else
     init_genrand64(seed);
     for(int i = 0; i < size; i++) {
-        value[i]=genrand64_real3()-0.5;
-        norm += value[i] * value[i];
+        value[i]=complex<double>(genrand64_real3()-0.5,genrand64_real3()-0.5);
+        norm += abs(value[i]) * abs(value[i]);
     }
     #endif
     norm = sqrt(norm);
@@ -85,7 +85,7 @@ double Vec::normalize() {
     double norm = 0;
     #pragma omp parallel for reduction(+:norm)
     for(i = 0; i < size; i++)
-        norm += value[i] * value[i];
+        norm += abs(value[i]) * abs(value[i]);
     double normsq = sqrt(norm);
     #pragma omp parallel for schedule(static)
     for(i = 0; i < size; i++)
@@ -119,6 +119,13 @@ Vec & Vec::operator+=(const Vec & rhs) {
 }
 
 Vec & Vec::operator*=(const double & rhs) {
+    #pragma omp parallel for schedule(static)
+    for(int i = 0; i < size; i++)
+        value[i] *=rhs;
+    return *this;
+}
+
+Vec & Vec::operator*=(const complex<double> & rhs) {
     #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
         value[i] *=rhs;
@@ -164,12 +171,20 @@ Vec Vec::operator*(const double &rhs) {
     return rt;
 }
 
-double Vec::operator*(const Vec &rhs) {
-    if(size != rhs.size) return 0 ;
-    double overlap = 0;
-    #pragma omp parallel for reduction(+:overlap)
+Vec Vec::operator*(const complex<double> &rhs) {
+    Vec rt(size);
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
-        overlap += value[i] * (rhs.value)[i];
+        rt.value[i] = value[i]* rhs;
+    return rt;
+}
+
+complex<double> Vec::operator*(const Vec &rhs) {
+    if(size != rhs.size) return 0 ;
+    complex<double> overlap = 0;
+    //#pragma omp parallel for reduction(+:overlap)
+    for(int i = 0; i < size; i++)
+        overlap += conj(value[i]) * (rhs.value)[i];
     return overlap;
 }
 
@@ -225,8 +240,8 @@ Vec Mat::operator*(const Vec &rhs)const {
     return phi;
 }
 
-vector<double> Mat::operator*(const vector<double> &rhs)const {
-    vector<double> phi;
+vector<complex<double> > Mat::operator*(const vector< complex<double> > &rhs)const {
+    vector< complex<double> > phi;
     phi.assign(rhs.size(),0);
     if(rhs.size()!=outer_starts.size()-1) return phi;
     #pragma omp parallel for schedule(guided,4)
@@ -238,7 +253,7 @@ vector<double> Mat::operator*(const vector<double> &rhs)const {
     return phi;
 }
 
-void Mat::init(const vector<long> & _outer,const vector<long> & _inner, const vector<double> &_value) {
+void Mat::init(const vector<long> & _outer,const vector<long> & _inner, const vector< complex<double> > &_value) {
     outer_starts.assign(_outer.begin(),_outer.end());
     inner_indices.assign(_inner.begin(),_inner.end());
     value.assign(_value.begin(),_value.end());

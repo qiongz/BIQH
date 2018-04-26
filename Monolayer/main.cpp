@@ -28,8 +28,8 @@ int main(int argc,char *argv[]) {
 
     init_argv(nphi,nel,J,kx,gamma,lambda,argc,argv);
     // keep lx/ly=nel/4
-    gamma=nel/4.0;
-    
+    //gamma=nel/4.0;
+
     ly=sqrt(2.0*M_PI*nphi/gamma);
     lx=ly*gamma;
 
@@ -53,18 +53,18 @@ int main(int argc,char *argv[]) {
     cout<<"J: = "<<J<<endl;
     cout<<"-----------Exact diag---------"<<endl;
 */
-/*
+
 
     hamil config;
     basis sector(nphi,nel,J,kx);
     sector.init();
     //sector.prlong();
     config.set_hamil(sector,lx,ly,nphi);
-    //config.print_hamil(12);
+    config.print_hamil(4);
     config.diag();
     //config.print_eigen(6);
     cout<<"E_gs:= "<<setprecision(4)<<config.ground_state_energy()/nel<<endl;
-*/
+
     /*
     for(int i=0;i<config.nHilbert;i++)
         if(abs(config.psi_0[i])>0.11){
@@ -79,17 +79,16 @@ int main(int argc,char *argv[]) {
 
    */
 
-/*
+
    lhamil lconfig(lambda,seed);
-   basis lsector(nphi,nel,J,-1);
-   lsector.init();
-   lconfig.set_hamil(lsector,lx,ly,nphi);
-   //lconfig.print_hamil(12);
-   lconfig.coeff_update();
+   lconfig.set_hamil(sector,lx,ly,nphi);
+   lconfig.print_hamil(4);
+   lconfig.coeff_explicit_update();
+   lconfig.print_lhamil(4);
    lconfig.diag();
    lconfig.eigenstates_reconstruction();
    cout<<"E_gs(LANCZOS):="<<setprecision(4)<<lconfig.ground_state_energy()/nel<<endl;
-*/
+
    /*
     for(int i=0;i<lconfig.nHilbert;i++)
       if(abs(lconfig.psir_0[i])>0.11){
@@ -102,7 +101,8 @@ int main(int argc,char *argv[]) {
           cout<<bitset<12>(sector.id[i]).to_string()<<" "<<lconfig.psir_0[i]<<endl;
       }
     */
-    
+
+/*
     double j0,k0;
     if(nel%2==0)
        j0=k0=nel/2;
@@ -127,8 +127,9 @@ int main(int argc,char *argv[]) {
     //lconfig.eigenstates_reconstruction();
     //cout<<"E_gs:="<<setprecision(5)<<lconfig.ground_state_energy()/nel<<endl;
    // cout<<"E_gs:="<<setprecision(5)<<config.ground_state_energy()/nel<<endl;
-    
+
     double K=sqrt((j%sector.C-j0)*(j%sector.C-j0)+(k%sector.C-k0)*(k%sector.C-k0)*gamma*gamma)*sqrt(2.0*M_PI/nphi/gamma);
+*/
 
     /*
     cout<<K<<" ";
@@ -144,11 +145,15 @@ int main(int argc,char *argv[]) {
     cout<<endl;
     */
 
-   cout<<K<<" "<<config.eigenvalues[0]<<" "<<config.eigenvalues[1]<<endl;
-     
+/*
+   cout<<K<<" ";
+   for(int s=0;s<10;s++)
+     cout<<config.eigenvalues[s]<<" ";
+    cout<<endl;
+
    }
  }
-
+*/
 
 
     /*

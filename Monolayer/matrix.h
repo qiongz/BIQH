@@ -28,16 +28,16 @@ double Integrate_ExpInt(double z) ;
 
 class Vec {
 public:
-    std::vector<double> value;
+    std::vector< complex<double> > value;
     long size;
 
     Vec();
     Vec(long _size);
-    Vec(long _size,const double _init);
+    Vec(long _size,const complex<double> _init);
     Vec(const Vec & rhs);
     ~Vec();
 
-    void assign(long _size, const double _init);
+    void assign(long _size, const complex<double> _init);
     void init_random(unsigned);
     void init_random(long,unsigned);
     void clear();
@@ -48,12 +48,14 @@ public:
     Vec & operator-=(const Vec & rhs);
     Vec & operator+=(const Vec & rhs);
     Vec & operator*=(const double & rhs);
+    Vec & operator*=(const complex<double> & rhs);
     Vec & operator/=(const double & rhs);
     Vec operator+(const Vec &);
     Vec operator-(const Vec &);
     Vec operator*(const double &);
+    Vec operator*(const complex<double> &);
     Vec operator/(const double &);
-    double operator*(const Vec &);
+    complex<double> operator*(const Vec &);
     friend ostream & operator<<(ostream & os, const Vec &);
 };
 
@@ -61,7 +63,7 @@ class Mat {
 public:
     // doublehe compressed Sparse Row (CSR) Data Structure
     std::vector<long> outer_starts,inner_indices;
-    std::vector<double> value;
+    std::vector< complex<double> > value;
 
     Mat();
     Mat(const Mat &rhs);
@@ -69,8 +71,8 @@ public:
     Mat & operator=(const Mat & rhs);
     // the last const means the object is a constant
     Vec operator*(const Vec &)const;
-    vector<double> operator*(const vector<double> &)const;
-    void init(const vector<long> &,const vector<long> &,const vector<double> &);
+    vector< complex<double> > operator*(const vector< complex<double> > &)const;
+    void init(const vector<long> &,const vector<long> &,const vector< complex<double> > &);
     void clear();
     void print();
 };
