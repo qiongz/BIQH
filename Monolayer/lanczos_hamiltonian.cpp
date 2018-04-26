@@ -129,7 +129,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly,long _nphi) {
                             if(occ_t == 0 && sector.basis_set.find(mask_t + b) != sector.basis_set.end())
                             {
                                 k = sector.basis_set[mask_t + b];
-                                sign=sector.get_sign(i,n,m,nt,mt);
+                                sign=sector.get_sign(sector.id[i],n,m,nt,mt);
                                 matrix_elements[k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign;
                             }
                         }

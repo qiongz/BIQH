@@ -86,8 +86,9 @@ void basis::init() {
          ++it;
     }
     // translate to the specified kx point
+     
+    //if(K!=0)
     /*
-    if(K!=0)
     for(it=basis_set.begin(); it!=basis_set.end();it++){
       long c=it->first;
       vector<long> cv;
@@ -96,12 +97,13 @@ void basis::init() {
            cv.push_back(n);
         config=0;
         for(i=0;i<cv.size();i++){
-              j=(cv[i]+q*K>=nphi?cv[i]+q*K-nphi:cv[i]+q*K);
+              j=(cv[i]-q*(C-1)<0?cv[i]-q*(C-1)+nphi:cv[i]-q*(C-1));
               config+=(1<<j);
            }
         it->second=config;
      }
-    */
+     */
+    
     }
 
     for(it=basis_set.begin(); it!=basis_set.end(); it++)
@@ -165,11 +167,11 @@ long basis::annihilation(long s,long n)
         return s;
 }
 
-int basis::get_sign(long i,long n, long m, long nt, long mt){
+int basis::get_sign(long c,long n, long m, long nt, long mt){
      long b,k,kl,kr,mask,mask_k,nsign;
      mask=(1<<n)+(1<<m);
       // get the rest electrons
-     b=id[i]^mask;
+     b=c^mask;
      // if there're no crossing between two electrons
      nsign=0;
         kl=nt<n?nt:n;
@@ -233,35 +235,48 @@ void  basis::generate(long count,long j,long Ji,long config){
   }
 }
 
-long basis::translate(long c, long k){
-     long config,n;
+long basis::translate(long c, long k, long & sign){
+     long j,config,n;
      vector<long> cv;
      long q=nphi/C;
      for(n=0;n<nphi;n++)
         if((c>>n)%2==1)
            cv.push_back(n);
      config=0;
+     sign=0;
      for(n=0;n<cv.size();n++){
-      long j=(cv[n]+q*k>=nphi?cv[n]+q*k-nphi:cv[n]+q*k);
+      if(cv[n]+q*k>=nphi){
+        j=cv[n]+q*k-nphi;
+        sign+=nel-1;
+        }
+      else
+         j=cv[n]+q*k;
       config+=(1<<j);
      }
+     sign=pow(-1,sign);
      cv.clear();
      return config;
 }
 
-long basis::inv_translate(long c, long k){
-     long config,n;
+long basis::inv_translate(long c, long k , long &sign){
+     long config,n,j;
      vector<long> cv;
      long q=nphi/C;
      for(n=0;n<nphi;n++)
         if((c>>n)%2==1)
            cv.push_back(n);
      config=0;
+     sign=0;
      for(n=0;n<cv.size();n++){
-       long j=(cv[n]-q*k<0?cv[n]-q*k+nphi:cv[n]-q*k);
+       if(cv[n]-q*k<0){
+         j=cv[n]-q*k+nphi;
+         sign+=nel-1; 
+       }
+       else
+         j=cv[n]-q*k;  
        config+=(1<<j);
      }
-
+     sign=pow(-1,sign);
      cv.clear();
      return config;
 }

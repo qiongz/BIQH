@@ -37,8 +37,8 @@ public:
     void init(long,long);
     void init(long,long,long,long);
     void generate(long,long,long,long);
-    long translate(long,long);
-    long inv_translate(long,long);
+    long translate(long,long,long &);
+    long inv_translate(long,long,long &);
     long creation(long,long);
     long annihilation(long,long);
     int get_sign(long i ,long n ,long m,long nt,long mt);

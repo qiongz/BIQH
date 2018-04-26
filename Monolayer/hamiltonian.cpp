@@ -40,8 +40,9 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi) {
             // k-space basis is a linear combination of translated basis subset
             // sum over left-basis after translation (k1 index) and right-basis after translation (k2 index)
             long k1,k2;
+            long signl,signr;
             for(k1=0;k1<sector.C;k1++){
-            long left_basis=sector.translate(sector.id[i],k1);
+            long left_basis=sector.translate(sector.id[i],k1,signl);
             // select two electrons in left-basis <m_1, m_2|
             // n=j1, m=j2
             for(n = 0; n < nphi-1; n++)
@@ -80,19 +81,18 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi) {
                             // looking up Lin's table, and find the corresponding index
                             if(occ_t == 0)
                              for(k2=0;k2<sector.C;k2++){
-                                long right_basis=sector.inv_translate(mask_t+b,k2);
+                                long right_basis=sector.inv_translate(mask_t+b,k2,signr);
                                 if(sector.basis_set.find(right_basis) != sector.basis_set.end())
                                 {
                                 k = sector.basis_set[right_basis];
-                                sign=sector.get_sign(i,n,m,nt,mt);
+                                sign=sector.get_sign(left_basis,n,m,nt,mt);
                                 complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(k1-k2)/sector.C),sin(2.0*M_PI*kx*(k1-k2)/sector.C))/sector.C;
-                                hamiltonian[i*nHilbert+k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor;
+                                hamiltonian[i*nHilbert+k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signl*signr;
                                }
                            }
                         }
                     }
                 }
-
            }
             // diagonal Coulomb classical energy term
           hamiltonian[i*nHilbert+i]+=E_cl*sector.nel;
@@ -122,7 +122,7 @@ double hamil::spectral_function(vector< complex<double> > &O_phi_0, double omega
             E = complex<double>(omega, eta);
             G += pow(conj(psi_n0[i]) * O_phi_0[i], 2) / (E + eigenvalues[i] - _E0);
         }
-    // else particle-sector
+        // else particle-sector
         else {
             E = complex<double>(omega, eta);
             G += pow( conj(psi_n0[i]) * O_phi_0[i], 2) / (E + _E0 - eigenvalues[i]);
