@@ -62,7 +62,7 @@ int main(int argc,char *argv[]) {
     config.set_hamil(sector,lx,ly,nphi);
     config.print_hamil(4);
     config.diag();
-    //config.print_eigen(6);
+    config.print_eigen(6);
     cout<<"E_gs:= "<<setprecision(4)<<config.ground_state_energy()/nel<<endl;
 
     /*
@@ -83,10 +83,11 @@ int main(int argc,char *argv[]) {
    lhamil lconfig(lambda,seed);
    lconfig.set_hamil(sector,lx,ly,nphi);
    lconfig.print_hamil(4);
-   lconfig.coeff_explicit_update();
+   lconfig.coeff_update();
    lconfig.print_lhamil(4);
    lconfig.diag();
    lconfig.eigenstates_reconstruction();
+   lconfig.print_eigen(6);
    cout<<"E_gs(LANCZOS):="<<setprecision(4)<<lconfig.ground_state_energy()/nel<<endl;
 
    /*

@@ -19,8 +19,8 @@ public:
     std::vector<double> norm; //!< Normalization coefficients vector in Lanczos update
     std::vector<double> overlap; //!< Overlap coefficients vector in Lanczos update
     std::vector< complex<double> > psir_0; //!< Ground state wave function in real-space
-    std::vector< complex<double> > psi_0; //!<Ground state eigenvector in Krylov subspace
-    std::vector< complex<double> > psi_n0; //!<First element of eigenvectors in Krylov subspace
+    std::vector<double> psi_0; //!<Ground state eigenvector in Krylov subspace
+    std::vector<double> psi_n0; //!<First element of eigenvectors in Krylov subspace
     std::vector<double> eigenvalues; //!< Eigenvalues
     lhamil();  //!< Empty constructor
     /**

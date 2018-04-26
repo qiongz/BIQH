@@ -214,17 +214,15 @@ void lhamil::coeff_explicit_update()
     overlap.assign(lambda,0);
 
     //phi_0.init_random(nHilbert,seed);
-#if __cplusplus > 199711L
+    #if __cplusplus > 199711L
     std::mt19937 rng(seed);
     for(i=0; i<nHilbert; i++)
-        phi_0[i]=rng()*1.0/rng.max()-0.5;
-        //phi_0[i]=complex<double>(rng()*1.0/rng.max()-0.5,rng()*1.0/rng.max()-0.5);
-#else
+        phi_0[i]=complex<double>(rng()*1.0/rng.max()-0.5,rng()*1.0/rng.max()-0.5);
+    #else
     init_genrand64(seed);
     for(i=0; i<nHilbert; i++)
-        //phi_0[i]=genrand64_real3()-0.5;
         phi_0[i]=complex<double>(genrand64_real3()-0.5,genrand64_real3()-0.5);
-#endif
+    #endif
 
     norm_factor=0;
     #pragma omp parallel for reduction(+:norm_factor)
@@ -446,15 +444,15 @@ void lhamil::diag()
     if(norm.size()==0) coeff_update();
     int l=lambda;
     double *e = new double[l];
-    complex<double> *h = new complex<double> [l * l];
-    memset(h, 0, sizeof(complex<double>)*l*l);
+    double *h = new double [l * l];
+    memset(h, 0, sizeof(double)*l*l);
     for(int i = 0; i < l-1; i++) {
         h[i *l + i + 1] = norm[i+1];
         h[(i + 1)*l + i] = norm[i+1];
         h[i * l + i] = overlap[i];
     }
     h[(l - 1)*l + l - 1] = overlap[l - 1];
-    diag_zheev(h,e,l);
+    diag_dsyev(h,e,l);
 
     psi_0.assign(l,0);
     psi_n0.assign(l,0);
@@ -472,15 +470,15 @@ void lhamil::diag(int l)
 {
     if(norm.size()==0) coeff_update();
     double *e = new double[l];
-    complex<double> *h = new complex<double> [l * l];
-    memset(h, 0, sizeof(complex<double>)*l*l);
+    double *h = new double [l * l];
+    memset(h, 0, sizeof(double)*l*l);
     for(int i = 0; i < l-1; i++) {
         h[i *l + i + 1] = norm[i+1];
         h[(i + 1)*l + i] = norm[i+1];
         h[i * l + i] = overlap[i];
     }
     h[(l - 1)*l + l - 1] = overlap[l - 1];
-    diag_zheev(h,e,l);
+    diag_dsyev(h,e,l);
     eigenvalues.assign(l,0);
     psi_0.assign(l,0);
     psi_n0.assign(l,0);
@@ -505,16 +503,17 @@ void lhamil::eigenstates_reconstruction() {
     phi_1 /= norm[1];
     psir_0.assign(nHilbert,0);
     for(n=0; n<nHilbert; n++)
-        psir_0[n]+=conj(psi_0[0])*phi_0.value[n]+conj(psi_0[1])*phi_1.value[n];
+        psir_0[n]+=psi_0[0]*phi_0.value[n]+psi_0[1]*phi_1.value[n];
 
     for(l=2; l<overlap.size(); l++) {
         phi_2 = H * phi_1;
         phi_2 -= phi_1 * overlap[l-1] + phi_0*norm[l-1];
         phi_2/= norm[l];
         for(n=0; n<nHilbert; n++)
-            psir_0[n]+=conj(psi_0[l])*phi_2.value[n];
+            psir_0[n]+=psi_0[l]*phi_2.value[n];
         swap(&phi_0,&phi_1,&phi_2);
     }
+    Norm=0;
     for(n=0; n<nHilbert; n++)
         Norm+=abs(psir_0[n])*abs(psir_0[n]);
     for(n=0; n<nHilbert; n++)
