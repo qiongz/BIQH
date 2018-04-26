@@ -75,7 +75,7 @@ void lhamil::init_Coulomb_matrix(){
 }
 
 
-void lhamil::set_hamil(basis & sector ,double _lx, double _ly,long _nphi) {
+void lhamil::set_hamil(basis  sector ,double _lx, double _ly,long _nphi) {
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
@@ -131,6 +131,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly,long _nphi) {
                                 k = sector.basis_set[mask_t + b];
                                 sign=sector.get_sign(sector.id[i],n,m,nt,mt);
                                 matrix_elements[k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign;
+                                //cout<<"lhamiltonian["<<i<<","<<k<<"] "<<2.0*Coulomb_matrix[s*nphi+abs(t)]*sign<<endl;
                             }
                         }
                     }

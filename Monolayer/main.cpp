@@ -28,7 +28,8 @@ int main(int argc,char *argv[]) {
 
     init_argv(nphi,nel,J,kx,gamma,lambda,argc,argv);
     // keep lx/ly=nel/4
-    gamma=nel/4.0;
+    //gamma=nel/4.0;
+    
     ly=sqrt(2.0*M_PI*nphi/gamma);
     lx=ly*gamma;
 
@@ -52,18 +53,19 @@ int main(int argc,char *argv[]) {
     cout<<"J: = "<<J<<endl;
     cout<<"-----------Exact diag---------"<<endl;
 */
-
+/*
 
     hamil config;
     basis sector(nphi,nel,J,kx);
     sector.init();
-    sector.prlong();
+    //sector.prlong();
     config.set_hamil(sector,lx,ly,nphi);
-    config.print_hamil(6);
+    //config.print_hamil(12);
     config.diag();
-    config.print_eigen(6);
+    //config.print_eigen(6);
     cout<<"E_gs:= "<<setprecision(4)<<config.ground_state_energy()/nel<<endl;
-
+*/
+    /*
     for(int i=0;i<config.nHilbert;i++)
         if(abs(config.psi_0[i])>0.11){
           cout<<i<<" :   ";
@@ -75,18 +77,22 @@ int main(int argc,char *argv[]) {
           cout<<bitset<12>(sector.id[i]).to_string()<<" "<<abs(config.psi_0[i])<<endl;
         }
 
-    
+   */
 
-
+/*
    lhamil lconfig(lambda,seed);
-   lconfig.set_hamil(sector,lx,ly,nphi);
-   lconfig.print_hamil(6);
+   basis lsector(nphi,nel,J,-1);
+   lsector.init();
+   lconfig.set_hamil(lsector,lx,ly,nphi);
+   //lconfig.print_hamil(12);
    lconfig.coeff_update();
    lconfig.diag();
    lconfig.eigenstates_reconstruction();
    cout<<"E_gs(LANCZOS):="<<setprecision(4)<<lconfig.ground_state_energy()/nel<<endl;
+*/
+   /*
     for(int i=0;i<lconfig.nHilbert;i++)
-        if(abs(lconfig.psir_0[i])>0.11){
+      if(abs(lconfig.psir_0[i])>0.11){
           cout<<i<<" :   ";
           long c=sector.id[i];
           for(int n=0;n<nphi;n++)
@@ -94,10 +100,13 @@ int main(int argc,char *argv[]) {
                 cout<<n+1<<" ";
           cout<<"    ";
           cout<<bitset<12>(sector.id[i]).to_string()<<" "<<lconfig.psir_0[i]<<endl;
-        }
+      }
+    */
 
-/*
-    for(int j=0;j<nel;j++){
+    double j0=0;
+    double k0=0;
+
+    for(int j=0;j<nphi;j++){
     for(int k=0;k<nel;k++){
 
     basis sector(nphi,nel,j,k);
@@ -116,9 +125,8 @@ int main(int argc,char *argv[]) {
     //cout<<"E_gs:="<<setprecision(5)<<lconfig.ground_state_energy()/nel<<endl;
    // cout<<"E_gs:="<<setprecision(5)<<config.ground_state_energy()/nel<<endl;
     
-    
-    double K=sqrt(j*j+k*k*gamma*gamma)*2.0*M_PI/nphi/gamma;
-*/
+    double K=sqrt((j%sector.C-j0)*(j%sector.C-j0)+(k%sector.C-k0)*(k%sector.C-k0)*gamma*gamma)*2.0*M_PI/nphi/gamma;
+
     /*
     cout<<K<<" ";
     int i=0;
@@ -132,10 +140,12 @@ int main(int argc,char *argv[]) {
     }while(count<2);
     cout<<endl;
     */
- //  cout<<K<<" "<<config.eigenvalues[0]<<" "<<config.eigenvalues[1]<<endl;
+
+   cout<<K<<" "<<config.eigenvalues[0]<<" "<<config.eigenvalues[1]<<endl;
      
-  // }
-// }
+   }
+ }
+
 
 
     /*

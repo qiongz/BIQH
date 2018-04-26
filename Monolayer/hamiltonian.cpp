@@ -10,68 +10,72 @@ double hamil::Coulomb_interaction(int k_x, int k_y) {
 void hamil::init_Coulomb_matrix() {
     Coulomb_matrix.assign(nphi*nphi, 0);
     for(int s = 0; s < nphi; s++)
-      for(int k_y = 0; k_y <nphi; k_y++){
-        double V=0;
-        for(int k_x=-nphi/2;k_x<=nphi/2;k_x++)
-          if(!(k_y==0 && k_x==0))
-            V+=Coulomb_interaction(k_x,k_y)*cos(2.0*M_PI*s*k_x/nphi)/(2.0*lx*ly);
-        Coulomb_matrix[s*nphi+k_y]=V;
-      }
+        for(int k_y = 0; k_y <nphi; k_y++) {
+            double V=0;
+            for(int k_x=-nphi/2; k_x<=nphi/2; k_x++)
+                if(!(k_y==0 && k_x==0))
+                    V+=Coulomb_interaction(k_x,k_y)*cos(2.0*M_PI*s*k_x/nphi)/(2.0*lx*ly);
+            Coulomb_matrix[s*nphi+k_y]=V;
+        }
     // initialize classical Coulomb energy
     E_cl=-2.0;
-    for(int i=0;i<nphi;i++)
-      for(int j=0;j<nphi;j++)
-        if(!(i==0 &&j==0))
-        E_cl+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
+    for(int i=0; i<nphi; i++)
+        for(int j=0; j<nphi; j++)
+            if(!(i==0 &&j==0))
+                E_cl+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
     E_cl/=sqrt(lx*ly);
 }
 
-void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi) {
+void hamil::set_hamil(basis sector, double _lx, double _ly, int _nphi) {
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
-    long kx=sector.K;
     init_Coulomb_matrix();
     nHilbert = sector.nbasis;
     hamiltonian = new complex<double>[nHilbert * nHilbert];
     memset(hamiltonian, 0, sizeof(complex<double>)*nHilbert * nHilbert);
     long mask, b, n, m, i, k, s,t, sign;
-    for(i = 0; i < nHilbert; i++){
-            // k-space basis is a linear combination of translated basis subset
-            // sum over left-basis after translation (k1 index) and right-basis after translation (k2 index)
-            long k1,k2;
-            long signl,signr;
-            for(k1=0;k1<sector.C;k1++){
-            long left_basis=sector.translate(sector.id[i],k1,signl);
-            // select two electrons in left-basis <m_1, m_2|
-            // n=j1, m=j2
+    long k1,k2,lbasis,rbasis,signl,signr;
+    long kx=sector.K;
+    vector<long> Nk;
+    for(i =0 ;i<nHilbert;i++)
+       for(k1=1;k1<=sector.C;k1++)
+        if(sector.translate(sector.id[i],k1,signl)==sector.id[i]){
+           Nk.push_back(k1);         
+           break;
+         }
+          
+    for(i = 0; i < nHilbert; i++) {
+        // start of new row of nonzero elements
+        // select two electrons in left-basis <m_1, m_2|
+        // n=j1, m=j2
+        for(k1=0; k1<Nk[i]; k1++) {
+            lbasis=sector.translate(sector.id[i],k1,signl);
             for(n = 0; n < nphi-1; n++)
                 for(m = n+1; m < nphi; m++) {
                     mask = (1 << n) + (1 << m);
                     // looking up the corresponding basis in id
                     // if there're two electrons on n and m;
-                    if((left_basis &mask) == mask && n!=m) {
+                    if((lbasis &mask) == mask && n!=m) {
                         // b is the rest electon positions
-                        b = left_basis ^ mask;
+                        b = lbasis ^ mask;
                         // mt=j3, nt=j4
                         long nt, mt, mask_t, occ_t;
                         // perform translation along x-direction (q_y), positive q_y
-                        for(t =-nphi/2 ; t <= nphi/2; t++) {
-                            // PBC, if one electron cross left boundary, sign change with -1
+                        for(t = -nphi/2; t<=nphi/2; t++) {
                             if(n + t >=nphi)
                                 nt = n + t - nphi;
                             else if(n+t<0)
-                                nt = n +t+nphi;
+                                nt = n + t + nphi;
                             else
                                 nt = n + t;
-                            // PBC, if one electron cross right boundary, sign change with -1
                             if(m - t <0)
                                 mt = m - t + nphi;
-                            else if(m-t>=nphi)
-                                mt =m-t-nphi;
+                            else if (m-t>=nphi)
+                                mt = m - t - nphi;
                             else
                                 mt = m - t;
-                            s=abs(mt-n);
+                            s=abs(n-mt);
                             // the translated two electrons indices
                             mask_t = (1 << nt) + (1 << mt);
                             // occupation of electons on the translated position
@@ -80,23 +84,24 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi) {
                             // which is a valid translation, can be applied
                             // looking up Lin's table, and find the corresponding index
                             if(occ_t == 0)
-                             for(k2=0;k2<sector.C;k2++){
-                                long right_basis=sector.inv_translate(mask_t+b,k2,signr);
-                                if(sector.basis_set.find(right_basis) != sector.basis_set.end())
-                                {
-                                k = sector.basis_set[right_basis];
-                                sign=sector.get_sign(left_basis,n,m,nt,mt);
-                                complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(k1-k2)/sector.C),sin(2.0*M_PI*kx*(k1-k2)/sector.C))/sector.C;
-                                hamiltonian[i*nHilbert+k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signl*signr;
-                               }
-                           }
+                                for(k2=0; k2<sector.C; k2++) {
+                                    rbasis=sector.inv_translate(mask_t+b,k2,signr);
+                                    if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                                        k = sector.basis_set[rbasis];
+                                        if(k2<Nk[k]){
+                                          sign=sector.get_sign(lbasis,n,m,nt,mt);
+                                          complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(k1-k2)/sector.C),sin(2.0*M_PI*kx*(k1-k2)/sector.C))/sqrt(Nk[i]*Nk[k]);
+                                          hamiltonian[i*nHilbert+k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signl*signr;
+                                        }
+                                    }
+                                }
                         }
                     }
                 }
-           }
-            // diagonal Coulomb classical energy term
-          hamiltonian[i*nHilbert+i]+=E_cl*sector.nel;
-          }
+
+        }
+        hamiltonian[i*nHilbert+i]+=E_cl*sector.nel;
+    }
 }
 
 hamil::~hamil() {}
@@ -122,7 +127,7 @@ double hamil::spectral_function(vector< complex<double> > &O_phi_0, double omega
             E = complex<double>(omega, eta);
             G += pow(conj(psi_n0[i]) * O_phi_0[i], 2) / (E + eigenvalues[i] - _E0);
         }
-        // else particle-sector
+    // else particle-sector
         else {
             E = complex<double>(omega, eta);
             G += pow( conj(psi_n0[i]) * O_phi_0[i], 2) / (E + _E0 - eigenvalues[i]);
@@ -131,14 +136,14 @@ double hamil::spectral_function(vector< complex<double> > &O_phi_0, double omega
     return -G.imag() / M_PI;
 }
 
-double hamil::ground_state_energy(){
+double hamil::ground_state_energy() {
     if(psi_0.size() == 0) return 0;
     complex<double> E_gs = 0;
     vector< complex<double> > psi_t;
     psi_t.assign(nHilbert,0);
-    for(int i=0;i<nHilbert;i++)
-       for(int j=0;j<nHilbert;j++)
-        psi_t[i]+=hamiltonian[i*nHilbert+j]*psi_0[j];
+    for(int i=0; i<nHilbert; i++)
+        for(int j=0; j<nHilbert; j++)
+            psi_t[i]+=hamiltonian[i*nHilbert+j]*psi_0[j];
     for(int i = 0; i < nHilbert; i++)
         E_gs += conj(psi_t[i]) * psi_0[i];
     psi_t.clear();
@@ -173,8 +178,8 @@ void hamil::print_hamil(int range) {
             cout <<setw(2)<< "[[";
         else cout <<setw(2)<< " [";
         // count is the No. of nonzero elements in the row
-        for(j=0;j<range;j++)
-            cout<<setw(5)<<setprecision(2)<<hamiltonian[i*nHilbert+j]<<", ";
+        for(j=0; j<range; j++)
+            cout<<setw(5)<<setprecision(2)<<hamiltonian[i*nHilbert+j].real()<<", ";
         if(i == range - 1)
             cout << ",...]]" << endl;
         else cout << ",...]" << endl;
@@ -183,7 +188,7 @@ void hamil::print_hamil(int range) {
 
 void hamil::print_eigen(int range) {
     if(range>=nHilbert)
-       range=nHilbert;
+        range=nHilbert;
     std::cout << "Eigenvalues:=[ ";
     for(int i = 0; i < range; i++)
         if(i != range - 1)

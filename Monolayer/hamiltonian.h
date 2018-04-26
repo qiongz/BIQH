@@ -28,7 +28,7 @@ public:
      \param t hopping strength,
      \param U onsite replusive interaction strength
      */
-    void set_hamil(basis & sector, double _lx, double _ly, int nphi);
+    void set_hamil(basis sector, double _lx, double _ly, int nphi);
     const hamil & operator=(const hamil &);
     /** Return the ground state energy of the system */
     double ground_state_energy();
