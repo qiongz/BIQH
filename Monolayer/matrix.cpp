@@ -35,13 +35,14 @@ void Vec::init_random(unsigned seed) {
     std::mt19937 rng(seed);
     for(int i = 0; i < size; i++) {
         value[i] = complex<double>(rng() * 1.0 / rng.max()-0.5,rng()*1.0/rng.max()-0.5 );
-        norm += abs(value[i])*abs(value[i]);
+        norm += std::norm(value[i]);
     }
     #else
     init_genrand64(seed);
     for(int i = 0; i < size; i++) {
         value[i]=complex<double>(genrand64_real3()-0.5,genrand64_real3()-0.5);
-        norm += abs(value[i])*abs(value[i]);
+        //value[i]=complex<double>(genrand64_real3()-0.5,genrand64_real3()-0.5);
+        norm += std::norm(value[i]);
     }
     #endif
     norm = sqrt(norm);
@@ -58,13 +59,13 @@ void Vec::init_random(long _size,unsigned seed) {
     std::mt19937 rng(seed);
     for(int i = 0; i < size; i++) {
         value[i] = complex<double>(rng() * 1.0 / rng.max()-0.5,rng()*1.0/rng.max()-0.5 );
-        norm += abs(value[i]) * abs(value[i]);
+        norm += std::norm(value[i]);
     }
     #else
     init_genrand64(seed);
     for(int i = 0; i < size; i++) {
         value[i]=complex<double>(genrand64_real3()-0.5,genrand64_real3()-0.5);
-        norm += abs(value[i]) * abs(value[i]);
+        norm += std::norm(value[i]);
     }
     #endif
     norm = sqrt(norm);
@@ -80,17 +81,29 @@ void Vec::clear() {
     }
 }
 
-double Vec::normalize() {
+double Vec::normed() {
     int i;
     double norm = 0;
     #pragma omp parallel for reduction(+:norm)
     for(i = 0; i < size; i++)
-        norm += abs(value[i]) * abs(value[i]);
+        norm += std::norm(value[i]);
     double normsq = sqrt(norm);
     #pragma omp parallel for schedule(static)
     for(i = 0; i < size; i++)
         value[i] /= normsq;
     return normsq;
+}
+
+void Vec::normalize() {
+    int i;
+    double norm = 0;
+    #pragma omp parallel for reduction(+:norm)
+    for(i = 0; i < size; i++)
+        norm += std::norm(value[i]);
+    double normsq = sqrt(norm);
+    #pragma omp parallel for schedule(static)
+    for(i = 0; i < size; i++)
+        value[i] /= normsq;
 }
 
 Vec & Vec::operator=(const Vec & rhs) {

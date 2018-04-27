@@ -41,7 +41,8 @@ public:
     void init_random(unsigned);
     void init_random(long,unsigned);
     void clear();
-    double normalize();
+    double normed();
+    void normalize();
 
     // operator overloading
     Vec & operator=(const Vec & rhs);
