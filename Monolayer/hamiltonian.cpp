@@ -37,19 +37,19 @@ void hamil::set_hamil(basis sector, double _lx, double _ly, int _nphi) {
     long mask, b, n, m, i, k, s,t, sign;
     long k1,k2,lbasis,rbasis,signl,signr;
     long kx=sector.K;
-    vector<long> Nk;
-    for(i =0 ;i<nHilbert;i++)
-       for(k1=1;k1<=sector.C;k1++)
-        if(sector.translate(sector.id[i],k1,signl)==sector.id[i]){
-           Nk.push_back(k1);         
-           break;
-         }
+    long Cl,Cr;
           
     for(i = 0; i < nHilbert; i++) {
         // start of new row of nonzero elements
+        // determine the subbasis size of basis i
+        for(k1=1; k1<=sector.C; k1++)
+            if(sector.translate(sector.id[i],k1,signl)==sector.id[i]) {
+                Cl=k1;
+                break;
+            }
         // select two electrons in left-basis <m_1, m_2|
         // n=j1, m=j2
-        for(k1=0; k1<Nk[i]; k1++) {
+        for(k1=0; k1<Cl; k1++) {
             lbasis=sector.translate(sector.id[i],k1,signl);
             for(n = 0; n < nphi-1; n++)
                 for(m = n+1; m < nphi; m++) {
@@ -83,18 +83,24 @@ void hamil::set_hamil(basis sector, double _lx, double _ly, int _nphi) {
                             // if there're no electon on the translated position
                             // which is a valid translation, can be applied
                             // looking up Lin's table, and find the corresponding index
-                            if(occ_t == 0)
-                                for(k2=0; k2<sector.C; k2++) {
+                            if(occ_t == 0){
+                                // determine the subbasis size of right side basis
+                                for(k2=1; k2<=sector.C; k2++)
+                                  if(sector.translate(mask_t+b,k2,signr)==(mask_t+b)) {
+                                    Cr=k2;
+                                    break;
+                                  }
+                                for(k2=0; k2<Cr; k2++) {
                                     rbasis=sector.inv_translate(mask_t+b,k2,signr);
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         k = sector.basis_set[rbasis];
-                                        if(k2<Nk[k]){
-                                          sign=sector.get_sign(lbasis,n,m,nt,mt);
-                                          complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(k1-k2)/sector.C),sin(2.0*M_PI*kx*(k1-k2)/sector.C))/sqrt(Nk[i]*Nk[k]);
-                                          hamiltonian[i*nHilbert+k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signl*signr;
-                                        }
+                                        sign=sector.get_sign(lbasis,n,m,nt,mt);
+                                        complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(k1-k2)/sector.C),sin(2.0*M_PI*kx*(k1-k2)/sector.C))/sqrt(Cl*Cr);
+                                        hamiltonian[i*nHilbert+k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signl*signr;
+                                        
                                     }
                                 }
+                            }
                         }
                     }
                 }

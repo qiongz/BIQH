@@ -22,6 +22,7 @@ public:
     std::vector<double> psi_0; //!<Ground state eigenvector in Krylov subspace
     std::vector<double> psi_n0; //!<First element of eigenvectors in Krylov subspace
     std::vector<double> eigenvalues; //!< Eigenvalues
+    
     lhamil();  //!< Empty constructor
     /**
      \param _H hamiltonian matrix
@@ -42,6 +43,7 @@ public:
     /** \param _sector Basis sector
     */
     void set_hamil(basis  _sector ,double _lx, double _ly, long _nphi);  //!< Initialize hamiltonian matrix
+    void Gram_Schmidt_orthogonalization(Vec &, int); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays
     void coeff_update_wopt(vector<complex<double> > O_phi_0);
