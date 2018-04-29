@@ -8,7 +8,7 @@ public:
     /** Size of the Hilbert space */
     long nHilbert;
     /** seed for the RNGs */
-    long nphi,off_head;
+    long nLL,nphi,off_head;
     double lx,ly,E_cl;
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
@@ -28,7 +28,7 @@ public:
      \param t hopping strength,
      \param U onsite replusive interaction strength
      */
-    void set_hamil(basis sector, double _lx, double _ly, int nphi);
+    void set_hamil(basis sector, double _lx, double _ly, int nphi,int _nLL);
     const hamil & operator=(const hamil &);
     /** Return the ground state energy of the system */
     double ground_state_energy();

@@ -88,7 +88,7 @@ void basis::init() {
     // translate to the specified kx point
      
     //if(K!=0)
-    
+   /* 
     for(it=basis_set.begin(); it!=basis_set.end();it++){
       long c=it->first;
       vector<long> cv;
@@ -102,7 +102,7 @@ void basis::init() {
            }
         it->second=config;
      }
-     
+      */
     
     }
 

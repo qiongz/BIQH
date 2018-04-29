@@ -9,7 +9,7 @@ public:
     unsigned seed;  //!< Seed for RNGs
     long nHilbert;  //!< Hilbert space size
     long lambda;    //!< Lanczos update steps
-    long nphi;
+    long nphi,nLL;
     long off_head;
     double lx,ly,E0,E_cl;      //!< Ground state eigen energy
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
@@ -42,7 +42,7 @@ public:
     void clear();
     /** \param _sector Basis sector
     */
-    void set_hamil(basis  _sector ,double _lx, double _ly, long _nphi);  //!< Initialize hamiltonian matrix
+    void set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,long nLL);  //!< Initialize hamiltonian matrix
     void Gram_Schmidt_orthogonalization(Vec &, int); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays

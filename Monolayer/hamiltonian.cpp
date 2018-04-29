@@ -4,7 +4,7 @@ hamil::hamil() {}
 
 double hamil::Coulomb_interaction(int k_x, int k_y) {
     double q=sqrt(k_x*k_x/(lx*lx)+k_y*k_y/(ly*ly))*2.0*M_PI;
-    return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0);
+    return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0)*pow(1.0-exp(-q*q/2.0),nLL*2);
 }
 
 void hamil::init_Coulomb_matrix() {
@@ -26,10 +26,11 @@ void hamil::init_Coulomb_matrix() {
     E_cl/=sqrt(lx*ly);
 }
 
-void hamil::set_hamil(basis sector, double _lx, double _ly, int _nphi) {
+void hamil::set_hamil(basis sector, double _lx, double _ly, int _nphi, int _nLL) {
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
+    nLL = _nLL;
     init_Coulomb_matrix();
     nHilbert = sector.nbasis;
     hamiltonian = new complex<double>[nHilbert * nHilbert];
@@ -97,7 +98,6 @@ void hamil::set_hamil(basis sector, double _lx, double _ly, int _nphi) {
                                         sign=sector.get_sign(lbasis,n,m,nt,mt);
                                         complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(k1-k2)/sector.C),sin(2.0*M_PI*kx*(k1-k2)/sector.C))/sqrt(Cl*Cr);
                                         hamiltonian[i*nHilbert+k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signl*signr;
-                                        
                                     }
                                 }
                             }

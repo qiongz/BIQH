@@ -2,22 +2,27 @@
 void usage(char *target) {
     std::cout<<"Usage: "<<target<<" [Options]\n";
     std::cout<<"Options:\n";
+    std::cout<<"  -l                       No. of Landau level\n";
     std::cout<<"  -n                       nphi\n";
     std::cout<<"  -e                       No. of electrons\n";
     std::cout<<"  -j                       J in [0,C-1]\n";
     std::cout<<"  -k                       kx in [0,C-1]\n";
     std::cout<<"  -g                       aspect ratio gamma=lx/ly\n";
     std::cout<<"  -m                       Lambda\n";
+    
     std::cout<<"Default: (nphi,n,lambda) = (2,2,200)\n";
 }
 
-void init_argv(int &nphi, int& nel,int &J, int &kx, double & gamma,int &lambda,int argc,char *argv[])
+void init_argv(int & nLL,int &nphi, int& nel,int &J, int &kx, double & gamma,int &lambda,int argc,char *argv[])
 {
     extern char *optarg;
     int ch,errFlag;
     errFlag=0;
-    while((ch=getopt(argc,argv,"n:e:j:k:g:m:h:"))!=-1) {
+    while((ch=getopt(argc,argv,"l:n:e:j:k:g:m:h:"))!=-1) {
         switch(ch) {
+        case 'l':
+            nLL=atoi(optarg);
+            break;
         case 'n':
             nphi=atoi(optarg);
             break;

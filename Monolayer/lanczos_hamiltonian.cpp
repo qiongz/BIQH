@@ -52,7 +52,7 @@ const lhamil & lhamil::operator =(const lhamil & _config) {
 
 double lhamil::Coulomb_interaction(int k_x, int k_y) {
     double q=sqrt(k_x*k_x/(lx*lx)+k_y*k_y/(ly*ly))*2.0*M_PI;
-    return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0);
+    return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0)*pow(1.0-exp(-q*q/2.0),nLL*2);
 }
 
 void lhamil::init_Coulomb_matrix() {
@@ -75,10 +75,11 @@ void lhamil::init_Coulomb_matrix() {
 }
 
 
-void lhamil::set_hamil(basis  sector ,double _lx, double _ly,long _nphi) {
+void lhamil::set_hamil(basis & sector ,double _lx, double _ly,long _nphi, long _nLL) {
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
+    nLL = _nLL;
     init_Coulomb_matrix();
     nHilbert = sector.nbasis;
     vector<complex<double> > matrix_elements;
