@@ -12,7 +12,7 @@
 using namespace std;
 
 int main(int argc,char *argv[]) {
-    int nphi,nel,nel_up,nel_down,J_up, J_down,lambda;
+    int nphi,nel,nel_up,nel_down,J_up, J_down, kx_up, kx_down,lambda;
     double lx,ly,gamma;
     int Sz;
     unsigned seed;
@@ -22,12 +22,15 @@ int main(int argc,char *argv[]) {
     nel=4;
     nel_up=2;
     nel_down=2;
-    gamma=0.99;
-    J_up=-1;
-    J_down=-1;
+    gamma=1.0;
+    J_up=0;
+    J_down=0;
+    kx_up=0;
+    kx_down=0;
+
     d=10;
     lambda=200;
-    init_argv(nphi,nel,nel_up,J_up,J_down,d,gamma,lambda,argc,argv);
+    init_argv(nphi,nel,nel_up,J_up,J_down,kx_up,kx_down,d,gamma,lambda,argc,argv);
     ly=sqrt(nphi*2.0*M_PI/gamma);
     lx=ly*gamma;
 
@@ -41,8 +44,8 @@ int main(int argc,char *argv[]) {
     #endif
     Sz=nel_up-nel_down;
 
-    //basis sector(nphi,nel_up,nel_down,J_up,J_down);
-    //sector.init();
+    basis sector(nphi,nel_up,nel_down,J_up,J_down,kx_up,kx_down);
+    sector.init();
     /*
     stringstream sf;
     string filename;
@@ -50,19 +53,29 @@ int main(int argc,char *argv[]) {
     sf>>filename;
     */
 
-    /* basis check */
-
+    cout<<"nphi: = "<<nphi<<endl;
+    cout<<"nel_up: = "<<nel_up<<endl;
+    cout<<"nel_down: = "<<nel_up<<endl;
+    cout<<"d:="<<d<<endl;
+    cout<<"lx: = "<<lx<<endl;
+    cout<<"ly: = "<<ly<<endl;
+    cout<<"J_u: = "<<J_up<<endl;
+    cout<<"K_u: = "<<kx_up<<endl;
+    cout<<"J_down: = "<<J_down<<endl;
+    cout<<"K_down: = "<<kx_down<<endl;
+    cout<<"nbasis_up:="<<sector.nbasis_up<<endl;
+    cout<<"nbasis_down:="<<sector.nbasis_down<<endl;
+    cout<<"nHilbert: ="<<sector.nbasis_up*sector.nbasis_down<<endl;
+    cout<<"-----------Ground state---------"<<endl;
     //sector.prlong();
-    /*
-    hamil config;
-    config.set_hamil(sector,lx,ly,nphi,d);
-    config.print_hamil(10);
-    config.diag();
-    config.print_eigen(10);
-    cout<<"E_gs:= "<<config.ground_state_energy()/nel<<endl;
-    */
-
-
+    lhamil lconfig(lambda,seed);
+    lconfig.set_hamil(sector,lx,ly,nphi,d);
+    //config.print_hamil(10);
+    lconfig.coeff_explicit_update();
+    lconfig.diag();
+    lconfig.eigenstates_reconstruction();
+    lconfig.print_eigen(10);
+    cout<<"E_gs:= "<<lconfig.ground_state_energy()/nel<<endl;
 
 /*
     basis sector(nphi,nel_up,nel_down,J_up,J_down);
@@ -104,7 +117,7 @@ int main(int argc,char *argv[]) {
         }
         */
 
-
+/*
 
     lhamil lconfig(lambda,seed);
     //basis sector(nphi,nel_up,nel_down,J_up,J_down);
@@ -138,6 +151,7 @@ int main(int argc,char *argv[]) {
       //cout<<n*0.1+0.01<<" "<<E_gap<<endl;
     }
 
+*/
 
 
 

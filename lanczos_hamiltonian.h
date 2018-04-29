@@ -14,14 +14,14 @@ public:
     long lambda;    //!< Lanczos update steps
     long nphi,off_head;
     double lx,ly,d;
-    double E0,Ec;      //!< Ground state eigen energy
+    double E0,E_cl;      //!< Ground state eigen energy
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
     Mat H;  //!< Hamiltonian matrix in CSR format
     //Mat O;  //!< Operator matrix in CSR format
     std::vector<double> norm; //!< Normalization coefficients vector in Lanczos update
     std::vector<double> overlap; //!< Overlap coefficients vector in Lanczos update
-    std::vector<double> psir_0; //!< Ground state wave function in real-space
+    std::vector< complex<double> > psir_0; //!< Ground state wave function in real-space
     std::vector<double> psi_0; //!<Ground state eigenvector in Krylov subspace
     std::vector<double> psi_n0; //!<First element of eigenvectors in Krylov subspace
     std::vector<double> eigenvalues; //!< Eigenvalues
@@ -44,9 +44,10 @@ public:
     /** \param _sector Basis sector
     */
     void set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,double _d);  //!< Initialize hamiltonian matrix
+    void Gram_Schmidt_orthogonalization(Vec &, int);
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays
-    void coeff_update_wopt(vector<double> O_phi_0);
+    void coeff_update_wopt(vector< complex<double> > O_phi_0);
     void diag();  //!< Diagonalize the full Lanczos hamiltonian
 
     void eigenstates_reconstruction(); //!< Transform |psi_0> to |psir_0>
@@ -54,6 +55,7 @@ public:
     double ground_state_energy();    //!< Ground state energy
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version
     void init_Coulomb_matrix();
+    void print_hamil_CSR(); //!< print the hamiltonian matrix in the CSR format
     void print_hamil(int n); //!< print the full hamiltonian matrix
     void print_lhamil(int n);  //!< print the Lanczos hamiltonian matrix with first n x n elements
     void print_eigen(int n);  //!< print the first n eigenvalues
