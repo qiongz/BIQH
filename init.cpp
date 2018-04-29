@@ -2,6 +2,7 @@
 void usage(char *target) {
     std::cout<<"Usage: "<<target<<" [Options]\n";
     std::cout<<"Options:\n";
+    std::cout<<"  -l                       nLL\n";
     std::cout<<"  -p                       nphi\n";
     std::cout<<"  -n                       Total No. of electrons in upper-layer\n";
     std::cout<<"  -u                       No. of electrons in upper-layer\n";
@@ -15,13 +16,16 @@ void usage(char *target) {
     std::cout<<"Default: (l,n,u,d,lambda) = (4,4,2,1,200)\n";
 }
 
-void init_argv(int &nphi, int& nel, int &nel_up, int &J_up, int &J_down,int &kx_up,int &kx_down, double &d,double &gamma ,int &lambda,int argc,char *argv[])
+void init_argv(int &nLL,int &nphi, int& nel, int &nel_up, int &J_up, int &J_down,int &kx_up,int &kx_down, double &d,double &gamma ,int &lambda,int argc,char *argv[])
 {
     extern char *optarg;
     int ch,errFlag;
     errFlag=0;
-    while((ch=getopt(argc,argv,"p:n:u:d:j:k:s:t:g:m:h:"))!=-1) {
+    while((ch=getopt(argc,argv,"l:p:n:u:d:j:k:s:t:g:m:h:"))!=-1) {
         switch(ch) {
+        case 'l':
+            nLL=atoi(optarg);
+            break;
         case 'p':
             nphi=atoi(optarg);
             break;

@@ -12,7 +12,7 @@ public:
     unsigned seed;  //!< Seed for RNGs
     long nHilbert;  //!< Hilbert space size
     long lambda;    //!< Lanczos update steps
-    long nphi,off_head;
+    long nLL,nphi,off_head;
     double lx,ly,d;
     double E0,E_cl;      //!< Ground state eigen energy
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
@@ -43,7 +43,7 @@ public:
     const lhamil & operator=(const lhamil &);
     /** \param _sector Basis sector
     */
-    void set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,double _d);  //!< Initialize hamiltonian matrix
+    void set_hamil(basis & _sector ,double _lx, double _ly, long _nphi, long _nLL,double _d);  //!< Initialize hamiltonian matrix
     void Gram_Schmidt_orthogonalization(Vec &, int);
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays
@@ -51,7 +51,7 @@ public:
     void diag();  //!< Diagonalize the full Lanczos hamiltonian
 
     void eigenstates_reconstruction(); //!< Transform |psi_0> to |psir_0>
-    double Coulomb_interaction(int alpha,int beta, int q_x, int q_y);
+    double Coulomb_interaction(int alpha,int q_x, int q_y);
     double ground_state_energy();    //!< Ground state energy
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version
     void init_Coulomb_matrix();

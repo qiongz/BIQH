@@ -32,12 +32,12 @@ const lhamil & lhamil::operator =(const lhamil & _config) {
     return *this;
 }
 
-double lhamil::Coulomb_interaction(int alpha,int beta, int q_x, int q_y){
+double lhamil::Coulomb_interaction(int alpha,int q_x, int q_y){
     double q=sqrt(q_x*q_x/(lx*lx)+q_y*q_y/(ly*ly))*2.0*M_PI;
-    if(alpha==beta)
-        return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0);
+    if(alpha==0)
+        return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0)*pow(1.0-exp(-q*q/2.0),nLL*2);
     else
-        return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0-q*d);
+        return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0-q*d)*pow(1.0-exp(-q*q/2.0),nLL*2);
 }
 
 void lhamil::init_Coulomb_matrix(){
@@ -49,7 +49,7 @@ void lhamil::init_Coulomb_matrix(){
             double V=0;
             for(int q_x = -nphi/2; q_x <=nphi/2; q_x++)
                 if(!(q_x==0 && q_y==0))
-                  V+=2.0*Coulomb_interaction(0,alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
+                  V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
               // Coulomb matrix elements in Landau gauge
               Coulomb_matrix[alpha*nphi*nphi+s*nphi+q_y]=V;
             }
@@ -63,12 +63,13 @@ void lhamil::init_Coulomb_matrix(){
 }
 
 
-void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi,double _d){
+void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long _nLL,double _d){
     long nbasis_up, nbasis_down;
     d = _d;
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
+    nLL = _nLL;
     init_Coulomb_matrix();
     nbasis_up = sector.nbasis_up;
     nbasis_down = sector.nbasis_down;
@@ -275,13 +276,17 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi,double
                                                 Cr_down=C;
                                                 break;
                                             }
+                                        // transform the right basis_up back 
                                         for(kru=0; kru<Cr_up; kru++) {
                                             rbasis_up=sector.inv_translate_up(mask_ut+b,kru,signru);
+                                            // transform the right basis_down back 
                                             for(krd=0; krd<Cr_down; krd++) {
                                                 rbasis_down=sector.inv_translate_down(mask_dt+p,krd,signrd);
+                                                // if the produced the right basises are in the basis set, find the indices
                                                 if(sector.basis_up.find(rbasis_up) != sector.basis_up.end() && sector.basis_down.find(rbasis_down) != sector.basis_down.end()) {
                                                     k = sector.basis_up[rbasis_up];
                                                     l = sector.basis_down[rbasis_down];
+                                                    // sign produced by the left-basis and right-basis
                                                     sign=sector.get_signud(lbasis_up,lbasis_down,n,m,nt,mt);
                                                     complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx_up*(klu-kru)/sector.C_up),sin(2.0*M_PI*kx_up*(klu-kru)/sector.C_up))/sqrt(Cl_up*Cr_up)*complex<double>(cos(2.0*M_PI*kx_down*(kld-krd)/sector.C_down),sin(2.0*M_PI*kx_down*(kld-krd)/sector.C_down))/sqrt(Cl_down*Cr_down);
                                                     matrix_elements[k*nbasis_down+l]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT_factor*signlu*signld*signru*signrd;
@@ -295,7 +300,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi,double
                 }
             }
             // diagonal Coulomb classical energy term
-            // matrix_elements[i*nbasis_down+j]+=E_cl*(sector.nel_up+sector.nel_down);
+            matrix_elements[i*nbasis_down+j]+=E_cl*(sector.nel_up+sector.nel_down);
             long count=0;
             for(k=0;k<nHilbert;k++)
                 if(abs(matrix_elements[k])>1e-10){

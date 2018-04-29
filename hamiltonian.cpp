@@ -1,12 +1,12 @@
 #include"hamiltonian.h"
 hamil::hamil() {}
 
-double hamil::Coulomb_interaction(int alpha, int beta, int q_x, int q_y) {
+double hamil::Coulomb_interaction(int alpha,int q_x, int q_y) {
     double q = sqrt(q_x * q_x / (lx * lx) + q_y * q_y / (ly * ly)) * 2.0 * M_PI;
-    if(alpha == beta)
-        return 2.0*M_PI/q*exp(-q*q/2.0);
+    if(alpha ==0)
+        return 2.0*M_PI/q*exp(-q*q/2.0)*pow(1.0-exp(-q*q/2.0),nLL*2);
     else
-        return 2.0*M_PI/q*exp(-q*q/2.0-q*d);
+        return 2.0*M_PI/q*exp(-q*q/2.0-q*d)*pow(1.0-exp(-q*q/2.0),nLL*2);
 }
 
 void hamil::init_Coulomb_matrix() {
@@ -18,7 +18,7 @@ void hamil::init_Coulomb_matrix() {
                 double V=0;
                 for(int q_x = -nphi/2; q_x <=nphi/2; q_x++)
                     if(!(q_x==0 && q_y==0))
-                        V+=2.0*Coulomb_interaction(0,alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
+                        V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
                 // Coulomb matrix elements in Landau gauge
                 Coulomb_matrix[alpha*nphi*nphi+s*nphi+q_y]=V;
             }
@@ -31,13 +31,14 @@ void hamil::init_Coulomb_matrix() {
     E_cl/=sqrt(lx*ly);
 }
 
-void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double _d)
+void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _nLL, double _d)
 {
     long nbasis_up, nbasis_down;
     d = _d;
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
+    nLL = _nLL;
     init_Coulomb_matrix();
     nbasis_up = sector.nbasis_up;
     nbasis_down = sector.nbasis_down;
@@ -67,6 +68,7 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double 
             // select two electrons in left-basis <m_1, m_2|
             // n=j1, m=j2
             // upper-layer
+           /* 
             for(klu=0; klu<Cl_up; klu++) {
                 lbasis_up=sector.translate_up(sector.id_up[i],klu,signlu);
                 for(n = 0; n < nphi-1; n++)
@@ -125,8 +127,10 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double 
                         }
                     }
             }
+           
 
             // down-layer
+            
             for(kld=0; kld<Cl_down; kld++) {
                 lbasis_down=sector.translate_down(sector.id_down[j],kld,signld);
                 for(n = 0; n < nphi-1; n++)
@@ -181,6 +185,7 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double 
                         }
                     }
             }
+            */ 
 
             // consider the one electron in the upper layer
             // and one electron in the lower layer case
@@ -256,7 +261,7 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, int _nphi, double 
                 }
             }
             // diagonal Coulomb classical energy term
-            hamiltonian[(i*nbasis_down+j)*nHilbert+i*nbasis_down+j]+=E_cl*(sector.nel_up+sector.nel_down);
+           // hamiltonian[(i*nbasis_down+j)*nHilbert+i*nbasis_down+j]+=E_cl*(sector.nel_up+sector.nel_down);
         }
     }
 }

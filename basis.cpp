@@ -257,7 +257,6 @@ int basis::get_signud(long cu,long cd,long n, long m, long nt, long mt){
       // get the rest electrons
      b=cu^mask;
      p=cd^mask;
-     // if there're no crossing between two electrons
      nsign=0;
         kl=nt<n?nt:n;
         kr=nt<n?n:nt;
@@ -273,12 +272,6 @@ int basis::get_signud(long cu,long cd,long n, long m, long nt, long mt){
           if((p&mask_k)==mask_k)
              nsign++;
         }
-
-        // if there're crossings between two electrons
-        // exchange of layer-up/down electrons doesn't change sign
-        //if(nt>mt && m>n || mt>nt && m<n)
-         // nsign++;
-
 
      return pow(-1,nsign);
 }
@@ -322,7 +315,6 @@ void basis::generate_up(long count,long j, long Ji, long config) {
        generate_up(count,i,k,c);
      }
     else{
-      //cout<<count<<" "<<i<<" "<<j<<" "<<c<<" "<<bitset<12>(c).to_string()<<endl;
       if(J_up<0)
         basis_up[c]=c;
       else if(k%nphi==J_up)
@@ -344,7 +336,6 @@ void basis::generate_down(long count, long j, long Ji, long config) {
        generate_down(count,i,k,c);
      }
     else{
-      //cout<<count<<" "<<i<<" "<<j<<" "<<c<<" "<<bitset<12>(c).to_string()<<endl;
       if(J_down<0)
         basis_down[c]=c;
       else if(k%nphi==J_down)
