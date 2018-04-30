@@ -12,23 +12,24 @@
 using namespace std;
 
 int main(int argc,char *argv[]) {
-    int nphi,nel,J,lambda;
+    int nLL,nphi,nel,J,lambda;
     double lx,ly;
     int kx;
     unsigned seed;
     // aspect ratio lx/ly
     double gamma;
 
+    nLL=0;
     nphi=4;
     nel=2;
     lambda=400;
-    kx=-1;
-    J=-1;
+    kx=0;
+    J=0;
     gamma=1;
 
-    init_argv(nphi,nel,J,kx,gamma,lambda,argc,argv);
+    init_argv(nLL,nphi,nel,J,kx,gamma,lambda,argc,argv);
     // keep lx/ly=nel/4
-    //gamma=nel/4.0;
+    gamma=nel/4.0;
 
     ly=sqrt(2.0*M_PI*nphi/gamma);
     lx=ly*gamma;
@@ -39,14 +40,15 @@ int main(int argc,char *argv[]) {
     Timer tmr;
     seed=tmr.nanoseconds();
     #endif
-    //basis sector(nphi,nel,J,kx);
-    //sector.init();
 
-    /* basis check */
+/*
+    basis sector(nphi,nel,J,kx);
+    sector.init();
+
     //sector.prlong();
     //sector.generate(count,index,a);
     
-    /*
+    cout<<"nLL: ="<<nLL<<endl;
     cout<<"nphi: = "<<nphi<<endl;
     cout<<"nel: = "<<nel<<endl;
     cout<<"lx: = "<<lx<<endl;
@@ -62,12 +64,12 @@ int main(int argc,char *argv[]) {
     //basis sector(nphi,nel,J,kx);
     //sector.init();
     //sector.prlong();
-    config.set_hamil(sector,lx,ly,nphi);
+    config.set_hamil(sector,lx,ly,nphi,nLL);
     //config.print_hamil(4);
     config.diag();
     config.print_eigen(10);
     cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
-    */
+ */ 
 
     /*
     for(int i=0;i<config.nHilbert;i++)
@@ -83,7 +85,7 @@ int main(int argc,char *argv[]) {
 
    */
 
-   /*
+  /* 
    cout<<"-----------Lanczos---------"<<endl;
    //basis sector(nphi,nel,J,kx);
    //sector.init();
@@ -97,8 +99,9 @@ int main(int argc,char *argv[]) {
    lconfig.eigenstates_reconstruction();
    lconfig.print_eigen(10);
    cout<<"E_gs(LANCZOS):="<<setprecision(6)<<lconfig.ground_state_energy()/nel<<endl;
+*/
     
-   */
+   
    
    /*
     for(int i=0;i<lconfig.nHilbert;i++)
@@ -115,35 +118,30 @@ int main(int argc,char *argv[]) {
 
 
     double j0,k0;
-    if(nel%2==0)
-       j0=k0=nel/2;
-    else
-       j0=k0=0;
+    j0=0;
+    k0=nLL/2;
 
+    //lhamil lconfig(lambda,seed);
     for(int j=0;j<nphi;j++){
     for(int k=0;k<nel;k++){
 
     basis sector(nphi,nel,j,k);
     sector.init();
-    lhamil lconfig(lambda,seed);
-    lconfig.set_hamil(sector,lx,ly,nphi);
-    lconfig.coeff_explicit_update();
-    lconfig.diag();
-    double K=sqrt((j%sector.C-j0)*(j%sector.C-j0)+(k%sector.C-k0)*(k%sector.C-k0)*gamma*gamma)*sqrt(2.0*M_PI/nphi/gamma);
+    hamil config;
+    config.set_hamil(sector,lx,ly,nphi,nLL);
+    config.diag();
+    
+    double K=sqrt(gamma*gamma*(j%sector.C-j0)*(j%sector.C-j0)+(k%sector.C-k0)*(k%sector.C-k0))*sqrt(2.0*M_PI/nphi/gamma);
 
-    cout<<K<<" "<<lconfig.eigenvalues[0]<<" ";
-    int i=0;
-    int count=0;
-    do{
-       i++;
-       if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-5) {
-         cout<<lconfig.eigenvalues[i]<<" ";
-         count++;
-      }
-    }while(count<10 && count<lconfig.norm.size());
+    cout<<j<<" "<<k<<" "<<K<<" ";
+    for(int n=0;n<3;n++)
+       cout<<config.eigenvalues[n]<<" ";
     cout<<endl;
+    
     }
     }
+
+    
 
     /*
     for(int j=0;j<nphi;j++){
