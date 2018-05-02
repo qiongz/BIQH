@@ -12,40 +12,40 @@
 using namespace std;
 
 int main(int argc,char *argv[]) {
-    int nLL,nphi,nel,nel_up,nel_down,J_up, J_down, kx_up, kx_down,lambda;
+    int nLL,nphi,nel,nel_up,nel_down,J,kx,lambda;
     double lx,ly,gamma;
     int Sz;
     unsigned seed;
     double d,mu;
 
     nLL=0;
-    nphi=4;
+    nphi=8;
     nel=4;
     nel_up=2;
     nel_down=2;
-    gamma=1.25;
-    J_up=0;
-    J_down=0;
-    kx_up=0;
-    kx_down=0;
+    gamma=1.0;
+    J=0;
+    kx=0;
 
     d=10;
     lambda=200;
-    init_argv(nLL,nphi,nel,nel_up,J_up,J_down,kx_up,kx_down,d,gamma,lambda,argc,argv);
+    init_argv(nLL,nphi,nel,nel_up,J,kx,d,gamma,lambda,argc,argv);
+    gamma=nel_up/4.0;
     ly=sqrt(nphi*2.0*M_PI/gamma);
     lx=ly*gamma;
 
     nel_down=nel-nel_up;
 
-#if __cplusplus > 199711L
+    #if __cplusplus > 199711L
     seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-#else
+    #else
     Timer tmr;
     seed=tmr.nanoseconds();
-#endif
+    #endif
     Sz=nel_up-nel_down;
-    /*
-        basis sector(nphi,nel_up,nel_down,J_up,J_down,kx_up,kx_down);
+
+      
+        basis sector(nphi,nel_up,nel_down,J,2,kx,2);
         sector.init();
 
         cout<<"nphi: = "<<nphi<<endl;
@@ -54,24 +54,36 @@ int main(int argc,char *argv[]) {
         cout<<"d:="<<d<<endl;
         cout<<"lx: = "<<lx<<endl;
         cout<<"ly: = "<<ly<<endl;
-        cout<<"J_u: = "<<J_up<<endl;
-        cout<<"K_u: = "<<kx_up<<endl;
-        cout<<"J_down: = "<<J_down<<endl;
-        cout<<"K_down: = "<<kx_down<<endl;
+        cout<<"J: = "<<J<<endl;
+        cout<<"kx: = "<<kx<<endl;
+        cout<<"Ju: ="<<sector.J_up<<endl;
+        cout<<"Jd: ="<<sector.J_down<<endl;
+        cout<<"Ku: ="<<sector.K_up<<endl;
+        cout<<"Kd: ="<<sector.K_down<<endl;
+        cout<<"Cu: ="<<sector.C_up<<endl;
+        cout<<"Cd: ="<<sector.C_down<<endl;
         cout<<"nbasis_up:="<<sector.nbasis_up<<endl;
         cout<<"nbasis_down:="<<sector.nbasis_down<<endl;
         cout<<"nHilbert: ="<<sector.nbasis_up*sector.nbasis_down<<endl;
         cout<<"-----------Ground state---------"<<endl;
-        //sector.prlong();
+        sector.prlong();
+        hamil config;
+        config.set_hamil(sector,lx,ly,nphi,nLL,d); 
+        config.diag();
+        cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
+        
+        
+
         lhamil lconfig(lambda,seed);
-        lconfig.set_hamil(sector,lx,ly,nphi,d);
-        //config.print_hamil(10);
+        lconfig.set_hamil(sector,lx,ly,nphi,nLL,d);
+        lconfig.print_hamil(4);
         lconfig.coeff_explicit_update();
         lconfig.diag();
         lconfig.eigenstates_reconstruction();
         lconfig.print_eigen(10);
-        cout<<"E_gs:= "<<lconfig.ground_state_energy()/nel<<endl;
-    */
+        cout<<"E_gs:= "<<setprecision(6)<<lconfig.ground_state_energy()/nel<<endl;
+     
+    
 
     /*
     for(int i=0;i<sector.nbasis_up;i++)
@@ -92,71 +104,70 @@ int main(int argc,char *argv[]) {
         }
         */
 
-    double j0,k0;
-    //if(nel_up%2==0)
-    //   j0=k0=nel_up/2;
-    //else
-    j0=k0=0;
+/*
+    basis sector0(nphi,nel_up,nel_down,0,0,0,0);
+    double t0,s0;
+    t0=s0=0;
+     
+    int N=sector0.common_divisor(nphi,nel_up);
 
-    for(int J=0; J<nphi; J++)
-        for(int kx=0; kx<nel_up; kx++){
+    for(int t=0; t<N; t++)
+        for(int s=0; s<N; s++){
             double Egs=0;
-            int j_up_0=0;
-            int kx_up_0=0;
-            for(int j_up=0; j_up<nphi; j_up++) {
-                for(int kx_up=0; kx_up<nel_up; kx_up++) {
-                    int j_down=(J-j_up<0?J-j_up+nphi:J-j_up)%nphi;
-                    int kx_down=(kx-kx_up<0?kx-kx_up+nel_up:kx-kx_up)%nel_up;
-                    basis sector(nphi,nel_up,nel_down,j_up,j_down,kx_up,kx_down);
+            int tu_0=0;
+            int su_0=0;
+            
+            for(int tu=0; tu<N; tu++) 
+                for(int su=0; su<N; su++) {
+                    int td=(t-tu<0?t-tu+N:t-tu)%N;
+                    int sd=(s-su<0?s-su+N:s-su)%N;
+                    basis sector(nphi,nel_up,nel_down,tu,td,su,sd);
                     sector.init();
-                    /*
-                    lhamil lconfig(lambda,seed);
-                    lconfig.set_hamil(sector,lx,ly,nphi,d);
-                    lconfig.coeff_explicit_update();
-                    lconfig.diag();
-                    */
+                    //lhamil lconfig(lambda,seed);
+                    //lconfig.set_hamil(sector,lx,ly,nphi,d);
+                    //lconfig.coeff_explicit_update();
+                    //lconfig.diag();
                     hamil config;
                     config.set_hamil(sector,lx,ly,nphi,nLL,d);
                     config.diag();
                     if(config.ground_state_energy()<Egs){
                        Egs=config.ground_state_energy();
-                       j_up_0=j_up;
-                       kx_up_0=kx_up;
+                       tu_0=tu;
+                       su_0=su;
                     }
                 }
-                int j_down=(J-j_up_0<0?J-j_up_0+nphi:J-j_up_0)%nphi;
-                int kx_down=(kx-kx_up_0<0?kx-kx_up_0+nel_up:kx-kx_up_0)%nel_up;
-                basis sector(nphi,nel_up,nel_down,j_up_0,j_down,kx_up_0,kx_down);
+                basis sector(nphi,nel_up,nel_down,t,tu_0,s,su_0);
                 sector.init();
-                    /*
-                    lhamil lconfig(lambda,seed);
-                    lconfig.set_hamil(sector,lx,ly,nphi,d);
-                    lconfig.coeff_explicit_update();
-                    lconfig.diag();
-                    */
+                    //lhamil lconfig(lambda,seed);
+                    //lconfig.set_hamil(sector,lx,ly,nphi,d);
+                    //lconfig.coeff_explicit_update();
+                //    lconfig.diag();
                 hamil config;
                 config.set_hamil(sector,lx,ly,nphi,nLL,d);
                 config.diag();
-                double K=sqrt((J%sector.C_up-j0)*(J%sector.C_up-j0)+(kx%sector.C_up-k0)*(kx%sector.C_up-k0)*gamma*gamma)*sqrt(2.0*M_PI/nphi/gamma);
+                double K=sqrt((s-s0)*(s-s0)+(t-t0)*(t-t0)*gamma*gamma)*sqrt(2.0*M_PI/nphi/gamma);
                 cout<<K<<" ";
-                for(int n=0; n<10; n++)
+                for(int n=0; n<3; n++)
                     cout<<config.eigenvalues[n]<<" ";
                 cout<<endl;
-                /*
+              
+*/
+               /* 
                 cout<<K<<" "<<lconfig.eigenvalues[0]<<" ";
                 int i=0;
                 int count=0;
                 do{
                    i++;
-                   if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-5) {
+                  if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-5) {
                      cout<<lconfig.eigenvalues[i]<<" ";
                      count++;
                   }
                 }while(count<3 && count<lconfig.norm.size());
                 cout<<endl;
                 */
-            }
-     }
+     //}
+
+
     /*
 
         lhamil lconfig(lambda,seed);

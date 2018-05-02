@@ -5,13 +5,19 @@ basis::basis() {
 }
 
 basis::basis(long _nphi,long _nel_up, long _nel_down):nphi(_nphi),nel_up(_nel_up),nel_down(_nel_down) {
-  K_up=-1;
-  K_down=-1;
-  J_up=-1;
-  J_down=-1;
+  K=0;
+  K_up=0;
+  J=0;
+  J_up=0;
+  K_down=0;
+  J_down=0;
 }
 
-basis::basis(long _nphi,long _nel_up, long _nel_down, long _Ju,long _Jd, long _Ku, long _Kd):nphi(_nphi),nel_up(_nel_up),nel_down(_nel_down),J_up(_Ju),J_down(_Jd),K_up(_Ku),K_down(_Kd){
+
+basis::basis(long _nphi,long _nel_up, long _nel_down, long _J,long _Ju, long _K, long _Ku):nphi(_nphi),nel_up(_nel_up),nel_down(_nel_down),J(_J),J_up(_Ju),K(_K),K_up(_Ku){
+    C_up=common_divisor(nphi,nel_up);
+    J_down=(J-J_up<0?J-J_up+nphi:J-J_up)%C_up;
+    K_down=(K-K_up<0?K-K_up+C_up:K-K_up)%C_up;
 }
 
 const basis & basis::operator =(const basis & _basis) {
@@ -26,7 +32,7 @@ const basis & basis::operator =(const basis & _basis) {
         id_up=_basis.id_up;
         id_down=_basis.id_down;
         K_up=_basis.K_up;
-        K_down=_basis.K_down;
+        K=_basis.K;
     }
     return *this;
 }
@@ -70,7 +76,7 @@ void basis::init() {
     else{
     C_up=common_divisor(nel_up,nphi);
     q_up=nphi/C_up;
-
+    
     count=j=config=Ki=0;
     generate_up(count,j,Ki,config);
     // shrink the up-layer basis to an unique subset L_up
@@ -99,6 +105,19 @@ void basis::init() {
       else
          ++it;
      }
+        for(it=basis_up.begin();it!=basis_up.end();it++){
+         long c=it->first;
+         vector<long> cv;
+         for(n=0;n<nphi;n++)
+           if((c>>n)%2==1)
+             cv.push_back(n);
+           config=0;
+           for(i=0;i<cv.size();i++){
+               j=(cv[i]+q_up*K_up>=nphi?cv[i]+q_up*K_up-nphi:cv[i]+q_up*K_up);
+               config+=(1<<j);
+           }
+           it->second=config;
+        }
     }
  
     if(nel_down==0){
@@ -136,6 +155,19 @@ void basis::init() {
       else
          ++it;
     }
+        for(it=basis_down.begin();it!=basis_down.end();it++){
+         long c=it->first;
+         vector<long> cv;
+         for(n=0;n<nphi;n++)
+           if((c>>n)%2==1)
+             cv.push_back(n);
+           config=0;
+           for(i=0;i<cv.size();i++){
+               j=(cv[i]-q_down*K_down<0?cv[i]-q_down*K_down+nphi:cv[i]-q_down*K_down);
+               config+=(1<<j);
+           }
+           it->second=config;
+        }
     }
 
     for(it=basis_up.begin(); it!=basis_up.end(); it++)
@@ -441,13 +473,26 @@ void basis::prlong() {
     cout<<"---------------------------------------"<<endl;
     cout<<"spin-up electrons:"<<endl;
     cout<<"---------------------------------------"<<endl;
-    for(it=basis_up.begin(); it!=basis_up.end(); it++)
+    for(it=basis_up.begin(); it!=basis_up.end(); it++){
+        long c=it->first;
+        for(int n=0;n<nphi;n++){
+          if((c>>n)%2==1)
+            cout<<n<<" ";
+        }
+        cout<<"   ";
         cout<<bitset<20>(it->first).to_string()<<" "<<setw(6)<<it->first<<" "<<it->second<<endl;
+    }
     cout<<"---------------------------------------"<<endl;
     cout<<"spin-down electrons:"<<endl;
     cout<<"---------------------------------------"<<endl;
-    for(it=basis_down.begin(); it!=basis_down.end(); it++)
+    for(it=basis_down.begin(); it!=basis_down.end(); it++){
+        long c=it->first;
+        for(int n=0;n<nphi;n++){
+          if((c>>n)%2==1)
+            cout<<n<<" ";
+        }
         cout<<bitset<20>(it->first).to_string()<<" "<<setw(6)<<it->first<<" "<<it->second<<endl;
+    }
     cout<<"---------------------------------------"<<endl;
     cout<<"No. basis for spin-up electrons: "<<setw(6)<<nbasis_up<<endl;
     cout<<"No. basis for spin-down electrons: "<<setw(6)<<nbasis_down<<endl;

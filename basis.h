@@ -21,14 +21,14 @@ using namespace std;
 class basis {
 public:
     long nphi,nel_up,nel_down;  //N_phi, up/down-layer electrons
-    long K_up,K_down,J_up,J_down,C_up,C_down;  // total sum of j for up/down-layers and kx for up/down-layers
+    long K,J,K_up,K_down,J_up,J_down,C_up,C_down;  // total sum of j for up/down-layers and kx for up/down-layers
     map<long,long> basis_up,basis_down; // basis set of up/down-layer electrons, I-J table
 
     long nbasis_up,nbasis_down;     // No. of basis for up/down-layer electrons
     vector<long> id_up,id_down;     // reversal table, J->I, Lin's Table is a 2D array
     explicit basis();
     basis(long _nphi,long _nel_up, long _nel_down);
-    basis(long _nphi,long _nel_up, long _nel_down,long _Ju,long _Jd,long _Ku,long _Kd);
+    basis(long _nphi,long _nel_up, long _nel_down,long _J,long _Ju,long _K,long _Ku);
     const basis & operator=(const basis &);
     ~basis();
     // Delta_SAS, interlayer hopping
@@ -39,7 +39,7 @@ public:
     void init();
     void clear();
     void init(long _nphi,long _nel_up,long _nel_down);
-    void init(long _nphi,long _nel_up,long _nel_down,long _Ju,long _Jd,long _Ku,long _Kd);
+    void init(long _nphi,long _nel_up,long _nel_down,long _J,long _Ju,long _K,long _Ku);
     void generate_up(long,long,long,long);
     void generate_down(long,long,long,long);
     long translate_up(long,long,long &);

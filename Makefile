@@ -3,7 +3,7 @@ CC =  icpc
 CFLAGS = -openmp
 LIBS= -lpthread -mkl
 
-blqh:check.cpp basis.o matrix.o init.o lanczos_hamiltonian.o hamiltonian.o mt19937-64.o
+blqh:main.cpp basis.o matrix.o init.o lanczos_hamiltonian.o hamiltonian.o mt19937-64.o
 	$(CC) $(CFLAGS) $^ -O3 -o $@ ${LIBS} $(CFLAGS) -lgsl
 
 basis.o:basis.cpp basis.h
@@ -24,8 +24,8 @@ lanczos_hamiltonian.o:lanczos_hamiltonian.cpp lanczos_hamiltonian.h matrix.h
 mt19937-64.o:mt19937-64.c mt19937-64.h
 	$(CC) -c mt19937-64.c
 
-.PHONY: all clean remove
-all: clean check
+.PHONY: all blqh remove
+all: clean blqh 
 
 clean:
 	rm -f  *.o

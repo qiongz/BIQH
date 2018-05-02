@@ -81,8 +81,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
     H.outer_starts.reserve(nHilbert + 1);
     long mask, mask_u, mask_d, b, p, n, m, i, j, k, l, s,t,sign;
     long klu,kld,kru,krd,lbasis_up,lbasis_down,rbasis_up,rbasis_down,signlu,signld,signru,signrd;
-    long kx_up=sector.K_up;
-    long kx_down=sector.K_down;
+    long kx=sector.K;
     long Cl_up,Cl_down,Cr_up,Cr_down;
     long row = 0;
     H.outer_starts.push_back(0);
@@ -156,7 +155,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                                         {
                                             k = sector.basis_up[rbasis_up];
                                             sign=sector.get_signu(lbasis_up,n,m,nt,mt);
-                                            complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx_up*(klu-kru)/sector.C_up),sin(2.0*M_PI*kx_up*(klu-kru)/sector.C_up))/sqrt(Cl_up*Cr_up);
+                                            complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(klu-kru)/sector.C_up),sin(2.0*M_PI*kx*(klu-kru)/sector.C_up))/sqrt(Cl_up*Cr_up);
                                             matrix_elements[k*nbasis_down+j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signlu*signru;
                                         }
                                     }
@@ -211,7 +210,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                                         if(sector.basis_down.find(rbasis_down) != sector.basis_down.end()) {
                                             l = sector.basis_down[rbasis_down];
                                             sign=sector.get_signd(lbasis_down,n,m,nt,mt);
-                                            complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx_down*(kld-krd)/sector.C_down),sin(2.0*M_PI*kx_down*(kld-krd)/sector.C_down))/sqrt(Cl_down*Cr_down);
+                                            complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(kld-krd)/sector.C_down),sin(2.0*M_PI*kx*(kld-krd)/sector.C_down))/sqrt(Cl_down*Cr_down);
                                             matrix_elements[i*nbasis_down+l]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signld*signrd;
                                         }
                                     }
@@ -226,8 +225,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
             // and one electron in the lower layer case
             for(klu=0; klu<Cl_up; klu++) {
                 lbasis_up=sector.translate_up(sector.id_up[i],klu,signlu);
-                for(kld=0; kld<Cl_down; kld++) {
-                    lbasis_down=sector.translate_down(sector.id_down[j],kld,signld);
+                lbasis_down=sector.translate_down(sector.id_down[j],klu,signld);
                     for(n = 0; n < nphi; n++)
                         for(m = 0; m < nphi; m++) {
                             mask_u = (1 << n);
@@ -279,25 +277,21 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                                         // transform the right basis_up back 
                                         for(kru=0; kru<Cr_up; kru++) {
                                             rbasis_up=sector.inv_translate_up(mask_ut+b,kru,signru);
-                                            // transform the right basis_down back 
-                                            for(krd=0; krd<Cr_down; krd++) {
-                                                rbasis_down=sector.inv_translate_down(mask_dt+p,krd,signrd);
+                                            rbasis_down=sector.inv_translate_down(mask_dt+p,kru,signrd);
                                                 // if the produced the right basises are in the basis set, find the indices
                                                 if(sector.basis_up.find(rbasis_up) != sector.basis_up.end() && sector.basis_down.find(rbasis_down) != sector.basis_down.end()) {
                                                     k = sector.basis_up[rbasis_up];
                                                     l = sector.basis_down[rbasis_down];
                                                     // sign produced by the left-basis and right-basis
                                                     sign=sector.get_signud(lbasis_up,lbasis_down,n,m,nt,mt);
-                                                    complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx_up*(klu-kru)/sector.C_up),sin(2.0*M_PI*kx_up*(klu-kru)/sector.C_up))/sqrt(Cl_up*Cr_up)*complex<double>(cos(2.0*M_PI*kx_down*(kld-krd)/sector.C_down),sin(2.0*M_PI*kx_down*(kld-krd)/sector.C_down))/sqrt(Cl_down*Cr_down);
+                                                    complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(klu-kru)/sector.C_up),sin(2.0*M_PI*kx*(klu-kru)/sector.C_up))/sqrt(Cl_up*Cr_up);
                                                     matrix_elements[k*nbasis_down+l]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT_factor*signlu*signld*signru*signrd;
                                                 }
-                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                }
             }
             // diagonal Coulomb classical energy term
             matrix_elements[i*nbasis_down+j]+=E_cl*(sector.nel_up+sector.nel_down);

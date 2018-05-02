@@ -60,7 +60,7 @@ void basis::init() {
     generate(count,j,Ji,config);
     std::map<long,long>::iterator it;
     // shrink to an unique subset L, all other subset could be generated with translation
-    if(K>=0){
+    if(K>=0)
     for(it=basis_set.begin(); it!=basis_set.end();){
       long c=it->first;
       vector<long> cv;
@@ -84,26 +84,6 @@ void basis::init() {
          basis_set.erase(it++);
       else
          ++it;
-    }
-    // translate to the specified kx point
-     
-    //if(K!=0)
-   /* 
-    for(it=basis_set.begin(); it!=basis_set.end();it++){
-      long c=it->first;
-      vector<long> cv;
-      for(n=0;n<nphi;n++)
-         if((c>>n)%2==1)
-           cv.push_back(n);
-        config=0;
-        for(i=0;i<cv.size();i++){
-              j=(cv[i]-q*(C-1)<0?cv[i]-q*(C-1)+nphi:cv[i]-q*(C-1));
-              config+=(1<<j);
-           }
-        it->second=config;
-     }
-      */
-    
     }
 
     for(it=basis_set.begin(); it!=basis_set.end(); it++)
