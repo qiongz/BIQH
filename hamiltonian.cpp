@@ -23,12 +23,12 @@ void hamil::init_Coulomb_matrix() {
                 Coulomb_matrix[alpha*nphi*nphi+s*nphi+q_y]=V;
             }
     // initialize classical Coulomb energy
-    E_cl=-2.0;
+    Ec=-2.0;
     for(int i=0; i<nphi; i++)
         for(int j=0; j<nphi; j++)
             if(!(i==0 &&j==0))
-                E_cl+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
-    E_cl/=sqrt(lx*ly);
+                Ec+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
+    Ec/=sqrt(lx*ly);
 }
 
 void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _nLL, double _d)
@@ -52,6 +52,7 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _n
                 Cl=C;
                 break;
             }
+            if(kx<0) Cl=1;
             for(kl=0; kl<Cl; kl++) {
                 lbasis=sector.translate(sector.id[i],kl,signl);
                 for(n = 0; n < nphi-1; n++)
@@ -94,6 +95,7 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _n
                                             Cr=C;
                                             break;
                                         }
+                                    if(kx<0) Cr=1;
                                     for(kr=0; kr<Cr; kr++) {
                                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
                                         if(sector.basis_set.find(rbasis) != sector.basis_set.end())
@@ -146,6 +148,7 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _n
                                             Cr=C;
                                             break;
                                         }
+                                    if(kx<0) Cr=1;
                                     for(kr=0; kr<Cr; kr++) {
                                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
                                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
@@ -200,6 +203,7 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _n
                                             Cr=C;
                                             break;
                                         }
+                                    if(kx<0) Cr=1;
                                     for(kr=0; kr<Cr; kr++) {
                                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
                                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
@@ -215,7 +219,7 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _n
                   }
            }
            // diagonal Coulomb classical energy term
-           hamiltonian[i*nHilbert+i]+=E_cl*(sector.nel_up+sector.nel_down);
+           hamiltonian[i*nHilbert+i]+=Ec*(sector.nel_up+sector.nel_down);
     }
 }
 

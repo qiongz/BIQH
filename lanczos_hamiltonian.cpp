@@ -54,12 +54,12 @@ void lhamil::init_Coulomb_matrix(){
               Coulomb_matrix[alpha*nphi*nphi+s*nphi+q_y]=V;
             }
     // initialize classical Coulomb energy
-    E_cl=-2.0;
+    Ec=-2.0;
     for(int i=0;i<nphi;i++)
       for(int j=0;j<nphi;j++)
         if(!(i==0 &&j==0))
-        E_cl+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
-    E_cl/=sqrt(lx*ly);
+        Ec+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
+    Ec/=sqrt(lx*ly);
 }
 
 
@@ -89,6 +89,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                 Cl=C;
                 break;
             }
+            if(kx<0) Cl=1;
             for(kl=0; kl<Cl; kl++) {
                 lbasis=sector.translate(sector.id[i],kl,signl);
                 for(n = 0; n < nphi-1; n++)
@@ -131,6 +132,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                                             Cr=C;
                                             break;
                                         }
+                                    if(kx<0) Cr=1;
                                     for(kr=0; kr<Cr; kr++) {
                                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
                                         if(sector.basis_set.find(rbasis) != sector.basis_set.end())
@@ -183,6 +185,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                                             Cr=C;
                                             break;
                                         }
+                                    if(kx<0) Cr=1;
                                     for(kr=0; kr<Cr; kr++) {
                                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
                                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
@@ -223,7 +226,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                                 else
                                     mt = m - t;
                                 s=fabs(mt-nphi-n);
-                                // the translated upper electron index
+                                // the translated electron index
                                 mask_t = (1 << nt)+(1<<mt);
                                 // occupation of electons on the translated position
                                 occ_t = mask_t & b;
@@ -231,12 +234,13 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                                 // which is a valid translation, can be applied
                                 // the translated indices
                                 if(occ_t == 0) {
-                                    // determine the subbasis size of the right side up-basis
+                                    // determine the subbasis size of the right side basis
                                     for(int C=1; C<=sector.C; C++)
                                         if(sector.translate(mask_t +b, C,sign)==(mask_t+b)) {
                                             Cr=C;
                                             break;
                                         }
+                                    if(kx<0) Cr=1;
                                     for(kr=0; kr<Cr; kr++) {
                                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
                                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
@@ -250,9 +254,9 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                             }
                         }
                   }
-           }
-           // diagonal Coulomb classical energy term
-            matrix_elements[i]+=E_cl*(sector.nel_up+sector.nel_down);
+            }
+            // diagonal Coulomb classical energy term
+            matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
             long count=0;
             for(k=0;k<nHilbert;k++)
                 if(abs(matrix_elements[k])>1e-10){

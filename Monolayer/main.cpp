@@ -23,13 +23,13 @@ int main(int argc,char *argv[]) {
     nphi=4;
     nel=2;
     lambda=400;
-    kx=0;
-    J=0;
+    kx=-1;
+    J=-1;
     gamma=1;
 
     init_argv(nLL,nphi,nel,J,kx,gamma,lambda,argc,argv);
     // keep lx/ly=nel/4
-    gamma=nel/4.0;
+    //gamma=nel/4.0;
 
     ly=sqrt(2.0*M_PI*nphi/gamma);
     lx=ly*gamma;
@@ -41,11 +41,11 @@ int main(int argc,char *argv[]) {
     seed=tmr.nanoseconds();
 #endif
 
-    
+/*    
         basis sector(nphi,nel,J,kx);
         sector.init();
 
-        //sector.prlong();
+        sector.prlong();
         //sector.generate(count,index,a);
 
         cout<<"nLL: ="<<nLL<<endl;
@@ -57,8 +57,9 @@ int main(int argc,char *argv[]) {
         cout<<"K: = "<<kx<<endl;
         cout<<"nHilbert: ="<<sector.nbasis<<endl;
         cout<<"-----------Exact Diag---------"<<endl;
+*/
 
-
+/*
         hamil config;
         //basis sector(nphi,nel,J,kx);
         //sector.init();
@@ -69,6 +70,7 @@ int main(int argc,char *argv[]) {
         config.print_eigen(10);
         cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
     
+*/
 
     /*
     for(int i=0;i<config.nHilbert;i++)
@@ -114,7 +116,7 @@ int main(int argc,char *argv[]) {
            cout<<bitset<12>(sector.id[i]).to_string()<<" "<<lconfig.psir_0[i]<<endl;
        }
      */
-/*
+
     basis sector0(nphi,nel,0,0);
     double s0,t0;
     t0=0;
@@ -123,7 +125,7 @@ int main(int argc,char *argv[]) {
 
     hamil config;
     //lhamil lconfig(lambda,seed);
-    for(int t=0; t<N; t++) {
+    for(int t=0; t<=N/2; t++) {
         for(int s=0; s<N; s++) {
             basis sector(nphi,nel,t,s);
             sector.init();
@@ -132,13 +134,13 @@ int main(int argc,char *argv[]) {
 
             double K=sqrt(gamma*gamma*(t-t0)*(t-t0)+(s-s0)*(s-s0))*sqrt(2.0*M_PI/nphi/gamma);
 
-            cout<<s<<" "<<t<<" "<<K<<" ";
+            cout<<K<<" ";
             for(int n=0; n<4; n++)
                 cout<<config.eigenvalues[n]<<" ";
             cout<<endl;
         }
     }
-*/
+
 
 
     /*
