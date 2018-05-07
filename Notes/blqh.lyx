@@ -1,5 +1,5 @@
-#LyX 2.2 created this file. For more info see http://www.lyx.org/
-\lyxformat 508
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
 \begin_document
 \begin_header
 \save_transient_properties true
@@ -21,6 +21,8 @@
 \font_osf false
 \font_sf_scale 100 100
 \font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
 \graphics default
 \default_output_format default
 \output_sync 0
@@ -49,6 +51,7 @@
 \suppress_date false
 \justification true
 \use_refstyle 1
+\use_minted 0
 \index Index
 \shortcut idx
 \color #008000
@@ -57,7 +60,10 @@
 \tocdepth 3
 \paragraph_separation indent
 \paragraph_indentation default
-\quotes_language english
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
@@ -410,7 +416,295 @@ and
 
 \end_layout
 
+\begin_layout Section
+Background charge
+\end_layout
+
 \begin_layout Standard
+The problem is to calculate the electrostatic potential experienced by one
+ ion in the presence of all the other ions in the crystal.
+ The total potential 
+\begin_inset Formula $V_{tot}(r)$
+\end_inset
+
+ and the total charge density is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+V_{tot}(r) & =\sum_{i}V(r-r_{i})=\sum_{G}V_{G}e^{iG\cdot r},\\
+\rho_{tot}= & \sum_{i}e\delta(r-r_{i})=\sum_{i}e\rho(r-r_{i})=\sum_{G}\rho_{G}e^{iG\cdot r}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The Poisson equation gives:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\nabla^{2}V_{tot}(r) & =-4\pi\rho_{tot}\\
+\sum_{G} & G^{2}c_{G}e^{iG\cdot r}=4\pi\sum_{G}\rho_{G}e^{iG\cdot r}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+we have
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{G}=\begin{cases}
+0, & G=0\\
+4\pi\rho_{G}/G^{2}, & G\neq0
+\end{cases}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For the Coulomb interaction, use the integral representation
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\frac{1}{|r-r_{i}|}=\frac{1}{\sqrt{\pi}}\int_{0}^{\infty}d\eta\eta^{-1/2}e^{-\eta|r-r_{i}|^{2}},
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+with the Poisson equation, we then assume the charge density at site 
+\begin_inset Formula $r_{i}$
+\end_inset
+
+ is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\rho(r-r_{i}) & =e(\eta/\pi)^{3/2}e^{-\eta|r-r_{i}|^{2}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The integral of the total charge density 
+\begin_inset Formula $\rho_{tot}$
+\end_inset
+
+ times 
+\begin_inset Formula $exp[-iG\cdot r]$
+\end_inset
+
+ over a single cell is equal to the integral of the charge density originating
+ in a single cell times 
+\begin_inset Formula $exp[-iG\cdot r]$
+\end_inset
+
+ over all space
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\rho_{G}\int_{unit\ cell} & e^{iG\cdot r}e^{-iG\cdot r}dr=\rho_{G}a_{c}\\
+= & \int_{all\ space}\sum_{i}\rho_{i}e^{-iG\cdot r}d^{3}r\\
+= & \int_{all\ space}\sum_{i}e\left(\frac{\eta}{\pi}\right)^{3/2}e^{-\eta|r-r_{i}|^{2}}e^{-iG\cdot r}d^{3}r\\
+= & e\sum_{i}e^{-iG\cdot r_{i}}\left(\frac{\eta}{\pi}\right)^{3/2}\int_{all\ space}e^{-\eta\xi^{2}}e^{-iG\cdot\xi}d^{3}\xi\\
+= & e\sum_{i}e^{-iG\cdot r_{i}}\left(\frac{\eta}{\pi}\right)^{3/2}\int_{-\infty}^{\infty}e^{-\frac{G^{2}}{4\eta}-\eta(\xi+i\frac{G}{\eta})^{2}}d^{3}\xi\\
+= & e\sum_{i}e^{-iG\cdot r_{i}}e^{-\frac{G^{2}}{4\eta}}\\
+= & eS_{G}e^{-\frac{G^{2}}{4\eta}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+then we have 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\rho_{G}=\frac{eS_{G}}{a_{c}}e^{-\frac{G^{2}}{4\eta}},
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+charge neutrality requires
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\rho_{G=0}=e\sum_{i}+\rho_{bg}=0,
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+then the potential at site 
+\begin_inset Formula $r_{i}$
+\end_inset
+
+ with the reference electron experienced by all other electrons is 
+\begin_inset Formula $V_{tot}$
+\end_inset
+
+ substract the potential on site 
+\begin_inset Formula $r_{i}$
+\end_inset
+
+ , 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+V(r-r_{i}) & =\int_{0}^{\infty}4\pi rdr\rho(r)\\
+ & =\int_{0}^{\infty}4\pi e^{2}rdr\left(\frac{\eta}{\pi}\right)^{3/2}e^{-\eta r^{2}}\\
+ & =2e^{2}\left(\frac{\eta}{\pi}\right)^{1/2}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The potential at the reference point that experiences from the tails of
+ Gaussian distributions of other electrons are 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+e[\frac{1}{r_{j}}-\frac{1}{r_{j}}\int_{0}^{r_{j}}\rho(r)dr-\int_{0}^{\infty}\frac{\rho(r)}{r}dr
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+we have 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+V' & =\sum_{j}\frac{e}{r_{j}}F(\eta^{1/2}r_{j})\\
+F(x) & =\frac{1}{\sqrt{\pi}}\int_{x}^{\infty}\exp(-s^{2})ds
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+then the deired total potential of the reference ion i in the field of all
+ the other ions in the crystal is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V_{int}(r_{i})=\frac{4\pi}{a_{c}}\sum_{G\neq0}S_{G}G^{-2}\exp(-G^{2}/4\eta)-2e^{2}\left(\eta/\pi\right)^{1/2}+e\sum_{j}F(\eta^{1/2}r_{j})/r_{j}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Now the Madelung energy is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+W & =\frac{1}{2}\sum_{i\neq j}\frac{e^{2}}{|r_{i}-r_{j}|}\\
+ & =\frac{1}{2}\sum_{i}e^{2}\sum_{i\neq j}\frac{1}{|r_{i}-r_{j}|}\\
+ & =\frac{1}{2}\sum_{i}V_{int}(r_{i})
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To make the system electrically neutral, we assume that the two-dimensional
+ Wigner crystal is embedded in a uniform two-dimensional background of positive
+ charge with charge density 
+\begin_inset Formula $\rho_{+}=e/a_{c}$
+\end_inset
+
+, the energy of interaction of the reference electron with this neutralizing
+ background is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+E_{I}^{b} & =-e\rho_{+}\int\frac{dr}{r}\\
+ & =-e\rho_{+}\int dr\frac{2\pi}{L^{2}}\sum_{k}\frac{1}{k}e^{ik\cdot r}\\
+ & =-\frac{2\pi e^{2}}{a_{c}}\left(\frac{1}{k}\right)_{k=0}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then the total interaction energy is given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+E_{I} & =V_{int}(r_{i})+E_{I}^{b}\\
+ & =\frac{4\pi e}{a_{c}}\sum_{G\neq0}G^{-2}S_{G}e^{-\frac{G^{2}}{\eta}}-2e^{2}\left(\frac{\eta}{\pi}\right)^{1/2}-\frac{2\pi e^{2}}{a_{c}}\left(\frac{1}{k}\right)_{k=0}+e\sum_{j}F(\eta^{1/2}r_{j})/r_{j}\\
+\end{align*}
+
+\end_inset
+
 
 \end_layout
 
