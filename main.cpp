@@ -47,8 +47,7 @@ int main(int argc,char *argv[]) {
 
     basis sector(nphi,nel_up,nel_down,J,kx);
     sector.init();
-
-    
+    /*
     cout<<"nphi: = "<<nphi<<endl;
     cout<<"nel_up: = "<<nel_up<<endl;
     cout<<"nel_down: = "<<nel_up<<endl;
@@ -59,32 +58,31 @@ int main(int argc,char *argv[]) {
     cout<<"kx: = "<<kx<<endl;
     cout<<"C: ="<<sector.C<<endl;
     cout<<"nHilbert: ="<<sector.nbasis<<endl;
-    //cout<<"-----------Ground state---------"<<endl;
+    cout<<"-----------Ground state---------"<<endl;
+    */
     
 
     //sector.prlong();
-
-
-  /* 
-   // hamil config;
     lhamil lconfig(lambda,seed);
-    for(int i=0;i<20;i++){
-    //config.set_hamil(sector,lx,ly,nphi,nLL,i*0.1+0.1);
-    //config.print_hamil(10);
-    //config.diag();
-    // cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
-    //cout<<i*0.1+0.1<<" "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
-    lhamil lconfig(lambda,seed);
-    lconfig.set_hamil(sector,lx,ly,nphi,nLL,0.1*i+0.1);
+    for(int i=0;i<30;i++){
+    lconfig.set_hamil(sector,lx,ly,nphi,nLL,i*0.1+0.05);
     lconfig.coeff_explicit_update();
-    lconfig.diag();
+    lconfig.diag(); 
     lconfig.eigenstates_reconstruction();
-    cout<<i*0.1+0.1<<" "<<setprecision(6)<<lconfig.ground_state_energy()/nel<<endl;
+    cout<<i*0.1+0.05<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<endl;
     }
-   */ 
 
-    
+    /*
+  
+    hamil config;
+    config.set_hamil(sector,lx,ly,nphi,nLL,d);
+    //config.print_hamil(10);
+    config.diag();
+    cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
+    */
 
+/*
+    cout<<"-----------Lanczos results---------"<<endl;
     lhamil lconfig(lambda,seed);
     lconfig.set_hamil(sector,lx,ly,nphi,nLL,d);
     cout<<"Stage-1: Hamiltonian matrix initialized !"<<endl;
@@ -114,6 +112,7 @@ int main(int argc,char *argv[]) {
           cout<<bitset<8>((sector.id[i])).to_string()<<": "<<bitset<8>((sector.id[i])>>nphi).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
         }
    
+*/
 
   /* 
         basis sector0(nphi,nel_up,nel_down,0,0);

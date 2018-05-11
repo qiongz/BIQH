@@ -62,7 +62,7 @@ void lhamil::init_Coulomb_matrix(){
         Ec+=erfc(sqrt(M_PI*(i*i*lx/ly+j*j*ly/lx)));
     Ec/=sqrt(lx*ly);
     // classical Coulomb energy for interwell interaction
-    Ec_d=-1.0/d;
+    Ec_d=M_PI*d/(lx*ly)-1.0/d;
     for(int i=0;i<10*nphi/d;i++)
        for(int j=0;j<10*nphi/d;j++)
          if(!(i==0 && j==0))
@@ -261,15 +261,26 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                             }
                         }
                   }
+              /*
+              for(n = 0; n < nphi; n++){
+                mask = (1 << n) + (1 << (n + nphi));
+                if((lbasis &mask) == mask) 
+  	  	  matrix_elements[i]+=Ec_d/sqrt(Cl*Cl);
+                }
+              */
             }
             // diagonal Coulomb classical energy term
             matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
+	    
+	    
             lbasis=sector.id[i];
             for(n = 0; n < nphi; n++){
               mask = (1 << n) + (1 << (n + nphi));
               if((lbasis &mask) == mask) 
   		matrix_elements[i]+=Ec_d;
             }
+	   
+	    
             
             long count=0;
             for(k=0;k<nHilbert;k++)

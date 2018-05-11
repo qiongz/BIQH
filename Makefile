@@ -1,6 +1,6 @@
 CC = icpc
-CFLAGS =-std=c++11 -DMKL_ILP64 -mkl=parallel
-LIBS=  -qopenmp -lpthread -lm -ldl
+CFLAGS =-std=c++11 -DMKL_ILP64 -mkl=parallel -qopenmp
+LIBS=   -liomp5 -lpthread -lm -ldl
 
 blqh:main.cpp basis.o matrix.o init.o hamiltonian.o mt19937-64.o lanczos_hamiltonian.o
 	$(CC) $(CFLAGS) $^ -O3 -o $@ ${LIBS} $(CFLAGS) -lgsl

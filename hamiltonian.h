@@ -10,7 +10,7 @@ public:
     unsigned seed;
     long nphi,nLL;
     double lx,ly,d;
-    double Ec;
+    double Ec,Ec_d;
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     std::vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
     /** Hamiltonian matrix in CSR format */

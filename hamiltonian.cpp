@@ -27,13 +27,13 @@ void hamil::init_Coulomb_matrix() {
     for(int i=0; i<nphi; i++)
         for(int j=0; j<nphi; j++)
             if(!(i==0 &&j==0))
-                Ec+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
+                Ec+=erfc(sqrt(M_PI*(i*i*lx/ly+j*j*ly/lx)));
     Ec/=sqrt(lx*ly);
-    // classical Coulomb energy for interwell interaction
-    for(int i=0;i<lx;i++)
-       for(int j=0;j<ly;j++)
-          Ec+=Integrate_BesselInt(sqrt(i*i+j*j)*2.0*M_PI,d);
-    Ec-=1.0/d;
+    Ec_d=M_PI*d/(lx*ly)-1.0/d;
+    for(int i=0;i<10*nphi/d;i++)
+       for(int j=0;j<10*nphi/d;j++)
+         if(!(i==0 && j==0))
+          Ec_d+=2.0*M_PI/sqrt(i*i/(lx*lx)+j*j/(ly*ly))*exp(-sqrt(i*i/(lx*lx)+j*j/(ly*ly))*2.0*M_PI*d)/(lx*ly);
 }
 
 void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _nLL, double _d)
@@ -222,6 +222,11 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _n
                             }
                         }
                   }
+              for(n = 0; n < nphi; n++){
+                mask = (1 << n) + (1 << (n + nphi));
+                if((lbasis &mask) == mask) 
+  	  	  hamiltonian[i*nHilbert+i]+=Ec_d/sqrt(Cl*Cl);
+                }
            }
            // diagonal Coulomb classical energy term
            hamiltonian[i*nHilbert+i]+=Ec*(sector.nel_up+sector.nel_down);
