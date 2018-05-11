@@ -111,7 +111,7 @@ int main(int argc,char *argv[]) {
              if((u>>n)%2==1)
                 cout<<n+1-nphi<<" ";
           cout<<")   ";
-          cout<<bitset<12>(sector.id[i]).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
+          cout<<bitset<8>((sector.id[i])).to_string()<<": "<<bitset<8>((sector.id[i])>>nphi).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
         }
    
 

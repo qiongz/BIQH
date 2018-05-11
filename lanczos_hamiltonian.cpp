@@ -255,8 +255,6 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                                             sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
                                             complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(kl-kr)/sector.C),sin(2.0*M_PI*kx*(kl-kr)/sector.C))/sqrt(Cl*Cr);
                                             matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT_factor;
-					    if(m==n && t==0)
-					       matrix_elements[j]+=Ec_d*sign*FT_factor;
                                         }
                                     }
                                 }
@@ -266,6 +264,12 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
             }
             // diagonal Coulomb classical energy term
             matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
+            lbasis=sector.id[i];
+            for(n = 0; n < nphi; n++){
+              mask = (1 << n) + (1 << (n + nphi));
+              if((lbasis &mask) == mask) 
+  		matrix_elements[i]+=Ec_d;
+            }
             
             long count=0;
             for(k=0;k<nHilbert;k++)
