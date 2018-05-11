@@ -29,6 +29,11 @@ void hamil::init_Coulomb_matrix() {
             if(!(i==0 &&j==0))
                 Ec+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
     Ec/=sqrt(lx*ly);
+    // classical Coulomb energy for interwell interaction
+    for(int i=0;i<lx;i++)
+       for(int j=0;j<ly;j++)
+          Ec+=Integrate_BesselInt(sqrt(i*i+j*j)*2.0*M_PI,d);
+    Ec-=1.0/d;
 }
 
 void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _nLL, double _d)
@@ -101,9 +106,9 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _n
                                         if(sector.basis_set.find(rbasis) != sector.basis_set.end())
                                         {
                                             j = sector.basis_set[rbasis];
-                                            sign=sector.get_sign(lbasis,n,m,nt,mt);
+                                            sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
                                             complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(kl-kr)/sector.C),sin(2.0*M_PI*kx*(kl-kr)/sector.C))/sqrt(Cl*Cr);
-                                            hamiltonian[i*nHilbert+j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signl*signr;
+                                            hamiltonian[i*nHilbert+j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor;
                                         }
                                     }
                                 }
@@ -153,9 +158,9 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _n
                                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
                                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                             j = sector.basis_set[rbasis];
-                                            sign=sector.get_sign(lbasis,n,m,nt,mt);
+                                            sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
                                             complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(kl-kr)/sector.C),sin(2.0*M_PI*kx*(kl-kr)/sector.C))/sqrt(Cl*Cr);
-                                            hamiltonian[i*nHilbert+j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signl*signr;
+                                            hamiltonian[i*nHilbert+j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor;
                                         }
                                     }
 
@@ -208,9 +213,9 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _n
                                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
                                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                             j = sector.basis_set[rbasis];
-                                            sign=sector.get_sign(lbasis,n,m,nt,mt);
+                                            sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
                                             complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(kl-kr)/sector.C),sin(2.0*M_PI*kx*(kl-kr)/sector.C))/sqrt(Cl*Cr);
-                                            hamiltonian[i*nHilbert+j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT_factor*signl*signr;
+                                            hamiltonian[i*nHilbert+j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT_factor;
                                         }
                                     }
                                 }

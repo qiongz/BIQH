@@ -323,14 +323,42 @@ double func_ExpInt(double t, void *params) {
     return ret_value;
 }
 
-double Integrate_ExpInt(double z) {
+struct my_params{
+    double r;
+    double d;
+};
+   
+double func_BesselInt(double k, void *p){
+    struct my_params *params =(struct my_params *)p;
+     
+    double f = gsl_sf_bessel_J0(k*params->r)*exp(-k*params->d)/(k+1e-10);
+    return f;
+}
+
+double Integrate_ExpInt(double x) {
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(50000);
     double result,error;
 
     gsl_function F;
     F.function = &func_ExpInt;
-    F.params= & z;
+    F.params= & x;
 
     gsl_integration_qagiu(& F,1.0,1.0e-6, 1.0e-6, 50000,w, &result, & error);
+    return result;
+}
+
+double Integrate_BesselInt(double r,double d) {
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(50000);
+    double result,error;
+
+    my_params params;
+    params.r=r;
+    params.d=d;
+
+    gsl_function F;
+    F.function = &func_BesselInt;
+    F.params= & params;
+
+    gsl_integration_qagiu(& F,0.0,1.0e-6, 1.0e-6, 50000,w, &result, & error);
     return result;
 }

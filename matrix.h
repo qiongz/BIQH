@@ -13,6 +13,7 @@
 #define MKL_Complex16 std::complex<double>
 #include"mkl.h"
 #include<gsl/gsl_integration.h>
+#include<gsl/gsl_sf.h>
 
 #if __cplusplus > 199711L
 #include<random>
@@ -25,6 +26,8 @@ void diag_dsyev(double *h, double *e, int l);
 void diag_zheev(complex<double> *h, double *e, int l);
 double func_ExpInt(double t, void *params);
 double Integrate_ExpInt(double z) ;
+double func_BesselInt(double k, void *params);
+double Integrate_BesselInt(double r,double d) ;
 
 class Vec {
 public:

@@ -3,8 +3,8 @@ void usage(char *target) {
     std::cout<<"Usage: "<<target<<" [Options]\n";
     std::cout<<"Options:\n";
     std::cout<<"  -l                       nLL\n";
-    std::cout<<"  -p                       nphi\n";
-    std::cout<<"  -n                       Total No. of electrons in upper-layer\n";
+    std::cout<<"  -n                       nphi\n";
+    std::cout<<"  -e                       Total No. of electrons in upper-layer\n";
     std::cout<<"  -u                       No. of electrons in upper-layer\n";
     std::cout<<"  -s                       kx in upper-layer\n";
     std::cout<<"  -t                       total J in upper-layer or down-layer\n";
@@ -19,15 +19,15 @@ void init_argv(int &nLL,int &nphi, int& nel, int &nel_up, int &J, int &kx, doubl
     extern char *optarg;
     int ch,errFlag;
     errFlag=0;
-    while((ch=getopt(argc,argv,"l:p:n:u:d:s:t:g:m:h:"))!=-1) {
+    while((ch=getopt(argc,argv,"l:e:n:u:d:s:t:g:m:h:"))!=-1) {
         switch(ch) {
         case 'l':
             nLL=atoi(optarg);
             break;
-        case 'p':
+        case 'n':
             nphi=atoi(optarg);
             break;
-        case 'n':
+        case 'e':
             nel=atoi(optarg);
             break;
         case 'u':

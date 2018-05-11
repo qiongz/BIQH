@@ -58,8 +58,15 @@ void lhamil::init_Coulomb_matrix(){
     for(int i=0;i<nphi;i++)
       for(int j=0;j<nphi;j++)
         if(!(i==0 &&j==0))
-        Ec+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
+        //Ec+=Integrate_ExpInt((i*i*lx/ly+j*j*ly/lx)*M_PI);
+        Ec+=erfc(sqrt(M_PI*(i*i*lx/ly+j*j*ly/lx)));
     Ec/=sqrt(lx*ly);
+    // classical Coulomb energy for interwell interaction
+    Ec_d=-1.0/d;
+    for(int i=0;i<10*nphi/d;i++)
+       for(int j=0;j<10*nphi/d;j++)
+         if(!(i==0 && j==0))
+          Ec_d+=2.0*M_PI/sqrt(i*i/(lx*lx)+j*j/(ly*ly))*exp(-sqrt(i*i/(lx*lx)+j*j/(ly*ly))*2.0*M_PI*d)/(lx*ly);
 }
 
 
@@ -138,9 +145,9 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                                         if(sector.basis_set.find(rbasis) != sector.basis_set.end())
                                         {
                                             j = sector.basis_set[rbasis];
-                                            sign=sector.get_sign(lbasis,n,m,nt,mt);
+                                            sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
                                             complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(kl-kr)/sector.C),sin(2.0*M_PI*kx*(kl-kr)/sector.C))/sqrt(Cl*Cr);
-                                            matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signl*signr;
+                                            matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor;
                                         }
                                     }
                                 }
@@ -190,9 +197,9 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
                                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                             j = sector.basis_set[rbasis];
-                                            sign=sector.get_sign(lbasis,n,m,nt,mt);
+                                            sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
                                             complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(kl-kr)/sector.C),sin(2.0*M_PI*kx*(kl-kr)/sector.C))/sqrt(Cl*Cr);
-                                            matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signl*signr;
+                                            matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor;
                                         }
                                     }
 
@@ -245,9 +252,11 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
                                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                             j = sector.basis_set[rbasis];
-                                            sign=sector.get_sign(lbasis,n,m,nt,mt);
+                                            sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
                                             complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(kl-kr)/sector.C),sin(2.0*M_PI*kx*(kl-kr)/sector.C))/sqrt(Cl*Cr);
-                                            matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT_factor*signl*signr;
+                                            matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT_factor;
+					    if(m==n && t==0)
+					       matrix_elements[j]+=Ec_d*sign*FT_factor;
                                         }
                                     }
                                 }
@@ -257,6 +266,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
             }
             // diagonal Coulomb classical energy term
             matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
+            
             long count=0;
             for(k=0;k<nHilbert;k++)
                 if(abs(matrix_elements[k])>1e-10){
@@ -266,6 +276,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly, long _nphi, long 
                 }
             row += count;
             H.outer_starts.push_back(row);
+
     }
     matrix_elements.clear();
 }
@@ -655,6 +666,7 @@ double lhamil::ground_state_energy() {
 
 
 // spectral function continued fraction version
+/*
 double lhamil::spectral_function(double omega, double eta) {
     // calculation continued fraction using modified Lentz method
     complex<double> E(omega,eta);
@@ -693,6 +705,7 @@ double lhamil::spectral_function(double omega, double eta) {
     delta.clear();
     return I;
 }
+*/
 
 
 void lhamil::save_to_file(const char* filename) {

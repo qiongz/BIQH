@@ -12,9 +12,9 @@ public:
     unsigned seed;  //!< Seed for RNGs
     long nHilbert;  //!< Hilbert space size
     long lambda;    //!< Lanczos update steps
-    long nLL,nphi,off_head;
+    long nLL,nphi;
     double lx,ly,d;
-    double E0,E_cl;      //!< Ground state eigen energy
+    double E0,Ec,Ec_d;      //!< Ground state eigen energy
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
     Mat H;  //!< Hamiltonian matrix in CSR format

@@ -1,7 +1,6 @@
-CC =  icpc
-#CFLAGS = -qopenmp -std=c++11
-CFLAGS = -openmp
-LIBS= -lpthread -mkl
+CC = icpc
+CFLAGS =-std=c++11 -qopenmp 
+LIBS= -mkl -pthread
 
 blqh:main.cpp basis.o matrix.o init.o hamiltonian.o mt19937-64.o lanczos_hamiltonian.o
 	$(CC) $(CFLAGS) $^ -O3 -o $@ ${LIBS} $(CFLAGS) -lgsl
