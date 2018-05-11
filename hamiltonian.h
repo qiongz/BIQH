@@ -12,9 +12,9 @@ public:
     double lx,ly,d;
     double Ec;
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
-    vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
+    std::vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
     /** Hamiltonian matrix in CSR format */
-    vector< complex<double> > hamiltonian;
+    std::vector< complex<double> > hamiltonian;
     /** Eigenvalues of the hamiltonian */
     std::vector<double> eigenvalues;
     /** Ground state wave function */

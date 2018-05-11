@@ -44,11 +44,11 @@ int main(int argc,char *argv[]) {
     #endif
     Sz=nel_up-nel_down;
 
-/*
+
     basis sector(nphi,nel_up,nel_down,J,kx);
     sector.init();
 
-
+    
     cout<<"nphi: = "<<nphi<<endl;
     cout<<"nel_up: = "<<nel_up<<endl;
     cout<<"nel_down: = "<<nel_up<<endl;
@@ -59,13 +59,13 @@ int main(int argc,char *argv[]) {
     cout<<"kx: = "<<kx<<endl;
     cout<<"C: ="<<sector.C<<endl;
     cout<<"nHilbert: ="<<sector.nbasis<<endl;
-    cout<<"-----------Ground state---------"<<endl;
+    //cout<<"-----------Ground state---------"<<endl;
+    
 
-    sector.prlong();
-*/
+    //sector.prlong();
+
 
   /* 
- 
    // hamil config;
     lhamil lconfig(lambda,seed);
     for(int i=0;i<20;i++){
@@ -84,39 +84,38 @@ int main(int argc,char *argv[]) {
    */ 
 
     
-/*
+
     lhamil lconfig(lambda,seed);
     lconfig.set_hamil(sector,lx,ly,nphi,nLL,d);
-    lconfig.print_hamil(4);
+    cout<<"Stage-1: Hamiltonian matrix initialized !"<<endl;
+    //lconfig.print_hamil(4);
     lconfig.coeff_explicit_update();
+    cout<<"Stage-2: Lanczos update completed !"<<endl;
     lconfig.diag();
     lconfig.eigenstates_reconstruction();
-    lconfig.print_eigen(10);
+    cout<<"Stage-3: Groundstate wavefunction reconstructed !"<<endl;
+    //lconfig.print_eigen(10);
     cout<<"E_gs:= "<<setprecision(6)<<lconfig.ground_state_energy()/nel<<endl;
-*/
-    
+    cout<<"Ec:= "<<lconfig.Ec<<endl;
+    cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
 
-
-    /*
-    for(int i=0;i<sector.nbasis_up;i++)
-     for(int j=0;j<sector.nbasis_down;j++)
-        if(abs(lconfig.psir_0[i*sector.nbasis_down+j])>0.11){
-          cout<<i*sector.nbasis_down+j<<" :   ";
-          long u=sector.id_up[i];
-          long d=sector.id_down[j];
+    for(int i=0;i<lconfig.nHilbert;i++)
+        if(abs(lconfig.psir_0[i])>0.11){
+          cout<<i<<" :   |";
+          unsigned long long u=sector.id[i];
           for(int n=0;n<nphi;n++)
              if((u>>n)%2==1)
                 cout<<n+1<<" ";
-          cout<<":";
-          for(int n=0;n<nphi;n++)
-             if((d>>n)%2==1)
-                cout<<n+1<<" ";
-          cout<<"    ";
-          cout<<bitset<12>(sector.id_up[i]).to_string()<<":"<<bitset<12>(sector.id_down[j]).to_string()<<" "<<lconfig.psir_0[i*sector.nbasis_down+j]<<endl;
+          cout<<")|";
+          for(int n=nphi;n<2*nphi;n++)
+             if((u>>n)%2==1)
+                cout<<n+1-nphi<<" ";
+          cout<<")   ";
+          cout<<bitset<12>(sector.id[i]).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
         }
-    */
-
    
+
+  /* 
         basis sector0(nphi,nel_up,nel_down,0,0);
         double t0,s0;
         t0=s0=0;
@@ -137,7 +136,7 @@ int main(int argc,char *argv[]) {
                 cout<<endl;
 
              }
-    
+   */ 
 
 
     /*
