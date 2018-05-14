@@ -76,8 +76,9 @@ void lhamil::peer_set_hamil_upper(unsigned long long lbasis,int Cl,int kl,int si
     unsigned long long rbasis,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signr,kr,Cr;
     long i,j,k,l;
-    for(int _n=0;_n<_nbatch_peer;_n++){
-      n=_nbatch_peer*id+_n;
+    //for(int _n=0;_n<_nbatch_peer;_n++){
+    //  n=_nbatch_peer*id+_n;
+    n=id;
     for(m = n+1; m < nphi; m++) {
         mask = (1 << n) + (1 << m);
         // consider the upper-layer two electrons
@@ -127,14 +128,14 @@ void lhamil::peer_set_hamil_upper(unsigned long long lbasis,int Cl,int kl,int si
                             complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(kl-kr)/sector.C),sin(2.0*M_PI*kx*(kl-kr)/sector.C))/sqrt(Cl*Cr);
 			    mutex_update.lock();
                             matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor;
-			    mutex_update.unlock();
+			   mutex_update.unlock();
                         }
                     }
                 }
             }
         }
     }
-   }
+   //}
 }
 
 void lhamil::peer_set_hamil_down(unsigned long long lbasis,int Cl,int kl,int signl,int id ,int _nbatch_peer) {
@@ -142,8 +143,9 @@ void lhamil::peer_set_hamil_down(unsigned long long lbasis,int Cl,int kl,int sig
     unsigned long long rbasis,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signr,kr,Cr;
     long i,j,k,l;
-    for(int _n=0;_n<_nbatch_peer;_n++){
-      n=_nbatch_peer*id+_n+nphi;
+    //for(int _n=0;_n<_nbatch_peer;_n++){
+    //  n=_nbatch_peer*id+_n+nphi;
+    n=id+nphi;
     for(m = n+1; m < 2*nphi; m++) {
         mask = (1 << n) + (1 << m);
         // consider the upper-layer two electrons
@@ -199,7 +201,7 @@ void lhamil::peer_set_hamil_down(unsigned long long lbasis,int Cl,int kl,int sig
             }
         }
     }
-   }
+   //}
 }
 
 void lhamil::peer_set_hamil_upper_down(unsigned long long lbasis,int Cl,int kl,int signl,int id, int _nbatch_peer) {
@@ -207,8 +209,8 @@ void lhamil::peer_set_hamil_upper_down(unsigned long long lbasis,int Cl,int kl,i
     unsigned long long rbasis,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signr,kr,Cr;
     long i,j,k,l;
-    for(int _n=0;_n<_nbatch_peer;_n++){
-      n=_nbatch_peer*id+_n+nphi;
+    //for(int _n=0;_n<_nbatch_peer;_n++){
+    n=id+nphi;
     for(m = nphi; m < 2*nphi; m++) {
         mask = (1 << n) + (1 << m);
         // consider the upper-layer two electrons
@@ -220,9 +222,9 @@ void lhamil::peer_set_hamil_upper_down(unsigned long long lbasis,int Cl,int kl,i
             // mt=j3, nt=j4
             // perform translation along x-direction (q_y), positive q_y
             for(t = -nphi/2; t <= nphi/2; t++) {
-                if(n + t >=nphi)
+                if(n + t >=2*nphi)
                     nt = n + t - nphi;
-                else if (n+t <0)
+                else if (n+t <nphi)
                     nt = n + t +nphi;
                 else
                     nt = n + t;
@@ -265,7 +267,7 @@ void lhamil::peer_set_hamil_upper_down(unsigned long long lbasis,int Cl,int kl,i
             }
         }
     }
-   }
+   //}
 }
 
 void lhamil::set_hamil(basis _sector ,double _lx, double _ly, long _nphi, long _nLL,double _d) {
@@ -297,33 +299,31 @@ void lhamil::set_hamil(basis _sector ,double _lx, double _ly, long _nphi, long _
         if(kx<0) Cl=1;
         for(kl=0; kl<Cl; kl++) {
             lbasis=sector.translate(sector.id[i],kl,signl);
-            int nbatch= nphi-1;
-            int nthreads=nphi-1;
+            int nbatch= nphi;
+            int nthreads=nphi;
             int nbatch_peer=nbatch/nthreads;
             int nresidual=nbatch%nthreads;
             std::vector<std::thread> threads;
-            // upper-layer
-            for(int id = 0; id < nthreads; id++)
-		threads.push_back(std::thread(&lhamil::peer_set_hamil_upper,this,lbasis,Cl,kl,signl,id,nbatch_peer));
-	    for(auto &t:threads)
-	       t.join();
-
-            // down-layer
-            for(int id = 0; id < nthreads; id++)
-		threads.push_back(std::thread(&lhamil::peer_set_hamil_down,this,Cl,kl,signl,id,nbatch_peer));
-	    for(auto &t:threads)
-	       t.join();
-
             // consider the one electron in the upper layer
             // and one electron in the lower layer case
-            nbatch= nphi;
-            nthreads=nphi;
-            nbatch_peer=nbatch/nthreads;
-            nresidual=nbatch%nthreads;
             for(int id = 0; id < nthreads; id++)
 		threads.push_back(std::thread(&lhamil::peer_set_hamil_upper_down,this,lbasis,Cl,kl,signl,id,nbatch_peer));
 	    for(auto &t:threads)
 	       t.join();
+            threads.clear();
+            // upper-layer
+            for(int id = 0; id < nthreads-1; id++)
+		threads.push_back(std::thread(&lhamil::peer_set_hamil_upper,this,lbasis,Cl,kl,signl,id,nbatch_peer));
+	    for(auto &t:threads)
+	       t.join();
+
+            threads.clear();
+            // down-layer
+            for(int id = 0; id < nthreads-1; id++)
+		threads.push_back(std::thread(&lhamil::peer_set_hamil_down,this,lbasis,Cl,kl,signl,id,nbatch_peer));
+	    for(auto &t:threads)
+	       t.join();
+
         }
         // diagonal Coulomb classical energy term
         matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
