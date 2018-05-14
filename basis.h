@@ -37,6 +37,7 @@ public:
     void init();
     void clear();
     void init(int _nphi,int _nel_up,int _nel_down);
+    void init(int _nphi,int _nel_up, int _nel_down,int _J,int _K);
     void generate(long,long,long,unsigned long long);
     unsigned long long translate(unsigned long long,int,int &);
     unsigned long long inv_translate(unsigned long long,int,int &);

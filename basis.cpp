@@ -123,6 +123,17 @@ void basis::init(int _nphi, int _nel_up, int _nel_down) {
     init();
 }
 
+void basis::init(int _nphi,int _nel_up, int _nel_down,int _J,int _K){
+    nphi=_nphi;
+    nel_up=_nel_up;
+    nel_down=_nel_down;
+    J=_J;
+    K=_K;
+    C=common_divisor(nphi,nel_up);
+    nel=nel_up+nel_down;
+    init();
+}
+
 /*
 long basis::interlayer_hopping(long i,long n,long m) {
     long mask,K,L,b;

@@ -71,13 +71,11 @@ void lhamil::init_Coulomb_matrix() {
             }
 }
 
-void lhamil::peer_set_hamil_upper(unsigned long long lbasis,int Cl,int kl,int signl,int id,int _nbatch_peer){    
+void lhamil::peer_set_hamil_upper(unsigned long long lbasis,int Cl,int kl,int signl,int id){    
     int kx=sector.K;
     unsigned long long rbasis,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signr,kr,Cr;
     long i,j,k,l;
-    //for(int _n=0;_n<_nbatch_peer;_n++){
-    //  n=_nbatch_peer*id+_n;
     n=id;
     for(m = n+1; m < nphi; m++) {
         mask = (1 << n) + (1 << m);
@@ -121,30 +119,27 @@ void lhamil::peer_set_hamil_upper(unsigned long long lbasis,int Cl,int kl,int si
                     if(kx<0) Cr=1;
                     for(kr=0; kr<Cr; kr++) {
                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
+			mutex_update.lock();
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end())
                         {
                             j = sector.basis_set[rbasis];
                             sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
                             complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(kl-kr)/sector.C),sin(2.0*M_PI*kx*(kl-kr)/sector.C))/sqrt(Cl*Cr);
-			    mutex_update.lock();
                             matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor;
-			   mutex_update.unlock();
                         }
+			mutex_update.unlock();
                     }
                 }
             }
         }
     }
-   //}
 }
 
-void lhamil::peer_set_hamil_down(unsigned long long lbasis,int Cl,int kl,int signl,int id ,int _nbatch_peer) {
+void lhamil::peer_set_hamil_down(unsigned long long lbasis,int Cl,int kl,int signl,int id) {
     int kx=sector.K;
     unsigned long long rbasis,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signr,kr,Cr;
     long i,j,k,l;
-    //for(int _n=0;_n<_nbatch_peer;_n++){
-    //  n=_nbatch_peer*id+_n+nphi;
     n=id+nphi;
     for(m = n+1; m < 2*nphi; m++) {
         mask = (1 << n) + (1 << m);
@@ -187,44 +182,42 @@ void lhamil::peer_set_hamil_down(unsigned long long lbasis,int Cl,int kl,int sig
                     if(kx<0) Cr=1;
                     for(kr=0; kr<Cr; kr++) {
                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
+			 mutex_update.lock();
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end())
                         {
                             j = sector.basis_set[rbasis];
                             sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
                             complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(kl-kr)/sector.C),sin(2.0*M_PI*kx*(kl-kr)/sector.C))/sqrt(Cl*Cr);
-			    mutex_update.lock();
                             matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor;
-			    mutex_update.unlock();
                         }
+			 mutex_update.unlock();
                     }
                 }
             }
         }
     }
-   //}
 }
 
-void lhamil::peer_set_hamil_upper_down(unsigned long long lbasis,int Cl,int kl,int signl,int id, int _nbatch_peer) {
+void lhamil::peer_set_hamil_upper_down(unsigned long long lbasis,int Cl,int kl,int signl,int id) {
     int kx=sector.K;
     unsigned long long rbasis,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signr,kr,Cr;
     long i,j,k,l;
-    //for(int _n=0;_n<_nbatch_peer;_n++){
-    n=id+nphi;
+    n=id;
     for(m = nphi; m < 2*nphi; m++) {
         mask = (1 << n) + (1 << m);
         // consider the upper-layer two electrons
         // looking up the corresponding basis in id_up
         // if there're two electrons on n and m;
-        if((lbasis &mask) == mask && n!=m) {
+        if((lbasis &mask) == mask ) {
             // b is the rest electon positions
             b = lbasis ^ mask;
             // mt=j3, nt=j4
             // perform translation along x-direction (q_y), positive q_y
             for(t = -nphi/2; t <= nphi/2; t++) {
-                if(n + t >=2*nphi)
+                if(n + t >=nphi)
                     nt = n + t - nphi;
-                else if (n+t <nphi)
+                else if (n+t <0)
                     nt = n + t +nphi;
                 else
                     nt = n + t;
@@ -235,7 +228,7 @@ void lhamil::peer_set_hamil_upper_down(unsigned long long lbasis,int Cl,int kl,i
                 else
                     mt = m - t;
 
-                s=fabs(mt-n);
+                s=fabs(mt-nphi-n);
                 // the translated two electrons indices
                 mask_t = (1 << nt) + (1 << mt);
                 // occupation of electons on the translated position
@@ -253,31 +246,30 @@ void lhamil::peer_set_hamil_upper_down(unsigned long long lbasis,int Cl,int kl,i
                     if(kx<0) Cr=1;
                     for(kr=0; kr<Cr; kr++) {
                         rbasis=sector.inv_translate(mask_t+b,kr,signr);
+			 mutex_update.lock();
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end())
                         {
                             j = sector.basis_set[rbasis];
                             sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
                             complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(kl-kr)/sector.C),sin(2.0*M_PI*kx*(kl-kr)/sector.C))/sqrt(Cl*Cr);
-			    mutex_update.lock();
                             matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT_factor;
-			    mutex_update.unlock();
                         }
+			mutex_update.unlock();
                     }
                 }
             }
         }
     }
-   //}
 }
 
-void lhamil::set_hamil(basis _sector ,double _lx, double _ly, long _nphi, long _nLL,double _d) {
+void lhamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d) {
     d = _d;
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
     nLL = _nLL;
+
     init_Coulomb_matrix();
-    sector=_sector;
     nHilbert = sector.nbasis;
     H.clear();
     H.inner_indices.reserve(nHilbert * nphi);
@@ -299,28 +291,25 @@ void lhamil::set_hamil(basis _sector ,double _lx, double _ly, long _nphi, long _
         if(kx<0) Cl=1;
         for(kl=0; kl<Cl; kl++) {
             lbasis=sector.translate(sector.id[i],kl,signl);
-            int nbatch= nphi;
-            int nthreads=nphi;
-            int nbatch_peer=nbatch/nthreads;
-            int nresidual=nbatch%nthreads;
             std::vector<std::thread> threads;
-            // consider the one electron in the upper layer
-            // and one electron in the lower layer case
-            for(int id = 0; id < nthreads; id++)
-		threads.push_back(std::thread(&lhamil::peer_set_hamil_upper_down,this,lbasis,Cl,kl,signl,id,nbatch_peer));
-	    for(auto &t:threads)
-	       t.join();
-            threads.clear();
             // upper-layer
-            for(int id = 0; id < nthreads-1; id++)
-		threads.push_back(std::thread(&lhamil::peer_set_hamil_upper,this,lbasis,Cl,kl,signl,id,nbatch_peer));
+            for(int id = 0; id < nphi-1; id++)
+		threads.push_back(std::thread(&lhamil::peer_set_hamil_upper,this,lbasis,Cl,kl,signl,id));
 	    for(auto &t:threads)
 	       t.join();
 
             threads.clear();
             // down-layer
-            for(int id = 0; id < nthreads-1; id++)
-		threads.push_back(std::thread(&lhamil::peer_set_hamil_down,this,lbasis,Cl,kl,signl,id,nbatch_peer));
+            for(int id = 0; id < nphi-1; id++)
+		threads.push_back(std::thread(&lhamil::peer_set_hamil_down,this,lbasis,Cl,kl,signl,id));
+	    for(auto &t:threads)
+	       t.join();
+
+            threads.clear();
+            // consider the one electron in the upper layer
+            // and one electron in the lower layer case
+            for(int id = 0; id < nphi; id++)
+		threads.push_back(std::thread(&lhamil::peer_set_hamil_upper_down,this,lbasis,Cl,kl,signl,id));
 	    for(auto &t:threads)
 	       t.join();
 

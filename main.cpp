@@ -45,9 +45,6 @@ int main(int argc,char *argv[]) {
     Sz=nel_up-nel_down;
 
 
-    basis sector(nphi,nel_up,nel_down,J,kx);
-    sector.init();
-    
   
 /*
     cout<<"nphi: = "<<nphi<<endl;
@@ -69,8 +66,9 @@ int main(int argc,char *argv[]) {
     //sector.prlong();
   
     lhamil lconfig(lambda,seed);
+    lconfig.sector.init(nphi,nel_up,nel_down,J,kx);
     for(int i=0;i<40;i++){
-    lconfig.set_hamil(sector,lx,ly,nphi,nLL,i*0.1+0.05);
+    lconfig.set_hamil(lx,ly,nphi,nLL,i*0.1+0.05);
     lconfig.coeff_explicit_update();
     lconfig.diag(); 
     lconfig.eigenstates_reconstruction();
