@@ -2,6 +2,8 @@
 #define LANCZOS_HAMILTONIAN_H
 #include"matrix.h"
 #include"basis.h"
+#include<thread>
+#include<mutex>
 #include<gsl/gsl_integration.h>
 #include <gsl/gsl_sf_bessel.h>
 void swap(Vec *a,Vec *b,Vec *c);
@@ -14,9 +16,11 @@ public:
     long lambda;    //!< Lanczos update steps
     long nLL,nphi;
     double lx,ly,d;
-    double E0,Ec,Ec_d;      //!< Ground state eigen energy
+    double E0,Ec;      //!< Ground state eigen energy
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
+    vector<complex<double> > matrix_elements;
+    basis sector;
     Mat H;  //!< Hamiltonian matrix in CSR format
     //Mat O;  //!< Operator matrix in CSR format
     std::vector<double> norm; //!< Normalization coefficients vector in Lanczos update
@@ -43,7 +47,10 @@ public:
     const lhamil & operator=(const lhamil &);
     /** \param _sector Basis sector
     */
-    void set_hamil(basis & _sector ,double _lx, double _ly, long _nphi, long _nLL,double _d);  //!< Initialize hamiltonian matrix
+    void set_hamil(basis  _sector ,double _lx, double _ly, long _nphi, long _nLL,double _d);  //!< Initialize hamiltonian matrix
+    void peer_set_hamil_upper(unsigned long long, int ,int ,int ,int, int);
+    void peer_set_hamil_down(unsigned long long, int ,int ,int ,int, int);
+    void peer_set_hamil_upper_down( unsigned long long, int ,int ,int ,int,int);
     void Gram_Schmidt_orthogonalization(Vec &, int);
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays
