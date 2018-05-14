@@ -19,6 +19,12 @@ void hamil::init_Coulomb_matrix() {
                 for(int q_x = -nphi/2; q_x <=nphi/2; q_x++)
                     if(!(q_x==0 && q_y==0))
                         V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
+                if(alpha==1){
+                  V=0;
+                  for(int q_x = -50*nphi/d; q_x <50*nphi/d; q_x++)
+		  if(!(q_x==0 &&q_y==0))
+                    V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
+                  }
                 // Coulomb matrix elements in Landau gauge
                 Coulomb_matrix[alpha*nphi*nphi+s*nphi+q_y]=V;
             }
@@ -29,11 +35,6 @@ void hamil::init_Coulomb_matrix() {
             if(!(i==0 &&j==0))
                 Ec+=erfc(sqrt(M_PI*(i*i*lx/ly+j*j*ly/lx)));
     Ec/=sqrt(lx*ly);
-    Ec_d=M_PI*d/(lx*ly)-1.0/d;
-    for(int i=0;i<10*nphi/d;i++)
-       for(int j=0;j<10*nphi/d;j++)
-         if(!(i==0 && j==0))
-          Ec_d+=2.0*M_PI/sqrt(i*i/(lx*lx)+j*j/(ly*ly))*exp(-sqrt(i*i/(lx*lx)+j*j/(ly*ly))*2.0*M_PI*d)/(lx*ly);
 }
 
 void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _nLL, double _d)
@@ -222,11 +223,6 @@ void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _n
                             }
                         }
                   }
-              for(n = 0; n < nphi; n++){
-                mask = (1 << n) + (1 << (n + nphi));
-                if((lbasis &mask) == mask) 
-  	  	  hamiltonian[i*nHilbert+i]+=Ec_d/sqrt(Cl*Cl);
-                }
            }
            // diagonal Coulomb classical energy term
            hamiltonian[i*nHilbert+i]+=Ec*(sector.nel_up+sector.nel_down);

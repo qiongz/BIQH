@@ -47,7 +47,9 @@ int main(int argc,char *argv[]) {
 
     basis sector(nphi,nel_up,nel_down,J,kx);
     sector.init();
-    /*
+    
+  
+/*
     cout<<"nphi: = "<<nphi<<endl;
     cout<<"nel_up: = "<<nel_up<<endl;
     cout<<"nel_down: = "<<nel_up<<endl;
@@ -59,12 +61,15 @@ int main(int argc,char *argv[]) {
     cout<<"C: ="<<sector.C<<endl;
     cout<<"nHilbert: ="<<sector.nbasis<<endl;
     cout<<"-----------Ground state---------"<<endl;
-    */
+*/
+
+    
     
 
     //sector.prlong();
+  
     lhamil lconfig(lambda,seed);
-    for(int i=0;i<30;i++){
+    for(int i=0;i<40;i++){
     lconfig.set_hamil(sector,lx,ly,nphi,nLL,i*0.1+0.05);
     lconfig.coeff_explicit_update();
     lconfig.diag(); 
@@ -72,14 +77,22 @@ int main(int argc,char *argv[]) {
     cout<<i*0.1+0.05<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<endl;
     }
 
-    /*
-  
+
+
+
+   
+ /* 
     hamil config;
     config.set_hamil(sector,lx,ly,nphi,nLL,d);
     //config.print_hamil(10);
     config.diag();
     cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
-    */
+
+*/
+       
+
+
+
 
 /*
     cout<<"-----------Lanczos results---------"<<endl;
@@ -94,8 +107,8 @@ int main(int argc,char *argv[]) {
     cout<<"Stage-3: Groundstate wavefunction reconstructed !"<<endl;
     //lconfig.print_eigen(10);
     cout<<"E_gs:= "<<setprecision(6)<<lconfig.ground_state_energy()/nel<<endl;
-    cout<<"Ec:= "<<lconfig.Ec<<endl;
-    cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
+    //cout<<"Ec:= "<<lconfig.Ec<<endl;
+    //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
 
     for(int i=0;i<lconfig.nHilbert;i++)
         if(abs(lconfig.psir_0[i])>0.11){
@@ -111,10 +124,14 @@ int main(int argc,char *argv[]) {
           cout<<")   ";
           cout<<bitset<8>((sector.id[i])).to_string()<<": "<<bitset<8>((sector.id[i])>>nphi).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
         }
-   
 */
+   
 
-  /* 
+
+
+
+/*
+   
         basis sector0(nphi,nel_up,nel_down,0,0);
         double t0,s0;
         t0=s0=0;
@@ -130,12 +147,13 @@ int main(int argc,char *argv[]) {
 
                 double K=sqrt((s-s0)*(s-s0)+(t-t0)*(t-t0)*gamma*gamma)*sqrt(2.0*M_PI/nphi/gamma);
                 cout<<K<<" ";
-                for(int n=0; n<10; n++)
+                for(int n=0; n<5; n++)
                     cout<<config.eigenvalues[n]<<" ";
                 cout<<endl;
 
              }
-   */ 
+*/
+    
 
 
     /*

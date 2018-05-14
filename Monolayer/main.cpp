@@ -41,7 +41,7 @@ int main(int argc,char *argv[]) {
     seed=tmr.nanoseconds();
 #endif
 
-/*    
+    
         basis sector(nphi,nel,J,kx);
         sector.init();
 
@@ -57,20 +57,20 @@ int main(int argc,char *argv[]) {
         cout<<"K: = "<<kx<<endl;
         cout<<"nHilbert: ="<<sector.nbasis<<endl;
         cout<<"-----------Exact Diag---------"<<endl;
-*/
 
-/*
+
+
         hamil config;
         //basis sector(nphi,nel,J,kx);
         //sector.init();
         sector.prlong();
         config.set_hamil(sector,lx,ly,nphi,nLL);
-        config.print_hamil(8);
+       // config.print_hamil(8);
         config.diag();
-        config.print_eigen(10);
+        //config.print_eigen(10);
         cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
     
-*/
+
 
     /*
     for(int i=0;i<config.nHilbert;i++)
@@ -117,6 +117,7 @@ int main(int argc,char *argv[]) {
        }
      */
 
+/*
     basis sector0(nphi,nel,0,0);
     double s0,t0;
     t0=0;
@@ -140,6 +141,7 @@ int main(int argc,char *argv[]) {
             cout<<endl;
         }
     }
+*/
 
 
 
