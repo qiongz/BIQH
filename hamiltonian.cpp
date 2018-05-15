@@ -37,7 +37,7 @@ void hamil::init_Coulomb_matrix() {
     Ec/=sqrt(lx*ly);
 }
 
-void hamil::set_hamil(basis & sector, double _lx, double _ly, long _nphi,long _nLL, double _d)
+void hamil::set_hamil(double _lx, double _ly, long _nphi,long _nLL, double _d)
 {
     d = _d;
     lx = _lx;

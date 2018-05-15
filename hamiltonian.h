@@ -11,6 +11,7 @@ public:
     long nphi,nLL;
     double lx,ly,d;
     double Ec;
+    basis sector;
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     std::vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
     /** Hamiltonian matrix in CSR format */
@@ -29,7 +30,7 @@ public:
      \param t hopping strength,
      \param U onsite replusive interaction strength
      */
-    void set_hamil(basis & sector, double _lx, double _ly, long nphi,long nLL, double _d);
+    void set_hamil(double _lx, double _ly, long nphi,long nLL, double _d);
     const hamil & operator=(const hamil &);
     /** Return the ground state energy of the system */
     double ground_state_energy();

@@ -46,7 +46,7 @@ int main(int argc,char *argv[]) {
 
 
   
-/*
+
     cout<<"nphi: = "<<nphi<<endl;
     cout<<"nel_up: = "<<nel_up<<endl;
     cout<<"nel_down: = "<<nel_up<<endl;
@@ -55,16 +55,10 @@ int main(int argc,char *argv[]) {
     cout<<"ly: = "<<ly<<endl;
     cout<<"J: = "<<J<<endl;
     cout<<"kx: = "<<kx<<endl;
-    cout<<"C: ="<<sector.C<<endl;
-    cout<<"nHilbert: ="<<sector.nbasis<<endl;
-    cout<<"-----------Ground state---------"<<endl;
-*/
-
-    
-    
 
     //sector.prlong();
   
+/*
     lhamil lconfig(lambda,seed);
     lconfig.sector.init(nphi,nel_up,nel_down,J,kx);
     for(int i=0;i<40;i++){
@@ -75,43 +69,63 @@ int main(int argc,char *argv[]) {
     cout<<i*0.1+0.05<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<endl;
     }
 
+*/
 
 
 
    
- /* 
-    hamil config;
-    config.set_hamil(sector,lx,ly,nphi,nLL,d);
+    //hamil config;
+    //config.sector.init(nphi,nel_up,nel_down,J,kx);
+    //cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
+    //cout<<"-----------Ground state---------"<<endl;
+
+    //auto t1=std::chrono::high_resolution_clock::now();
+    //config.set_hamil(lx,ly,nphi,nLL,d);
+    //auto t2=std::chrono::high_resolution_clock::now();
+    //cout<<"Full Hamiltonian matrix initialized !"<<endl;
+    //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t2-t1).count()/1.0e6<<" seconds."<<endl;
+
     //config.print_hamil(10);
-    config.diag();
-    cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
-
-*/
-       
+    //config.diag();
+    //cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
 
 
-
-
-/*
     cout<<"-----------Lanczos results---------"<<endl;
     lhamil lconfig(lambda,seed);
-    lconfig.set_hamil(sector,lx,ly,nphi,nLL,d);
-    cout<<"Stage-1: Hamiltonian matrix initialized !"<<endl;
+    auto t1=std::chrono::high_resolution_clock::now();
+    lconfig.sector.init(nphi,nel_up,nel_down,J,kx);
+    auto t2=std::chrono::high_resolution_clock::now();
+    cout<<"Stage-1: Basis initialized !"<<endl;
+    cout<<"nHilbert: ="<<lconfig.sector.nbasis<<endl;
+    cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t2-t1).count()/1.0e6<<" seconds."<<endl;
+     
+    auto t3=std::chrono::high_resolution_clock::now();
+
+    lconfig.set_hamil(lx,ly,nphi,nLL,d);
+
+    auto t4=std::chrono::high_resolution_clock::now();
+    cout<<"Stage-2: Hamiltonian matrix initialized !"<<endl;
+
+    cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
     //lconfig.print_hamil(4);
+    t3=std::chrono::high_resolution_clock::now();
     lconfig.coeff_explicit_update();
-    cout<<"Stage-2: Lanczos update completed !"<<endl;
+   // cout<<"Stage-2: Lanczos update completed !"<<endl;
     lconfig.diag();
     lconfig.eigenstates_reconstruction();
+    double Egs=lconfig.ground_state_energy()/nel;
+    t4=std::chrono::high_resolution_clock::now();
     cout<<"Stage-3: Groundstate wavefunction reconstructed !"<<endl;
-    //lconfig.print_eigen(10);
-    cout<<"E_gs:= "<<setprecision(6)<<lconfig.ground_state_energy()/nel<<endl;
+    cout<<"E_gs:= "<<setprecision(6)<<Egs<<endl;
+    cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
     //cout<<"Ec:= "<<lconfig.Ec<<endl;
     //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
-
+/*
+   
     for(int i=0;i<lconfig.nHilbert;i++)
         if(abs(lconfig.psir_0[i])>0.11){
           cout<<i<<" :   |";
-          unsigned long long u=sector.id[i];
+          unsigned long long u=lconfig.sector.id[i];
           for(int n=0;n<nphi;n++)
              if((u>>n)%2==1)
                 cout<<n+1<<" ";
@@ -120,9 +134,10 @@ int main(int argc,char *argv[]) {
              if((u>>n)%2==1)
                 cout<<n+1-nphi<<" ";
           cout<<")   ";
-          cout<<bitset<8>((sector.id[i])).to_string()<<": "<<bitset<8>((sector.id[i])>>nphi).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
+          cout<<bitset<8>((lconfig.sector.id[i])).to_string()<<": "<<bitset<8>((lconfig.sector.id[i])>>nphi).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
         }
 */
+
    
 
 
