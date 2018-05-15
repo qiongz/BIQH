@@ -14,6 +14,7 @@ quantum Hall systems
 #include<cstdlib>
 #include<cmath>
 #include<map>
+#include<climits>
 #include<vector>
 #include<algorithm>
 using namespace std;

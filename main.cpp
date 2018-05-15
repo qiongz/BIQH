@@ -55,8 +55,8 @@ int main(int argc,char *argv[]) {
     cout<<"ly: = "<<ly<<endl;
     cout<<"J: = "<<J<<endl;
     cout<<"kx: = "<<kx<<endl;
+    cout<<"int size:="<<sizeof(unsigned long long)<<endl;
 
-    //sector.prlong();
   
 /*
     lhamil lconfig(lambda,seed);
@@ -94,11 +94,12 @@ int main(int argc,char *argv[]) {
     lhamil lconfig(lambda,seed);
     auto t1=std::chrono::high_resolution_clock::now();
     lconfig.sector.init(nphi,nel_up,nel_down,J,kx);
+    //lconfig.sector.prlong();
     auto t2=std::chrono::high_resolution_clock::now();
     cout<<"Stage-1: Basis initialized !"<<endl;
     cout<<"nHilbert: ="<<lconfig.sector.nbasis<<endl;
     cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t2-t1).count()/1.0e6<<" seconds."<<endl;
-     
+    /* 
     auto t3=std::chrono::high_resolution_clock::now();
 
     lconfig.set_hamil(lx,ly,nphi,nLL,d);
@@ -120,6 +121,27 @@ int main(int argc,char *argv[]) {
     cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
     //cout<<"Ec:= "<<lconfig.Ec<<endl;
     //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
+
+    */
+    unsigned long long mask,c_up,c_down,config,c;
+    int q=nphi/lconfig.sector.C;
+    c=lconfig.sector.id[0];
+    for(int n=0;n<lconfig.nHilbert;n++)
+	    if(lconfig.sector.id[n]>=(1<<(2*nphi)-1))
+                c=lconfig.sector.id[n];
+	    mask=(1<<nphi)-1;
+	    c_down=c & mask;
+	    c_up=(c>>nphi)&mask;
+            cout<<bitset<20>(c_up).to_string()<<": "<<bitset<20>(c_down).to_string()<<endl;
+	    for(int n=1;n<lconfig.sector.C;n++){
+	      // left rotate the bits in the upper-layer: c_up
+	      c_up=((c_up>>q) & mask|(c_up<<(nphi-q))&mask );
+	      // right rotate the bits in the down-layer: c_down
+	      c_down=((c_down<<q)&mask|(c_down>>(nphi-q))&mask);
+	      config=((c_up & mask)<<nphi | c_down & mask);
+            cout<<bitset<20>(c_up).to_string()<<": "<<bitset<20>(c_down).to_string()<<endl;
+            }
+    //
 /*
    
     for(int i=0;i<lconfig.nHilbert;i++)

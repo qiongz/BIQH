@@ -2,8 +2,8 @@ CC = icpc
 CFLAGS =-std=c++11 -DMKL_ILP64 -mkl=parallel -qopenmp -pthread
 LIBS=   -liomp5 -lm -ldl
 
-blqh:main.cpp basis.o matrix.o init.o hamiltonian.o mt19937-64.o lanczos_hamiltonian.o
-	$(CC) $(CFLAGS) $^ -O3 -o $@ ${LIBS} $(CFLAGS) -lgsl
+blqh:main.cpp  basis.o matrix.o init.o hamiltonian.o mt19937-64.o lanczos_hamiltonian.o
+	$(CC) $^ -O3 -o $@ ${LIBS}  -lgsl $(CFLAGS)
 
 basis.o:basis.cpp basis.h
 	$(CC) $(CFLAGS) -c basis.cpp

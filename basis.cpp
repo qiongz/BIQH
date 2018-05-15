@@ -70,40 +70,30 @@ void basis::init() {
     q=nphi/C;
 
     if(K>=0) {
-        vector<long> cv_up,cv_down;
+	unsigned long long c_up,c_down,mask;
         for(it=basis_set.begin(); it!=basis_set.end();) {
             unsigned long long c=it->first;
-            for(n=0; n<nphi; n++)
-                if((c>>n)%2==1)
-                    cv_up.push_back(n);
-            for(n=nphi; n<2*nphi; n++)
-                if((c>>n)%2==1)
-                    cv_down.push_back(n);
-            // if translation could generate this configuration, delete it
+	    // generate the read mask with field length nphi, and shift to the position
+	    mask=(1<<nphi)-1;
+	    c_down=c & mask;
+	    c_up=(c& (mask<<nphi))>>nphi;
             bool delete_flag=false;
-            for(n=1; n<C; n++) {
-                config=0;
-                // translate in the upper-layer
-                for(i=0; i<cv_up.size(); i++) {
-                    j=(cv_up[i]+q*n>=nphi?cv_up[i]+q*n-nphi:cv_up[i]+q*n);
-                    config+=(1<<j);
-                }
-                // inverse translate in the down-layer
-                for(i=0; i<cv_down.size(); i++) {
-                    j=(cv_down[i]-q*n<nphi?cv_down[i]-q*n+nphi:cv_down[i]-q*n);
-                    config+=(1<<j);
-                }
-                if(basis_set.find(config)!=basis_set.end()&& config!=c) {
-                    delete_flag=true;
-                    break;
-                }
+	    for(n=0;n<C;n++){
+	      // left rotate the bits in the upper-layer: c_up
+	      c_up=((c_up >>q)|(c_up<<(nphi-q)))&mask ;
+	      // right rotate the bits in the down-layer: c_down
+	      c_down=((c_down<<q)|(c_down>>(nphi-q)))&mask;
+	      config=((c_up)<<nphi | c_down);
+              // if translation could generate this configuration, delete it
+              if(basis_set.find(config)!=basis_set.end()&& config!=c) {
+                delete_flag=true;
+                break;
+              }
             }
             if(delete_flag)
                 basis_set.erase(it++);
             else
                 ++it;
-            cv_up.clear();
-            cv_down.clear();
         }
     }
 
