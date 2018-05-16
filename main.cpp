@@ -61,14 +61,15 @@ int main(int argc,char *argv[]) {
     lhamil lconfig(lambda,seed);
     lconfig.sector.init(nphi,nel_up,nel_down,J,kx);
     for(int i=0;i<40;i++){
-    lconfig.set_hamil(lx,ly,nphi,nLL,i*0.1+0.05);
+    lconfig.set_hamil(lx,ly,nphi,nLL,i*0.1+0.05,4);
     lconfig.coeff_explicit_update();
     lconfig.diag(); 
     lconfig.eigenstates_reconstruction();
     cout<<i*0.1+0.05<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<endl;
     }
+    */
 
-*/
+
 
 
 
@@ -89,6 +90,7 @@ int main(int argc,char *argv[]) {
     //cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
 
 
+    
     cout<<"-----------Lanczos results---------"<<endl;
     lhamil lconfig(lambda,seed);
     auto t1=std::chrono::high_resolution_clock::now();
@@ -101,7 +103,7 @@ int main(int argc,char *argv[]) {
      
     auto t3=std::chrono::high_resolution_clock::now();
 
-    lconfig.set_hamil(lx,ly,nphi,nLL,d);
+    lconfig.set_hamil(lx,ly,nphi,nLL,d,6);
 
     auto t4=std::chrono::high_resolution_clock::now();
     cout<<"Stage-2: Hamiltonian matrix initialized !"<<endl;
@@ -121,6 +123,7 @@ int main(int argc,char *argv[]) {
     //cout<<"Ec:= "<<lconfig.Ec<<endl;
     //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
 
+   
     
     //
 /*

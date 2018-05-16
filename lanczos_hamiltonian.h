@@ -19,7 +19,6 @@ public:
     double E0,Ec;      //!< Ground state eigen energy
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
-    vector<complex<double> > matrix_elements;
     vector<complex<double> > FT;
     basis sector;
     Mat H;  //!< Hamiltonian matrix in CSR format
@@ -48,8 +47,8 @@ public:
     const lhamil & operator=(const lhamil &);
     /** \param _sector Basis sector
     */
-    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d);  //!< Initialize hamiltonian matrix
-    void peer_set_hamil(unsigned long long, int ,int ,int ,int);
+    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,int nthread);  //!< Initialize hamiltonian matrix
+    void peer_set_hamil(int,long);
     void Gram_Schmidt_orthogonalization(Vec &, int);
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays

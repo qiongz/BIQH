@@ -66,7 +66,8 @@ public:
 class Mat {
 public:
     // doublehe compressed Sparse Row (CSR) Data Structure
-    std::vector<long> outer_starts,inner_indices;
+    // outer_size for multi-threads storing, for which inner_indices are stored randomly
+    std::vector<long> outer_starts,outer_size,inner_indices;
     std::vector< complex<double> > value;
 
     Mat();

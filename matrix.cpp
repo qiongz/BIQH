@@ -243,11 +243,12 @@ Mat & Mat::operator=(const Mat & rhs) {
 
 Vec Mat::operator*(const Vec &rhs)const {
     Vec phi(rhs.size,0);
-    if(rhs.size!=outer_starts.size()-1) return phi;
+    if(rhs.size!=outer_starts.size()) return phi;
     #pragma omp parallel for schedule(guided,4)
-    for(int i=0; i<outer_starts.size()-1; i++) {
-    #pragma ivdep
-        for(int idx=outer_starts[i]; idx<outer_starts[i+1]; idx++)
+    for(int i=0; i<outer_starts.size(); i++) {
+        #pragma ivdep
+       // for(int idx=outer_starts[i]; idx<outer_starts[i+1]; idx++)
+       for(int idx=outer_starts[i];idx<outer_starts[i]+outer_size[i];idx++)
             phi.value[i]+=value[idx]*rhs.value[inner_indices[idx]];
     }
     return phi;
@@ -256,11 +257,12 @@ Vec Mat::operator*(const Vec &rhs)const {
 vector<complex<double> > Mat::operator*(const vector< complex<double> > &rhs)const {
     vector< complex<double> > phi;
     phi.assign(rhs.size(),0);
-    if(rhs.size()!=outer_starts.size()-1) return phi;
+    if(rhs.size()!=outer_starts.size()) return phi;
     #pragma omp parallel for schedule(guided,4)
-    for(int i=0; i<outer_starts.size()-1; i++) {
+    for(int i=0; i<outer_starts.size(); i++) {
         #pragma ivdep
-        for(int idx=outer_starts[i]; idx<outer_starts[i+1]; idx++)
+       // for(int idx=outer_starts[i]; idx<outer_starts[i+1]; idx++)
+       for(int idx=outer_starts[i];idx<outer_starts[i]+outer_size[i];idx++)
             phi[i]+=value[idx]*rhs[inner_indices[idx]];
     }
     return phi;

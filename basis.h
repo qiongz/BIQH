@@ -43,7 +43,7 @@ public:
     void init(int _nphi,int _nel_up, int _nel_down,int _J,int _K);
     void generate(long,long,long,unsigned long long);
     unsigned long long translate(unsigned long long,int,int &);
-    unsigned long long inv_translate(unsigned long long,int,int &);
+    unsigned long long  inv_translate(unsigned long long,int,int &);
     //long creation(long,long);
     //long annihilation(long,long);
     int get_sign(unsigned long long c ,int n ,int m,int nt,int mt);

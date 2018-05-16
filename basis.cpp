@@ -104,6 +104,7 @@ void basis::init() {
     basis_set.clear();
     for(i=0; i<id.size(); i++)
         basis_set.insert(pair<unsigned long long, long>(id[i],i));
+    
     nbasis=id.size();
 
     // initialize the bit sets count table
@@ -268,7 +269,7 @@ void basis::generate(long count,long j, long Ji, unsigned long long config) {
 }
 
 
-unsigned long long basis::translate(unsigned long long c, int k, int &sign) {
+unsigned long long  basis::translate(unsigned long long c, int k, int &sign) {
     unsigned long long config,mask_d,mask_u,c_d,c_u,mask_sign;
     int nsign;
     int bits=k*nphi/C;
