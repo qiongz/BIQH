@@ -83,6 +83,8 @@ inline void lhamil::peer_set_hamil(int id, long nbatch) {
     int n,m,s,t,nt,mt,sign,signl,signr,kl,kr,Cl,Cr;
     long i,j,k,l;
     vector<complex<double> > matrix_elements; 
+    vector<long> inner_indices;
+    vector<complex<double> > value;
     for(int _i = 0; _i < nbatch; _i++) {
 	i=_i+id*nbatch;
         matrix_elements.assign(nHilbert,0);
@@ -263,17 +265,21 @@ inline void lhamil::peer_set_hamil(int id, long nbatch) {
             }
         }
         matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
-        mutex_update.lock();
-        H.outer_starts[i]=H.inner_indices.size();
 	long count=0;
         for(k=0; k<nHilbert; k++)
             if(abs(matrix_elements[k])>1e-10) {
-                H.inner_indices.push_back(k);
-                H.value.push_back(matrix_elements[k]);
+                inner_indices.push_back(k);
+                value.push_back(matrix_elements[k]);
 		count++;
             }
+        mutex_update.lock();
+        H.outer_starts[i]=H.inner_indices.size();
+        H.inner_indices.insert(H.inner_indices.end(),inner_indices.begin(),inner_indices.end());
+        H.value.insert(H.value.end(),value.begin(),value.end());
 	H.outer_size[i]=count;
         mutex_update.unlock();
+        inner_indices.clear();
+        value.clear();
     }
     matrix_elements.clear();
 }
