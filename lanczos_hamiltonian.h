@@ -20,6 +20,7 @@ public:
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
     vector<complex<double> > matrix_elements;
+    vector<complex<double> > FT;
     basis sector;
     Mat H;  //!< Hamiltonian matrix in CSR format
     //Mat O;  //!< Operator matrix in CSR format
