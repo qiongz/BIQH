@@ -23,6 +23,7 @@ class basis {
 public:
     int nphi,nel,nel_up,nel_down;  //N_phi, up/down-layer electrons
     int K,J,C;  // total sum of j for up/down-layers and kx for up/down-layers
+    vector<int> popcount_table;
     map<unsigned long long, unsigned long long> basis_set; // basis set of up/down-layer electrons, I-J table
 
     long nbasis;     // No. of basis for up/down-layer electrons
