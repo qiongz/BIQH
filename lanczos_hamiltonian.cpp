@@ -77,15 +77,19 @@ void lhamil::init_Coulomb_matrix() {
             FT[kl*sector.C+kr]=complex<double>(cos(2.0*M_PI*(kl-kr)*kx/sector.C),sin(2.0*M_PI*(kl-kr)*kx/sector.C));
 }
 
-inline void lhamil::peer_set_hamil(int id, long nbatch) {
+inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
     int kx=sector.K;
     unsigned long lbasis,rbasis,rbasis_0,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signl,signr,kl,kr,Cl,Cr;
     long i,j,k,l;
+    complex<double> matrix_element_t;
     vector<complex<double> > matrix_elements; 
     vector<long> inner_indices;
     vector<complex<double> > value;
-    for(int _i = 0; _i < nbatch; _i++) {
+    inner_indices.reserve(nphi);
+    value.reserve(nphi);
+    j=0;
+    for(int _i = 0; _i < nrange; _i++) {
 	i=_i+id*nbatch;
         matrix_elements.assign(nHilbert,0);
         Cl=sector.basis_C[i];
@@ -132,8 +136,8 @@ inline void lhamil::peer_set_hamil(int id, long nbatch) {
                         // which is a valid translation, can be applied
                         // looking up Lin's table, and find the corresponding index
 			rbasis_0=mask_t+b;
+			matrix_element_t=0;
                         if(occ_t == 0) {
-                            // determine the subbasis size of right side basis
 			    Cr=sector.C;
                             if(kx<0) Cr=1;
                             for(int C=0; C<Cr; C++) {
@@ -146,12 +150,16 @@ inline void lhamil::peer_set_hamil(int id, long nbatch) {
                                     j = sector.basis_set[rbasis];
 				    kr=C;
                                     sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
+ 				    matrix_element_t=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr];
                                 }
-				if(C!=0 && rbasis==rbasis_0)
+				if(C!=0 && rbasis==rbasis_0){
 				    Cr=C;
+				    break;
+				}
                             }
-                            matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
+			    matrix_element_t/=sqrt(Cl*Cr);
                         }
+			matrix_elements[j]+=matrix_element_t;
                     }
                 }
             }
@@ -187,6 +195,7 @@ inline void lhamil::peer_set_hamil(int id, long nbatch) {
                         // if there're no electon on the translated position
                         // which is a valid translation, can be applied
                         rbasis_0=mask_t+b;
+			matrix_element_t=0;
                         if(occ_t == 0) {
 			    Cr=sector.C;
                             if(kx<0) Cr=1;
@@ -200,12 +209,16 @@ inline void lhamil::peer_set_hamil(int id, long nbatch) {
                                     j = sector.basis_set[rbasis];
                                     kr=C;
                                     sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
+ 				    matrix_element_t=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr];
                                 }
-				if(C!=0 && rbasis==rbasis_0)
+				if(C!=0 && rbasis==rbasis_0){
 				   Cr=C;
+				   break;
+				}
                             }
-                            matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
+			    matrix_element_t/=sqrt(Cl*Cr);
                         }
+			matrix_elements[j]+=matrix_element_t;
                     }
                 }
             }
@@ -243,6 +256,7 @@ inline void lhamil::peer_set_hamil(int id, long nbatch) {
                         // which is a valid translation, can be applied
                         // the translated indices
 			rbasis_0=mask_t+b;
+			matrix_element_t=0;
                         if(occ_t == 0) {
                             // determine the subbasis size of the right side basis
 			    Cr=sector.C;
@@ -257,19 +271,21 @@ inline void lhamil::peer_set_hamil(int id, long nbatch) {
                                     j = sector.basis_set[rbasis];
 				    kr=C;
                                     sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
+ 				    matrix_element_t=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[kl*sector.C+kr];
                                 }
-			        if(C!=0 && rbasis==rbasis_0)
+			        if(C!=0 && rbasis==rbasis_0){
 				   Cr=C;
+				   break;
+				}
                             }
-                            matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
+			    matrix_element_t/=sqrt(Cl*Cr);
                         }
+		        matrix_elements[j]+=matrix_element_t;
                     }
                 }
             }
         }
         matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
-        inner_indices.reserve(nphi);
-        value.reserve(nphi);
 	long count=0;
         for(k=0; k<nHilbert; k++)
             if(abs(matrix_elements[k])>1e-10) {
@@ -307,11 +323,12 @@ void lhamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, 
     long  nbatch=nHilbert/nthread;
     long nresidual=nHilbert%nthread;
     for(int id = 0; id < nthread; id++)
-        threads.push_back(std::thread(&lhamil::peer_set_hamil,this,id,nbatch));
+        threads.push_back(std::thread(&lhamil::peer_set_hamil,this,id,nbatch,nbatch));
     for(auto &th:threads)
         if(th.joinable())
             th.join();
-    peer_set_hamil(nthread,nresidual);
+    if(nresidual!=0)
+      peer_set_hamil(nthread,nbatch,nresidual);
 }
 
 void lhamil::Gram_Schmidt_orthogonalization(Vec &phi, int n) {
@@ -328,7 +345,7 @@ void lhamil::Gram_Schmidt_orthogonalization(Vec &phi, int n) {
 
     for(int i = 1; i < n; i++) {
         phi_2= H * phi_1;
-#pragma ivdep
+        #pragma ivdep
         phi_2 -= phi_1 * overlap[i] + phi_0 * norm[i];
         phi_2 /= norm[i+1];
 
@@ -362,7 +379,7 @@ void lhamil::coeff_update() {
     for(int i = 1; i < lambda; i++) {
         phi_2 = H * phi_1;
         overlap.push_back( (phi_1 * phi_2).real());
-#pragma ivdep
+        #pragma ivdep
         phi_2 -= phi_1 * overlap[i] + phi_0 * norm[i];
         norm.push_back( phi_2.normed());
 

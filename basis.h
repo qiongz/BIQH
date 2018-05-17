@@ -29,7 +29,7 @@ public:
 
     long nbasis;     // No. of basis for up/down-layer electrons
     vector<unsigned long> id;     // reversal table, J->I, Lin's Table is a 2D array
-    vector<int> basis_C;
+    vector<short> basis_C;
     explicit basis();
     basis(int _nphi,int _nel_up, int _nel_down);
     basis(int _nphi,int _nel_up, int _nel_down,int _J,int _K);

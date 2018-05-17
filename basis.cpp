@@ -290,8 +290,8 @@ unsigned long  basis::translate(unsigned long c, int k, int &sign) {
     c_d= c & mask_d;
     c_u=(c & mask_u)>>nphi;
     nsign=popcount_table[(mask_sign<<reverse_bits) & c_u]*(nel_up-1)+popcount_table[mask_sign & c_d]*(nel_down-1);
-    c_u=((c_u<<(bits)))|(c_u>>(reverse_bits))&mask_d;
-    c_d=((c_d>>(bits)))|(c_d<<(reverse_bits))&mask_d;
+    c_u=((c_u<<bits))|(c_u>>reverse_bits)&mask_d;
+    c_d=((c_d>>bits))|(c_d<<reverse_bits)&mask_d;
     config=((c_u<<nphi)|c_d);
     sign=(nsign%2==0?1:-1);
     return config;
