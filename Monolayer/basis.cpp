@@ -32,7 +32,7 @@ void basis::clear(){
    }
 }
 
-long basis::factorial(long N, long m) {
+unsigned long basis::factorial(long N, long m) {
     unsigned long num,denum;
     long i;
     num=1;
@@ -53,37 +53,37 @@ long basis::common_divisor(long n, long m){
 }
 
 void basis::init() {
-    long i,j,n,Ji,config,count;
+    long i,j,n,Ji,count;
+    unsigned long config;
     C=common_divisor(nel,nphi);
     long q=nphi/C;
     count=j=config=Ji=0;
     generate(count,j,Ji,config);
-    std::map<long,long>::iterator it;
+    std::unordered_map<unsigned long,long>::iterator it;
     // shrink to an unique subset L, all other subset could be generated with translation
     if(K>=0)
-    for(it=basis_set.begin(); it!=basis_set.end();){
-      long c=it->first;
-      vector<long> cv;
-      for(n=0;n<nphi;n++)
-         if((c>>n)%2==1)
-           cv.push_back(n);
-      // if translation could generate this configuration, delete it
-      bool delete_flag=false;
-      for(n=1;n<C;n++){
-        config=0;
-        for(i=0;i<cv.size();i++){
-              j=(cv[i]+q*n>=nphi?cv[i]+q*n-nphi:cv[i]+q*n);
-              config+=(1<<j);
-           }
-        if(basis_set.find(config)!=basis_set.end()&& config!=c){
-          delete_flag=true;
-          break;
+    {
+        unsigned long mask;
+        for(it=basis_set.begin(); it!=basis_set.end();) {
+            unsigned long c=it->first;
+            // generate the read mask with field length nphi, and shift to the position
+            mask=(1<<nphi)-1;
+            c=c & mask;
+            bool delete_flag=false;
+            for(n=1; n<C; n++) {
+                config=((c>>(q*n))|(c<<(nphi-q*n)))&mask ;
+                // right rotate the bits in the down-layer: c_down
+                // if translation could generate this configuration, delete it
+                if(basis_set.find(config)!=basis_set.end()&& config!=c) {
+                    delete_flag=true;
+                    break;
+                }
+            }
+            if(delete_flag)
+                basis_set.erase(it++);
+            else
+                ++it;
         }
-      }
-      if(delete_flag)
-         basis_set.erase(it++);
-      else
-         ++it;
     }
 
     for(it=basis_set.begin(); it!=basis_set.end(); it++)
@@ -91,8 +91,27 @@ void basis::init() {
     sort(id.begin(),id.end());
     basis_set.clear();
     for(i=0; i<id.size(); i++)
-        basis_set[id[i]]=i;
+        basis_set.insert(pair<unsigned long, long>(id[i],i));
     nbasis=id.size();
+    
+
+    // initialize the bit sets count table
+    for(i=0; i<pow(2,nphi); i++) {
+        int count=0;
+        for(n=0; n<nphi; n++)
+            if((i>>n)%2==1)
+                count++;
+        popcount_table.push_back(count);
+    }
+    // initialize the sector translation size for each basis
+   int sign;
+    basis_C.assign(nbasis,C);
+    for(i=0;i<id.size();i++)
+       for(n=1; n<C; n++)
+            if(translate(id[i],n,sign)==id[i]) {
+                basis_C[i]=n;
+                break;
+    }
 }
 
 void basis::init(long _nphi, long _nel){
@@ -193,7 +212,7 @@ void basis::for_sum(long &a,int count,int index,int range,int n_iter){
 }
 
 
-void  basis::generate(long count,long j,long Ji,long config){
+void  basis::generate(long count,long j,long Ji,unsigned long config){
   int i,id,k,c;
   count++;
   config=(count==1?0:config);
@@ -215,55 +234,9 @@ void  basis::generate(long count,long j,long Ji,long config){
   }
 }
 
-long basis::translate(long c, long k, long & sign){
-     long j,config,n;
-     vector<long> cv;
-     long q=nphi/C;
-     for(n=0;n<nphi;n++)
-        if((c>>n)%2==1)
-           cv.push_back(n);
-     config=0;
-     sign=0;
-     for(n=0;n<cv.size();n++){
-      if(cv[n]+q*k>=nphi){
-        j=cv[n]+q*k-nphi;
-        sign+=nel-1;
-        }
-      else
-         j=cv[n]+q*k;
-      config+=(1<<j);
-     }
-     sign=pow(-1,sign);
-     cv.clear();
-     return config;
-}
-
-long basis::inv_translate(long c, long k , long &sign){
-     long config,n,j;
-     vector<long> cv;
-     long q=nphi/C;
-     for(n=0;n<nphi;n++)
-        if((c>>n)%2==1)
-           cv.push_back(n);
-     config=0;
-     sign=0;
-     for(n=0;n<cv.size();n++){
-       if(cv[n]-q*k<0){
-         j=cv[n]-q*k+nphi;
-         sign+=nel-1; 
-       }
-       else
-         j=cv[n]-q*k;  
-       config+=(1<<j);
-     }
-     sign=pow(-1,sign);
-     cv.clear();
-     return config;
-}
-
 
 void basis::prlong() {
-    std::map<long,long>::iterator it;
+    std::unordered_map<unsigned long,long>::iterator it;
     cout<<"---------------------------------------"<<endl;
     for(it=basis_set.begin(); it!=basis_set.end(); it++){
         long c=it->first;
@@ -284,3 +257,31 @@ void basis::prlong() {
        cout<<x<<endl;
     */
 }
+
+unsigned long basis::translate(unsigned long c, int k, int &sign) {
+        unsigned long config,mask,mask_sign;
+        int nsign;
+        int bits=k*nphi/C;
+        int reverse_bits=nphi-bits;
+        mask_sign=(1<<bits)-1;
+        mask=(1<<nphi)-1;
+        c= c & mask;
+        nsign=popcount_table[(mask_sign<<reverse_bits) & c]*(nel-1);
+        config=((c<<bits)|(c>>reverse_bits))&mask;
+        sign=(nsign%2==0?1:-1);
+        return config;
+    }
+
+unsigned long basis::inv_translate(unsigned long c, int k,int &sign) {
+        unsigned long config,mask,mask_sign;
+        int nsign;
+        int bits=k*nphi/C;
+        int reverse_bits=nphi-bits;
+        mask_sign=(1<<bits)-1;
+        mask=(1<<nphi)-1;
+        c=c&mask;
+        nsign=popcount_table[mask_sign & c]*(nel-1);
+        config=((c>>bits)|(c<<reverse_bits))&mask;
+        sign=(nsign%2==0?1:-1);
+        return config;
+    }

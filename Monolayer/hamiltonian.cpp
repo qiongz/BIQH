@@ -35,23 +35,19 @@ void hamil::set_hamil(basis sector, double _lx, double _ly, int _nphi, int _nLL)
     nHilbert = sector.nbasis;
     hamiltonian = new complex<double>[nHilbert * nHilbert];
     memset(hamiltonian, 0, sizeof(complex<double>)*nHilbert * nHilbert);
-    long mask, b, n, m, i, k, s,t, sign;
-    long k1,k2,lbasis,rbasis,signl,signr;
+    int sign,signl,signr;
+    long mask, b, n, m, i, k, s,t;
+    long k1,k2,lbasis,rbasis;
     long kx=sector.K;
     long Cl,Cr;
           
     for(i = 0; i < nHilbert; i++) {
-        // start of new row of nonzero elements
-        // determine the subbasis size of basis i
-        for(k1=1; k1<=sector.C; k1++)
-            if(sector.translate(sector.id[i],k1,signl)==sector.id[i]) {
-                Cl=k1;
-                break;
-            }
         // select two electrons in left-basis <m_1, m_2|
         // n=j1, m=j2
+        Cl=(kx<0?1:sector.basis_C[i]);
         for(k1=0; k1<Cl; k1++) {
-            lbasis=sector.translate(sector.id[i],k1,signl);
+            signl=1;
+            lbasis=(k1==0?sector.id[i]:sector.translate(sector.id[i],k1,signl));
             for(n = 0; n < nphi-1; n++)
                 for(m = n+1; m < nphi; m++) {
                     mask = (1 << n) + (1 << m);
@@ -91,8 +87,10 @@ void hamil::set_hamil(basis sector, double _lx, double _ly, int _nphi, int _nLL)
                                     Cr=k2;
                                     break;
                                   }
+                                Cr=(kx<0?1:Cr);
                                 for(k2=0; k2<Cr; k2++) {
-                                    rbasis=sector.inv_translate(mask_t+b,k2,signr);
+                                    signr=1;
+				    rbasis=(k2==0?mask_t+b:sector.inv_translate(mask_t+b,k2,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         k = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt);

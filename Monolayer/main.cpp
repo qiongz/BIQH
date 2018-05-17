@@ -29,7 +29,7 @@ int main(int argc,char *argv[]) {
 
     init_argv(nLL,nphi,nel,J,kx,gamma,lambda,argc,argv);
     // keep lx/ly=nel/4
-    //gamma=nel/4.0;
+    gamma=nel/4.0;
 
     ly=sqrt(2.0*M_PI*nphi/gamma);
     lx=ly*gamma;
@@ -45,7 +45,7 @@ int main(int argc,char *argv[]) {
         basis sector(nphi,nel,J,kx);
         sector.init();
 
-        sector.prlong();
+        //sector.prlong();
         //sector.generate(count,index,a);
 
         cout<<"nLL: ="<<nLL<<endl;
@@ -59,17 +59,18 @@ int main(int argc,char *argv[]) {
         cout<<"-----------Exact Diag---------"<<endl;
 
 
-
+/*
         hamil config;
         //basis sector(nphi,nel,J,kx);
         //sector.init();
-        sector.prlong();
+        //sector.prlong();
         config.set_hamil(sector,lx,ly,nphi,nLL);
        // config.print_hamil(8);
         config.diag();
         //config.print_eigen(10);
         cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
     
+*/
 
 
     /*
@@ -86,12 +87,12 @@ int main(int argc,char *argv[]) {
 
     */
 
-    /*
+    
      cout<<"-----------Lanczos---------"<<endl;
      //basis sector(nphi,nel,J,kx);
      //sector.init();
      lhamil lconfig(lambda,seed);
-     lconfig.set_hamil(sector,lx,ly,nphi);
+     lconfig.set_hamil(sector,lx,ly,nphi,nLL);
      //lconfig.print_hamil(4);
      lconfig.coeff_update();
      //lconfig.coeff_explicit_update();
@@ -100,7 +101,7 @@ int main(int argc,char *argv[]) {
      lconfig.eigenstates_reconstruction();
      lconfig.print_eigen(10);
      cout<<"E_gs(LANCZOS):="<<setprecision(6)<<lconfig.ground_state_energy()/nel<<endl;
-    */
+    
 
 
 
