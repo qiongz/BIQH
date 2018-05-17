@@ -60,6 +60,7 @@ void lhamil::init_Coulomb_matrix() {
                 for(int q_x = -nphi/2; q_x <=nphi/2; q_x++)
                     if(!(q_x==0 && q_y==0))
                         V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
+
                 if(alpha==1) {
                     V=0;
                     for(int q_x = -50*nphi/d; q_x <50*nphi/d; q_x++)

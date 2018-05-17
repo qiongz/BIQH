@@ -247,7 +247,6 @@ Vec Mat::operator*(const Vec &rhs)const {
     #pragma omp parallel for schedule(guided,4)
     for(int i=0; i<outer_starts.size(); i++) {
         #pragma ivdep
-       // for(int idx=outer_starts[i]; idx<outer_starts[i+1]; idx++)
        for(int idx=outer_starts[i];idx<outer_starts[i]+outer_size[i];idx++)
             phi.value[i]+=value[idx]*rhs.value[inner_indices[idx]];
     }
@@ -261,7 +260,6 @@ vector<complex<double> > Mat::operator*(const vector< complex<double> > &rhs)con
     #pragma omp parallel for schedule(guided,4)
     for(int i=0; i<outer_starts.size(); i++) {
         #pragma ivdep
-       // for(int idx=outer_starts[i]; idx<outer_starts[i+1]; idx++)
        for(int idx=outer_starts[i];idx<outer_starts[i]+outer_size[i];idx++)
             phi[i]+=value[idx]*rhs[inner_indices[idx]];
     }

@@ -32,11 +32,6 @@ const basis & basis::operator =(const basis & _basis) {
 
 basis::~basis() {}
 
-void basis::clear() {
-    basis_set.clear();
-    id.clear();
-}
-
 unsigned long basis::factorial(int N, int m) {
     unsigned long num,denum;
     long i;
@@ -144,6 +139,13 @@ void basis::init(int _nphi,int _nel_up, int _nel_down,int _J,int _K) {
     C=common_divisor(nphi,nel_up);
     nel=nel_up+nel_down;
     init();
+}
+
+void basis::clear(){
+    basis_set.clear();
+    id.clear();
+    basis_C.clear();
+    popcount_table.clear(); 
 }
 
 /*

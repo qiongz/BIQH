@@ -46,7 +46,6 @@ public:
     void generate(long,long,long,unsigned long);
     int get_sign(unsigned long c,int n,int m,int nt,int mt);
     void prlong();
-
     unsigned long translate(unsigned long c, int k, int &sign) ;
     unsigned long inv_translate(unsigned long c, int k, int &sign) ;
 };
