@@ -2,7 +2,9 @@
 Basis generation library for Bilayer integer
 quantum Hall systems
    @author qiongzhu
-   19/3/2018
+   19/03/2018
+   last updated
+   17/05/2018
    Email:qiongzhunow@gmail.com
 *************************************************/
 #ifndef BASIS_H
@@ -35,7 +37,6 @@ public:
     basis(int _nphi,int _nel_up, int _nel_down,int _J,int _K);
     const basis & operator=(const basis &);
     ~basis();
-    // Delta_SAS, interlayer hopping
     unsigned long factorial(int,int);
     long common_divisor(int,int);
     void init();
@@ -43,13 +44,11 @@ public:
     void init(int _nphi,int _nel_up,int _nel_down);
     void init(int _nphi,int _nel_up, int _nel_down,int _J,int _K);
     void generate(long,long,long,unsigned long);
-    unsigned long translate(unsigned long,int,int &);
-    unsigned long  inv_translate(unsigned long,int,int &);
-    //long creation(long,long);
-    //long annihilation(long,long);
-    int get_sign(unsigned long c ,int n ,int m,int nt,int mt);
+    int get_sign(unsigned long c,int n,int m,int nt,int mt);
     void prlong();
-    friend ostream & operator<<(ostream & os, const basis &);
+
+    unsigned long translate(unsigned long c, int k, int &sign) ;
+    unsigned long inv_translate(unsigned long c, int k, int &sign) ;
 };
 
 #endif

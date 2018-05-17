@@ -56,11 +56,6 @@ int main(int argc,char *argv[]) {
     cout<<"ly: = "<<ly<<endl;
     cout<<"J: = "<<J<<endl;
     cout<<"kx: = "<<kx<<endl;
-    cout<<"sizeof unsigned long long:="<<sizeof(unsigned long long )<<endl;
-    cout<<"sizeof unsigned long:="<<sizeof(unsigned long )<<endl;
-    cout<<"sizeof unsigned :="<<sizeof(unsigned)<<endl;
-    cout<<"sizeof long long:="<<sizeof(long long )<<endl;
-    cout<<"sizeof long:="<<sizeof(long )<<endl;
 
   
 /*
@@ -79,21 +74,24 @@ int main(int argc,char *argv[]) {
 
 
 
-   
-    //hamil config;
-    //config.sector.init(nphi,nel_up,nel_down,J,kx);
-    //cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
-    //cout<<"-----------Ground state---------"<<endl;
+  
+    /*
+    hamil config;
+    config.sector.init(nphi,nel_up,nel_down,J,kx);
+    cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
+    cout<<"-----------Ground state---------"<<endl;
 
-    //auto t1=std::chrono::high_resolution_clock::now();
-    //config.set_hamil(lx,ly,nphi,nLL,d);
-    //auto t2=std::chrono::high_resolution_clock::now();
-    //cout<<"Full Hamiltonian matrix initialized !"<<endl;
-    //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t2-t1).count()/1.0e6<<" seconds."<<endl;
+    auto _t1=std::chrono::high_resolution_clock::now();
+    config.set_hamil(lx,ly,nphi,nLL,d);
+    auto _t2=std::chrono::high_resolution_clock::now();
+    cout<<"Full Hamiltonian matrix initialized !"<<endl;
+    cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(_t2-_t1).count()/1.0e6<<" seconds."<<endl;
 
     //config.print_hamil(10);
-    //config.diag();
-    //cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
+    config.diag();
+    cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
+    */
+    
 
 
     
@@ -128,6 +126,7 @@ int main(int argc,char *argv[]) {
     cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
     //cout<<"Ec:= "<<lconfig.Ec<<endl;
     //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
+    
 
    
     

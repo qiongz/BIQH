@@ -48,7 +48,7 @@ public:
     /** \param _sector Basis sector
     */
     void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,int nthread);  //!< Initialize hamiltonian matrix
-    void peer_set_hamil(int,long);
+    void peer_set_hamil(int,long,long);
     void Gram_Schmidt_orthogonalization(Vec &, int);
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays

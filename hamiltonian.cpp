@@ -48,10 +48,9 @@ void hamil::set_hamil(double _lx, double _ly, long _nphi,long _nLL, double _d)
     nHilbert = sector.nbasis;
     hamiltonian.assign(nHilbert*nHilbert,0);
     int kx=sector.K;
-    unsigned long long lbasis,rbasis,mask,mask_t,occ_t,b;
+    unsigned long lbasis,rbasis,mask,mask_t,occ_t,b;
     long i,j,k,l;
     int n,m,s,t,nt,mt,sign,signl,signr,kl,kr,Cl,Cr;
-
     for(i = 0; i < nHilbert; i++) {
             for(int C=1; C<=sector.C; C++)
             if(sector.translate(sector.id[i],C,sign)==sector.id[i]) {
