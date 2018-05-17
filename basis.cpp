@@ -58,8 +58,8 @@ long basis::common_divisor(int n, int m) {
 
 void basis::init() {
     long n,i,j,Ki,count,q,C;
-    unsigned long long config;
-    std::unordered_map<unsigned long long,long>::iterator it;
+    unsigned long config;
+    std::unordered_map<unsigned long,long>::iterator it;
     count=j=config=Ki=0;
     generate(count,j,Ki,config);
 
@@ -69,9 +69,9 @@ void basis::init() {
     q=nphi/C;
 
     if(K>=0) {
-        unsigned long long c_up,c_down,config_v,mask_d,mask_u;
+        unsigned long c_up,c_down,config_v,mask_d,mask_u;
         for(it=basis_set.begin(); it!=basis_set.end();) {
-            unsigned long long c=it->first;
+            unsigned long c=it->first;
             // generate the read mask with field length nphi, and shift to the position
             mask_d=(1<<nphi)-1;
             mask_u=mask_d<<nphi;
@@ -103,9 +103,19 @@ void basis::init() {
     sort(id.begin(),id.end());
     basis_set.clear();
     for(i=0; i<id.size(); i++)
-        basis_set.insert(pair<unsigned long long, long>(id[i],i));
+        basis_set.insert(pair<unsigned long, long>(id[i],i));
     
     nbasis=id.size();
+
+    // initialize the sector translation size for each basis
+    int sign;
+    basis_C.assign(nbasis,C);
+    for(i=0;i<id.size();i++)
+       for(n=1; n<C; n++)
+            if(translate(id[i],n,sign)==id[i]) {
+                basis_C[i]=n;
+                break;
+            }
 
     // initialize the bit sets count table
     for(i=0; i<pow(2,nphi); i++) {
@@ -171,9 +181,9 @@ long basis::onsite_potential(long i,long j,long n) {
 */
 
 
-int basis::get_sign(unsigned long long c,int n, int m, int nt, int mt) {
+int basis::get_sign(unsigned long c,int n, int m, int nt, int mt) {
     int k,kl,kr,nsign,sign;
-    unsigned long long b,mask, mask_k;
+    unsigned long b,mask, mask_k;
     mask=(1<<n)+(1<<m);
     // get the rest electrons
     b=c^mask;
@@ -229,9 +239,9 @@ long basis::annihilation(long s,long n)
 */
 
 
-void basis::generate(long count,long j, long Ji, unsigned long long config) {
+void basis::generate(long count,long j, long Ji, unsigned long config) {
     long i,k,range;
-    unsigned long long c;
+    unsigned long c;
 
     count++;
     config=(count==1?0:config);
@@ -269,8 +279,8 @@ void basis::generate(long count,long j, long Ji, unsigned long long config) {
 }
 
 
-unsigned long long  basis::translate(unsigned long long c, int k, int &sign) {
-    unsigned long long config,mask_d,mask_u,c_d,c_u,mask_sign;
+unsigned long  basis::translate(unsigned long c, int k, int &sign) {
+    unsigned long config,mask_d,mask_u,c_d,c_u,mask_sign;
     int nsign;
     int bits=k*nphi/C;
     int reverse_bits=nphi-bits;
@@ -280,15 +290,15 @@ unsigned long long  basis::translate(unsigned long long c, int k, int &sign) {
     c_d= c & mask_d;
     c_u=(c & mask_u)>>nphi;
     nsign=popcount_table[(mask_sign<<reverse_bits) & c_u]*(nel_up-1)+popcount_table[mask_sign & c_d]*(nel_down-1);
-    c_u=((c_u<<bits)|(c_u>>reverse_bits))&mask_d;
-    c_d=((c_d>>bits)|(c_d<<reverse_bits))&mask_d;
+    c_u=((c_u<<(bits)))|(c_u>>(reverse_bits))&mask_d;
+    c_d=((c_d>>(bits)))|(c_d<<(reverse_bits))&mask_d;
     config=((c_u<<nphi)|c_d);
     sign=(nsign%2==0?1:-1);
     return config;
 }
 
-unsigned long long basis::inv_translate(unsigned long long c, int k, int &sign) {
-    unsigned long long config,mask_d,mask_u,c_d,c_u,mask_sign;
+unsigned long basis::inv_translate(unsigned long c, int k, int &sign) {
+    unsigned long config,mask_d,mask_u,c_d,c_u,mask_sign;
     int nsign;
     int bits=k*nphi/C;
     int reverse_bits=nphi-bits;
@@ -307,10 +317,10 @@ unsigned long long basis::inv_translate(unsigned long long c, int k, int &sign) 
 
 
 void basis::prlong() {
-    std::unordered_map<unsigned long long,long>::iterator it;
+    std::unordered_map<unsigned long,long>::iterator it;
     cout<<"---------------------------------------"<<endl;
     for(it=basis_set.begin(); it!=basis_set.end(); it++) {
-        unsigned long long c=it->first;
+        unsigned long c=it->first;
         cout<<" | ";
         for(int n=0; n<nphi; n++) {
             if((c>>n)%2==1)

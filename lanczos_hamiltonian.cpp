@@ -79,7 +79,7 @@ void lhamil::init_Coulomb_matrix() {
 
 inline void lhamil::peer_set_hamil(int id, long nbatch) {
     int kx=sector.K;
-    unsigned long long lbasis,rbasis,mask,mask_t,occ_t,b;
+    unsigned long lbasis,rbasis,rbasis_0,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signl,signr,kl,kr,Cl,Cr;
     long i,j,k,l;
     vector<complex<double> > matrix_elements; 
@@ -88,14 +88,15 @@ inline void lhamil::peer_set_hamil(int id, long nbatch) {
     for(int _i = 0; _i < nbatch; _i++) {
 	i=_i+id*nbatch;
         matrix_elements.assign(nHilbert,0);
-        for(int C=1; C<=sector.C; C++)
-            if(sector.translate(sector.id[i],C,sign)==sector.id[i]) {
-                Cl=C;
-                break;
-            }
+        Cl=sector.basis_C[i];
         if(kx<0) Cl=1;
         for(kl=0; kl<Cl; kl++) {
-            lbasis=sector.translate(sector.id[i],kl,signl);
+            if(kl==0){
+	      lbasis=sector.id[i];
+	      signl=1;
+	    }
+	    else
+              lbasis=sector.translate(sector.id[i],kl,signl);
             //upper-layer
 	    for(n=0;n<nphi-1;n++)
             for(m = n+1; m < nphi; m++) {
@@ -130,27 +131,26 @@ inline void lhamil::peer_set_hamil(int id, long nbatch) {
                         // if there're no electon on the translated position
                         // which is a valid translation, can be applied
                         // looking up Lin's table, and find the corresponding index
+			rbasis_0=mask_t+b;
                         if(occ_t == 0) {
                             // determine the subbasis size of right side basis
-
-                            for(int C=1; C<=sector.C; C++)
-                                if(sector.translate(mask_t +b, C,sign)==(mask_t+b)) {
-                                    Cr=C;
-                                    break;
-                                }
-
+			    Cr=sector.C;
                             if(kx<0) Cr=1;
-                            for(kr=0; kr<Cr; kr++) {
-                                rbasis=sector.inv_translate(mask_t+b,kr,signr);
-                                //rbasis=sector.basis_trans[mask_t+b][kr];
-                                if(sector.basis_set.find(rbasis) != sector.basis_set.end())
-                                {
+                            for(int C=0; C<Cr; C++) {
+				if(C==0){
+					rbasis=rbasis_0;
+					signr=1;
+				}
+                                else rbasis=sector.inv_translate(rbasis_0,C,signr);
+                                if(sector.basis_set.find(rbasis) != sector.basis_set.end()){
                                     j = sector.basis_set[rbasis];
+				    kr=C;
                                     sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
-                                    matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
-                                    break;
                                 }
+				if(C!=0 && rbasis==rbasis_0)
+				    Cr=C;
                             }
+                            matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
                         }
                     }
                 }
@@ -186,24 +186,25 @@ inline void lhamil::peer_set_hamil(int id, long nbatch) {
                         occ_t = mask_t & b;
                         // if there're no electon on the translated position
                         // which is a valid translation, can be applied
+                        rbasis_0=mask_t+b;
                         if(occ_t == 0) {
-                            // determine the subbasis size of the right side basis
-                            for(int C=1; C<=sector.C; C++)
-                                if(sector.translate(mask_t +b, C,sign)==(mask_t+b)) {
-                                    Cr=C;
-                                    break;
-                                }
+			    Cr=sector.C;
                             if(kx<0) Cr=1;
-                            for(kr=0; kr<Cr; kr++) {
-                                rbasis=sector.inv_translate(mask_t+b,kr,signr);
+                            for(int C=0; C<Cr; C++) {
+                                if(C==0){
+				   rbasis=rbasis_0;
+				   signr=1;
+                                }
+				else  rbasis=sector.inv_translate(rbasis_0,C,signr);
                                 if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                     j = sector.basis_set[rbasis];
+                                    kr=C;
                                     sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
-                                    matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
-                                    break;
                                 }
+				if(C!=0 && rbasis==rbasis_0)
+				   Cr=C;
                             }
-
+                            matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
                         }
                     }
                 }
@@ -241,30 +242,34 @@ inline void lhamil::peer_set_hamil(int id, long nbatch) {
                         // if there're no electon on the translated position
                         // which is a valid translation, can be applied
                         // the translated indices
+			rbasis_0=mask_t+b;
                         if(occ_t == 0) {
                             // determine the subbasis size of the right side basis
-                            for(int C=1; C<=sector.C; C++)
-                                if(sector.translate(mask_t +b, C,sign)==(mask_t+b)) {
-                                    Cr=C;
-                                    break;
-                                }
+			    Cr=sector.C;
                             if(kx<0) Cr=1;
-                            for(kr=0; kr<Cr; kr++) {
-                                rbasis=sector.inv_translate(mask_t+b,kr,signr);
+                            for(int C=0; C<Cr; C++) {
+				if(C==0){
+			          rbasis=rbasis_0;
+				  signr=1;
+                                }
+                                else rbasis=sector.inv_translate(rbasis_0,C,signr);
                                 if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                     j = sector.basis_set[rbasis];
+				    kr=C;
                                     sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
-                                    matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
-                                    //mutex_update.unlock();
-                                    break;
                                 }
+			        if(C!=0 && rbasis==rbasis_0)
+				   Cr=C;
                             }
+                            matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
                         }
                     }
                 }
             }
         }
         matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
+        inner_indices.reserve(nphi);
+        value.reserve(nphi);
 	long count=0;
         for(k=0; k<nHilbert; k++)
             if(abs(matrix_elements[k])>1e-10) {

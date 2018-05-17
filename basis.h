@@ -25,10 +25,11 @@ public:
     int nphi,nel,nel_up,nel_down;  //N_phi, up/down-layer electrons
     int K,J,C;  // total sum of j for up/down-layers and kx for up/down-layers
     vector<int> popcount_table;
-    std::unordered_map<unsigned long long, long> basis_set; // basis set of up/down-layer electrons, I-J table
+    std::unordered_map<unsigned long, long> basis_set; // basis set of up/down-layer electrons, I-J table
 
     long nbasis;     // No. of basis for up/down-layer electrons
-    vector<unsigned long long> id;     // reversal table, J->I, Lin's Table is a 2D array
+    vector<unsigned long> id;     // reversal table, J->I, Lin's Table is a 2D array
+    vector<int> basis_C;
     explicit basis();
     basis(int _nphi,int _nel_up, int _nel_down);
     basis(int _nphi,int _nel_up, int _nel_down,int _J,int _K);
@@ -41,12 +42,12 @@ public:
     void clear();
     void init(int _nphi,int _nel_up,int _nel_down);
     void init(int _nphi,int _nel_up, int _nel_down,int _J,int _K);
-    void generate(long,long,long,unsigned long long);
-    unsigned long long translate(unsigned long long,int,int &);
-    unsigned long long  inv_translate(unsigned long long,int,int &);
+    void generate(long,long,long,unsigned long);
+    unsigned long translate(unsigned long,int,int &);
+    unsigned long  inv_translate(unsigned long,int,int &);
     //long creation(long,long);
     //long annihilation(long,long);
-    int get_sign(unsigned long long c ,int n ,int m,int nt,int mt);
+    int get_sign(unsigned long c ,int n ,int m,int nt,int mt);
     void prlong();
     friend ostream & operator<<(ostream & os, const basis &);
 };

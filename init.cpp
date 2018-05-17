@@ -6,20 +6,21 @@ void usage(char *target) {
     std::cout<<"  -n                       nphi\n";
     std::cout<<"  -e                       Total No. of electrons in upper-layer\n";
     std::cout<<"  -u                       No. of electrons in upper-layer\n";
-    std::cout<<"  -s                       kx in upper-layer\n";
-    std::cout<<"  -t                       total J in upper-layer or down-layer\n";
+    std::cout<<"  -k                       kx in upper-layer\n";
+    std::cout<<"  -j                       total J in upper-layer or down-layer\n";
     std::cout<<"  -g                       gamma=lx/ly  aspect ratio\n";
     std::cout<<"  -d                       interlayer distance\n";
     std::cout<<"  -m                       Lambda\n";
+    std::cout<<"  -t                       nthread\n";
     std::cout<<"Default: (l,n,u,d,lambda) = (4,4,2,1,200)\n";
 }
 
-void init_argv(int &nLL,int &nphi, int& nel, int &nel_up, int &J, int &kx, double &d,double &gamma ,int &lambda,int argc,char *argv[])
+void init_argv(int &nLL,int &nphi, int& nel, int &nel_up, int &J, int &kx, double &d,double &gamma ,int &lambda,int &nthread,int argc,char *argv[])
 {
     extern char *optarg;
     int ch,errFlag;
     errFlag=0;
-    while((ch=getopt(argc,argv,"l:e:n:u:d:s:t:g:m:h:"))!=-1) {
+    while((ch=getopt(argc,argv,"l:e:n:u:d:j:k:g:m:t:h:"))!=-1) {
         switch(ch) {
         case 'l':
             nLL=atoi(optarg);
@@ -33,10 +34,10 @@ void init_argv(int &nLL,int &nphi, int& nel, int &nel_up, int &J, int &kx, doubl
         case 'u':
             nel_up=atoi(optarg);
             break;
-        case 's':
+        case 'k':
             kx=atoi(optarg);
             break;
-        case 't':
+        case 'j':
             J=atoi(optarg);
             break;
         case 'g':
@@ -47,6 +48,9 @@ void init_argv(int &nLL,int &nphi, int& nel, int &nel_up, int &J, int &kx, doubl
             break;
         case 'm':
             lambda=atoi(optarg);
+            break;
+        case 't':
+            nthread=atoi(optarg);
             break;
         case 'h':
             errFlag++;

@@ -12,7 +12,7 @@
 using namespace std;
 
 int main(int argc,char *argv[]) {
-    int nLL,nphi,nel,nel_up,nel_down,J,kx,lambda;
+    int nLL,nphi,nel,nel_up,nel_down,J,kx,lambda,nthread;
     double lx,ly,gamma;
     int Sz;
     unsigned seed;
@@ -20,16 +20,17 @@ int main(int argc,char *argv[]) {
 
     nLL=0;
     nphi=8;
-    nel=4;
-    nel_up=2;
-    nel_down=2;
+    nel=8;
+    nel_up=4;
+    nel_down=4;
     gamma=1.0;
+    nthread=1;
     J=-1;
     kx=-1;
 
     d=100.0;
     lambda=100;
-    init_argv(nLL,nphi,nel,nel_up,J,kx,d,gamma,lambda,argc,argv);
+    init_argv(nLL,nphi,nel,nel_up,J,kx,d,gamma,lambda,nthread,argc,argv);
     //gamma=nel_up/4.0;
     ly=sqrt(nphi*2.0*M_PI/gamma);
     lx=ly*gamma;
@@ -55,6 +56,11 @@ int main(int argc,char *argv[]) {
     cout<<"ly: = "<<ly<<endl;
     cout<<"J: = "<<J<<endl;
     cout<<"kx: = "<<kx<<endl;
+    cout<<"sizeof unsigned long long:="<<sizeof(unsigned long long )<<endl;
+    cout<<"sizeof unsigned long:="<<sizeof(unsigned long )<<endl;
+    cout<<"sizeof unsigned :="<<sizeof(unsigned)<<endl;
+    cout<<"sizeof long long:="<<sizeof(long long )<<endl;
+    cout<<"sizeof long:="<<sizeof(long )<<endl;
 
   
 /*
@@ -103,7 +109,7 @@ int main(int argc,char *argv[]) {
      
     auto t3=std::chrono::high_resolution_clock::now();
 
-    lconfig.set_hamil(lx,ly,nphi,nLL,d,6);
+    lconfig.set_hamil(lx,ly,nphi,nLL,d,nthread);
 
     auto t4=std::chrono::high_resolution_clock::now();
     cout<<"Stage-2: Hamiltonian matrix initialized !"<<endl;
