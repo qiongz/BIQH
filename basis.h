@@ -4,7 +4,7 @@ quantum Hall systems
    @author qiongzhu
    19/03/2018
    last updated
-   17/05/2018
+   18/05/2018
    Email:qiongzhunow@gmail.com
 *************************************************/
 #ifndef BASIS_H
@@ -25,13 +25,12 @@ using namespace std;
 class basis {
 public:
     int nphi,nel,nel_up,nel_down;  //N_phi, up/down-layer electrons
+    long nbasis;     // No. of basis for up/down-layer electrons
     int K,J,C;  // total sum of j for up/down-layers and kx for up/down-layers
     vector<int> popcount_table;
     std::unordered_map<unsigned long, long> basis_set; // basis set of up/down-layer electrons, I-J table
 
-    long nbasis;     // No. of basis for up/down-layer electrons
     vector<unsigned long> id;     // reversal table, J->I, Lin's Table is a 2D array
-    vector<short> basis_C;
     explicit basis();
     basis(int _nphi,int _nel_up, int _nel_down);
     basis(int _nphi,int _nel_up, int _nel_down,int _J,int _K);
@@ -40,14 +39,16 @@ public:
     unsigned long factorial(int,int);
     long common_divisor(int,int);
     void init();
-    void clear();
     void init(int _nphi,int _nel_up,int _nel_down);
     void init(int _nphi,int _nel_up, int _nel_down,int _J,int _K);
     void generate(long,long,long,unsigned long);
     int get_sign(unsigned long c,int n,int m,int nt,int mt);
-    void prlong();
     unsigned long translate(unsigned long c, int k, int &sign) ;
     unsigned long inv_translate(unsigned long c, int k, int &sign) ;
+    unsigned long relative_translate(unsigned long c, int k, int &sign) ;
+    unsigned long relative_inv_translate(unsigned long c, int k, int &sign) ;
+    void clear();
+    void prlong();
 };
 
 #endif

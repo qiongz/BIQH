@@ -82,205 +82,286 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
     int kx=sector.K;
     unsigned long lbasis,rbasis,rbasis_0,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signl,signr,kl,kr,Cl,Cr,C;
+    int ql,qr,Dl,Dr,D,_signl,_signr;
+    unsigned long _lbasis,_rbasis;
+
+
     long i,j,k,l;
-    vector<complex<double> > matrix_elements; 
+    vector<complex<double> > matrix_elements;
     vector<long> inner_indices;
     vector<complex<double> > value;
     inner_indices.reserve(nphi);
     value.reserve(nphi);
 
     for(int _i = 0; _i < nrange; _i++) {
-	// i for each thread
-	i=_i+id*nbatch;
+        // i for each thread
+        i=_i+id*nbatch;
         matrix_elements.assign(nHilbert,0);
-	// get the left-basis translation size
-	// if parameter kx<0, do not perform basis translation
-	Cl=(kx<0?1:sector.basis_C[i]);
-        for(kl=0; kl<Cl; kl++) {
-	    signl=1;
-	    // translation with 0 bits is not necessary
-	    lbasis=(kl==0?sector.id[i]:sector.translate(sector.id[i],kl,signl));
-            //upper-layer
-	    for(n=0;n<nphi-1;n++)
-            for(m = n+1; m < nphi; m++) {
-                mask = (1 << n) + (1 << m);
-                // consider the upper-layer two electrons
-                // looking up the corresponding basis in id_up
-                // if there're two electrons on n and m;
-                if((lbasis &mask) == mask ) {
-                    // b is the rest electon positions
-                    b = lbasis ^ mask;
-                    // mt=j3, nt=j4
-                    // perform translation along x-direction (q_y), positive q_y
-                    for(t = -nphi/2; t <= nphi/2; t++) {
-                        if(n + t >=nphi)
-                            nt = n + t - nphi;
-                        else if (n+t <0)
-                            nt = n + t +nphi;
-                        else
-                            nt = n + t;
-                        if(m - t <0)
-                            mt = m - t + nphi;
-                        else if (m - t >=nphi)
-                            mt = m - t -nphi;
-                        else
-                            mt = m - t;
-
-                        s=fabs(mt-n);
-                        // the translated two electrons indices
-                        mask_t = (1 << nt) + (1 << mt);
-                        // occupation of electons on the translated position
-                        occ_t = mask_t & b;
-			rbasis_0=mask_t+b;
-			j=-1;
-                        // if there're no electon on the translated position
-                        // which is a valid translation, can be applied
-                        if(occ_t == 0 ) {
-			    Cr=(kx<0?1:sector.C);
-                            for(C=0; C<Cr; C++) {
-				signr=1;
-				// 0 bits shifting is not performed
-				rbasis=(C==0?rbasis_0:sector.inv_translate(rbasis_0,C,signr));
-				if(C!=0 && rbasis==rbasis_0){
-				    Cr=C;
-				    break;
-				}
-                                if(sector.basis_set.find(rbasis) != sector.basis_set.end()){
-                                    j = sector.basis_set[rbasis];
-				    kr = C;
-                                    sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
-                                }
-                            }
-			  // j used for deteting if the basis is founded
-			  if(j>=0)
- 		            matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
-                        }
-                    }
-                }
-              }
-
-            // down-layer
-	    for(n=nphi;n<2*nphi-1;n++)
-            for(m = n+1; m < 2*nphi; m++) {
-                mask = (1 << n) + (1 << m);
-                // consider the lower-layer two electrons
-                // if there're two electrons on n and m;
-                if((lbasis &mask) == mask) {
-                    // p is the rest electon positions
-                    b = lbasis ^ mask;
-                    // perform translation in x-direction, negative q_y
-                    for(t = -nphi/2; t <= nphi/2; t++) {
-                        if(n + t >=2*nphi)
-                            nt = n + t - nphi;
-                        else if (n+t <nphi)
-                            nt = n + t +nphi;
-                        else
-                            nt = n + t;
-                        if(m - t <nphi)
-                            mt = m - t + nphi;
-                        else if (m - t >=2*nphi)
-                            mt = m - t -nphi;
-                        else
-                            mt = m - t;
-                        s=fabs(mt-n);
-                        // the translated two electrons indices
-                        mask_t = (1 << nt) + (1 << mt);
-                        // occupation of electons on the translated position
-                        occ_t = mask_t & b;
-                        // if there're no electon on the translated position
-                        // which is a valid translation, can be applied
-                        rbasis_0=mask_t+b;
-			j=-1;
-                        if(occ_t == 0) {
-			    Cr=(kx<0?1:sector.C);
-                            for(C=0; C<Cr;C++) {
-				signr=1;
-				// 0 bits shifting is not performed
-				rbasis=(C==0?rbasis_0:sector.inv_translate(rbasis_0,C,signr));
-				if(C!=0 && rbasis==rbasis_0){
-				   Cr=C;
-				   break;
-				}
-                                if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                    j = sector.basis_set[rbasis];
-				    kr=C;
-                                    sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
-                                }
-                            }
-			    if(j>=0)
-			    	matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
-                        }
-                    }
-                }
+        // determine the size of relative translate of this basis
+        Dl=sector.C;
+        for(D=1; D<sector.C; D++)
+            if(sector.relative_translate(sector.id[i],D,_signl)==sector.id[i]) {
+                Dl=D;
+                break;
             }
-           for(n=0;n<nphi;n++) 
-            for(m = nphi; m < 2*nphi; m++) {
-                mask = (1 << n) + (1 << m);
-                // if there is one electron at site n in upper-layer
-                // and one electron at site m in lower-layer
-                if((lbasis &mask) == mask) {
-                    // b is the rest electon positions for upper-layer electrons
-                    b = lbasis ^ mask;
-                    // perform translation along x-direction
-                    for(t = -nphi/2; t <= nphi/2 ; t++) {
-                        if(n + t>=nphi)
-                            nt = n + t - nphi;
-                        else if (n+t <0)
-                            nt = n + t +nphi;
-                        else
-                            nt = n + t;
-                        if(m - t <nphi)
-                            mt = m - t + nphi;
-                        else if (m - t >=2*nphi)
-                            mt = m - t -nphi;
-                        else
-                            mt = m - t;
-                        s=fabs(mt-nphi-n);
-                        // the translated electron index
-                        mask_t = (1 << nt)+(1<<mt);
-                        // occupation of electons on the translated position
-                        occ_t = mask_t & b;
-                        // if there're no electon on the translated position
-                        // which is a valid translation, can be applied
-                        // the translated indices
-			rbasis_0=mask_t+b;
-			j=-1;
-                        if(occ_t == 0 ) {
-			    Cr=(kx<0?1:sector.C);
-                            for( C=0; C<Cr; C++) {
-				signr=1;
-				rbasis=(C==0?rbasis_0:sector.inv_translate(rbasis_0,C,signr));
-			        if(C!=0 && rbasis==rbasis_0){
-				   Cr=C;
-				   break;
-				}
-                                if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                    j = sector.basis_set[rbasis];
-				    kr =C;
-                                    sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
+        // if parameter kx<0, do not perform basis translation
+        Dl=(kx<0?1:Dl);
+        Dl=1;
+        for(ql=0; ql<Dl; ql++) {
+            _signl=1;
+            _lbasis=(ql==0?sector.id[i]:sector.translate(sector.id[i],ql,_signl));
+            // determine the size of translate of this basis
+            Cl=sector.C;
+            for(C=1; C<sector.C; C++)
+                if(sector.translate(_lbasis,C,signl)==_lbasis) {
+                    Cl=C;
+                    break;
+                }
+            // if parameter kx<0, do not perform basis translation
+            Cl=(kx<0?1:Cl);
+            for(kl=0; kl<Cl; kl++) {
+                signl=1;
+                // translation with 0 bits is not necessary
+                lbasis=(kl==0?_lbasis:sector.relative_translate(_lbasis,kl,signl));
+                //down-layer
+                for(n=0; n<nphi-1; n++)
+                    for(m = n+1; m < nphi; m++) {
+                        mask = (1 << n) + (1 << m);
+                        // consider the upper-layer two electrons
+                        // looking up the corresponding basis in id_up
+                        // if there're two electrons on n and m;
+                        if((lbasis &mask) == mask ) {
+                            // b is the rest electon positions
+                            b = lbasis ^ mask;
+                            // mt=j3, nt=j4
+                            // perform translation along x-direction (q_y), positive q_y
+                            for(t = -nphi/2; t <= nphi/2; t++) {
+                                if(n + t >=nphi)
+                                    nt = n + t - nphi;
+                                else if (n+t <0)
+                                    nt = n + t +nphi;
+                                else
+                                    nt = n + t;
+                                if(m - t <0)
+                                    mt = m - t + nphi;
+                                else if (m - t >=nphi)
+                                    mt = m - t -nphi;
+                                else
+                                    mt = m - t;
+
+                                s=abs(mt-n);
+                                // the translated two electrons indices
+                                mask_t = (1 << nt) + (1 << mt);
+                                // occupation of electons on the translated position
+                                occ_t = mask_t & b;
+                                rbasis_0=mask_t+b;
+                                // if there're no electon on the translated position
+                                // which is a valid translation, can be applied
+                                if(occ_t == 0 ) {
+                                    // determine the right side size of the translation
+                                    Cr=sector.C;
+                                    for(C=1; C<sector.C; C++)
+                                        if(sector.relative_translate(rbasis_0,C,signr)==rbasis_0) {
+                                            Cr=C;
+                                            break;
+                                        }
+                                    // if parameter kx<0, do not perform basis translation
+                                    Cr=(kx<0?1:Cr);
+                                    for(kr=0; kr<Cr; kr++) {
+                                        signr=1;
+                                        // 0 bits shifting is not performed
+                                        _rbasis=(kr==0?rbasis_0:sector.relative_inv_translate(rbasis_0,kr,signr));
+                                        // determine the right side size of the relative_translation
+					/*
+                                        Dr=sector.C;
+                                        for(D=1; D<sector.C; D++)
+                                            if(sector.translate(_rbasis,D,_signr)==_rbasis) {
+                                                Dr=D;
+                                                break;
+                                            }
+					*/
+                                        // if parameter kx<0, do not perform basis translation
+                                        //Dr=(kx<0?1:Dr);
+					Dr=Dl;
+                                        //for(qr=0; qr<Dr; qr++) {
+                                            //_signr=1;
+                                            //rbasis=(qr==0?_rbasis:sector.inv_translate(_rbasis,qr,_signr));
+					    //rbasis=sector.inv_translate(_rbasis,ql,_signr);
+					    _signr=1;
+					    rbasis=_rbasis;
+                                            if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                                                j = sector.basis_set[rbasis];
+                                                sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr*_signl*_signr;
+                                                matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
+                                            }
+                                        //}
+                                    }
                                 }
                             }
-			    if(j>=0){
- 			       matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
-			    }
                         }
                     }
-                }
+
+                // upper-layer
+                for(n=nphi; n<2*nphi-1; n++)
+                    for(m = n+1; m < 2*nphi; m++) {
+                        mask = (1 << n) + (1 << m);
+                        // consider the lower-layer two electrons
+                        // if there're two electrons on n and m;
+                        if((lbasis &mask) == mask && n!=m) {
+                            // p is the rest electon positions
+                            b = lbasis ^ mask;
+                            // perform translation in x-direction, negative q_y
+                            for(t = -nphi/2; t <= nphi/2; t++) {
+                                if(n + t >=2*nphi)
+                                    nt = n + t - nphi;
+                                else if (n+t <nphi)
+                                    nt = n + t +nphi;
+                                else
+                                    nt = n + t;
+                                if(m - t <nphi)
+                                    mt = m - t + nphi;
+                                else if (m - t >=2*nphi)
+                                    mt = m - t -nphi;
+                                else
+                                    mt = m - t;
+                                s=abs(mt-n);
+                                // the translated two electrons indices
+                                mask_t = (1 << nt) + (1 << mt);
+                                // occupation of electons on the translated position
+                                occ_t = mask_t & b;
+                                // if there're no electon on the translated position
+                                // which is a valid translation, can be applied
+                                rbasis_0=mask_t+b;
+                                if(occ_t == 0 && nt!=mt) {
+                                    // determine the right side size of the translation
+                                    Cr=sector.C;
+                                    for(C=1; C<sector.C; C++)
+                                        if(sector.relative_translate(rbasis_0,C,signr)==rbasis_0) {
+                                            Cr=C;
+                                            break;
+                                        }
+                                    // if parameter kx<0, do not perform basis translation
+                                    Cr=(kx<0?1:Cr);
+                                    for(kr=0; kr<Cr; kr++) {
+                                        signr=1;
+                                        // 0 bits shifting is not performed
+                                        _rbasis=(kr==0?rbasis_0:sector.relative_inv_translate(rbasis_0,kr,signr));
+                                        // determine the right side size of the relative_translation
+					/*
+                                        Dr=sector.C;
+                                        for(D=1; D<sector.C; D++)
+                                            if(sector.translate(_rbasis,D,_signr)==_rbasis) {
+                                                Dr=D;
+                                                break;
+                                            }
+					*/
+                                        // if parameter kx<0, do not perform basis translation
+                                        //Dr=(kx<0?1:Dr);
+					Dr=Dl;
+                                        //for(qr=0; qr<Dr; qr++) {
+                                            //_signr=1;
+                                            //rbasis=(qr==0?_rbasis:sector.inv_translate(_rbasis,qr,_signr));
+					    //rbasis=sector.inv_translate(_rbasis,ql,_signr);
+					    _signr=1;
+					    rbasis=_rbasis;
+                                            if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                                                j = sector.basis_set[rbasis];
+                                                sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr*_signl*_signr;
+                                                matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
+                                            }
+                                        //}
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                /*
+                    for(n=0; n<nphi; n++)
+                        for(m = nphi; m < 2*nphi; m++) {
+                            mask = (1 << n) + (1 << m);
+                            // if there is one electron at site n in upper-layer
+                            // and one electron at site m in lower-layer
+                            if((lbasis &mask) == mask) {
+                                // b is the rest electon positions for upper-layer electrons
+                                b = lbasis ^ mask;
+                                // perform translation along x-direction
+                                for(t = -nphi/2; t <= nphi/2 ; t++) {
+                                    if(n + t>=nphi)
+                                        nt = n + t - nphi;
+                                    else if (n+t <0)
+                                        nt = n + t +nphi;
+                                    else
+                                        nt = n + t;
+                                    if(m - t <nphi)
+                                        mt = m - t + nphi;
+                                    else if (m - t >=2*nphi)
+                                        mt = m - t -nphi;
+                                    else
+                                        mt = m - t;
+                                    s=abs(mt-nphi-n);
+                                    // the translated electron index
+                                    mask_t = (1 << nt)+(1<<mt);
+                                    // occupation of electons on the translated position
+                                    occ_t = mask_t & b;
+                                    // if there're no electon on the translated position
+                                    // which is a valid translation, can be applied
+                                    // the translated indices
+                                    rbasis_0=mask_t+b;
+                                    if(occ_t == 0 ) {
+                		// determine the right side size of the translation
+                		Cr=sector.C;
+                                        for(C=1;C<sector.C;C++)
+                	           if(sector.relative_translate(rbasis_0,C,signr)==rbasis_0){
+                			Cr=C;
+                			break;
+                		      }
+                                        // if parameter kx<0, do not perform basis translation
+                		Cr=(kx<0?1:Cr);
+                                        for(kr=0; kr<Cr; kr++) {
+                                            signr=1;
+                                            // 0 bits shifting is not performed
+                                            _rbasis=(kr==0?rbasis_0:sector.relative_inv_translate(rbasis_0,kr,signr));
+                		    // determine the right side size of the translation
+                		    Dr=sector.C;
+                		    for(D=1;D<sector.C;D++)
+                			 if(sector.translate(_rbasis,D,_signr)==_rbasis){
+                		            Dr=D;
+                			    break;
+                			 }
+                                            // if parameter kx<0, do not perform basis translation
+                		    Dr=(kx<0?1:Dr);
+                		    for(qr=0;qr<Dr;qr++){
+                	              _signr=1;
+                		      rbasis=(qr==0?_rbasis:sector.inv_translate(_rbasis,qr,_signr));
+                                            if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                                                j = sector.basis_set[rbasis];
+                                                sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr*_signl*_signr;
+                                                matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr*Dl*Dr);
+                                            }
+                		    }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                */
             }
         }
+
         matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
-	long count=0;
+        long count=0;
         for(k=0; k<nHilbert; k++)
             if(abs(matrix_elements[k])>1e-10) {
                 inner_indices.push_back(k);
                 value.push_back(matrix_elements[k]);
-		count++;
+                count++;
             }
         mutex_update.lock();
         H.outer_starts[i]=H.inner_indices.size();
         H.inner_indices.insert(H.inner_indices.end(),inner_indices.begin(),inner_indices.end());
         H.value.insert(H.value.end(),value.begin(),value.end());
-	H.outer_size[i]=count;
+        H.outer_size[i]=count;
         mutex_update.unlock();
         inner_indices.clear();
         value.clear();
@@ -311,7 +392,7 @@ void lhamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, 
         if(th.joinable())
             th.join();
     if(nresidual!=0)
-      peer_set_hamil(nthread,nbatch,nresidual);
+        peer_set_hamil(nthread,nbatch,nresidual);
 }
 
 void lhamil::Gram_Schmidt_orthogonalization(Vec &phi, int n) {
@@ -328,7 +409,7 @@ void lhamil::Gram_Schmidt_orthogonalization(Vec &phi, int n) {
 
     for(int i = 1; i < n; i++) {
         phi_2= H * phi_1;
-        #pragma ivdep
+#pragma ivdep
         phi_2 -= phi_1 * overlap[i] + phi_0 * norm[i];
         phi_2 /= norm[i+1];
 
@@ -362,7 +443,7 @@ void lhamil::coeff_update() {
     for(int i = 1; i < lambda; i++) {
         phi_2 = H * phi_1;
         overlap.push_back( (phi_1 * phi_2).real());
-        #pragma ivdep
+#pragma ivdep
         phi_2 -= phi_1 * overlap[i] + phi_0 * norm[i];
         norm.push_back( phi_2.normed());
 
@@ -416,7 +497,7 @@ void lhamil::coeff_explicit_update()
     memset(phi_1,0,sizeof(complex<double>)*nHilbert);
     #pragma omp parallel for schedule(static)
     for(i=0; i<H.outer_starts.size(); i++) {
-        #pragma ivdep
+#pragma ivdep
         //for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
         for(idx=H.outer_starts[i]; idx< H.outer_starts[i]+H.outer_size[i]; idx++)
             phi_1[i]+=H.value[idx]*phi_0[H.inner_indices[idx]];
@@ -457,7 +538,7 @@ void lhamil::coeff_explicit_update()
         memset(phi_2,0,sizeof(complex<double>)*nHilbert);
         #pragma omp parallel for schedule(guided,4)
         for(i=0; i<H.outer_starts.size(); i++) {
-            #pragma ivdep
+#pragma ivdep
             //for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
             for(idx=H.outer_starts[i]; idx< H.outer_starts[i]+H.outer_size[i]; idx++)
                 phi_2[i]+=H.value[idx]*phi_1[H.inner_indices[idx]];

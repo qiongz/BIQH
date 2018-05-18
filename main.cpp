@@ -94,7 +94,7 @@ int main(int argc,char *argv[]) {
     
 
 
-    
+   
     cout<<"-----------Lanczos results---------"<<endl;
     lhamil lconfig(lambda,seed);
     auto t1=std::chrono::high_resolution_clock::now();
@@ -127,12 +127,14 @@ int main(int argc,char *argv[]) {
     //cout<<"Ec:= "<<lconfig.Ec<<endl;
     //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
     
+    
+    
 
    
     
     //
-/*
-   
+
+  /* 
     for(int i=0;i<lconfig.nHilbert;i++)
         if(abs(lconfig.psir_0[i])>0.11){
           cout<<i<<" :   |";
@@ -147,7 +149,8 @@ int main(int argc,char *argv[]) {
           cout<<")   ";
           cout<<bitset<8>((lconfig.sector.id[i])).to_string()<<": "<<bitset<8>((lconfig.sector.id[i])>>nphi).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
         }
-*/
+	*/
+
 
    
 
@@ -161,19 +164,22 @@ int main(int argc,char *argv[]) {
         t0=s0=0;
 
         int N=sector0.common_divisor(nphi,nel_up);
-        hamil config;
+        lhamil config(lambda,seed);
         for(int t=0; t<N; t++)
             for(int s=0; s<N; s++){
-                basis sector(nphi,nel_up,nel_down,t,s);
-                sector.init();
-                config.set_hamil(sector,lx,ly,nphi,nLL,d);
+		config.sector.init(nphi,nel_up,nel_down,t,s);
+                config.set_hamil(lx,ly,nphi,nLL,d,nthread);
+		config.coeff_update();
                 config.diag();
+		config.eigenstates_reconstruction();
 
                 double K=sqrt((s-s0)*(s-s0)+(t-t0)*(t-t0)*gamma*gamma)*sqrt(2.0*M_PI/nphi/gamma);
-                cout<<K<<" ";
-                for(int n=0; n<5; n++)
-                    cout<<config.eigenvalues[n]<<" ";
+                cout<<t<<" "<<s<<" "<<K<<" ";
+                //for(int n=0; n<5; n++)
+                //    cout<<config.eigenvalues[n]<<" ";
+		cout<<config.ground_state_energy()/nel;
                 cout<<endl;
+		config.sector.clear();
 
              }
 */
