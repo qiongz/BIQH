@@ -157,8 +157,8 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                         }
                     }
                 }
-            }
-        
+              }
+
             // down-layer
 	    for(n=nphi;n<2*nphi-1;n++)
             for(m = n+1; m < 2*nphi; m++) {
@@ -213,9 +213,6 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                     }
                 }
             }
-            // consider the one electron in the upper layer
-            // and one electron in the lower layer case
-	    
            for(n=0;n<nphi;n++) 
             for(m = nphi; m < 2*nphi; m++) {
                 mask = (1 << n) + (1 << m);
@@ -248,7 +245,7 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                         // the translated indices
 			rbasis_0=mask_t+b;
 			j=-1;
-                        if(occ_t == 0) {
+                        if(occ_t == 0 ) {
 			    Cr=(kx<0?1:sector.C);
                             for( C=0; C<Cr; C++) {
 				signr=1;
@@ -263,8 +260,9 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                     sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
                                 }
                             }
-			    if(j>=0)
+			    if(j>=0){
  			       matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
+			    }
                         }
                     }
                 }

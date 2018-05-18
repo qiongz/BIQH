@@ -1,6 +1,6 @@
 #include"init.h"
 #include"basis.h"
-#include"hamiltonian.h"
+//#include"hamiltonian.h"
 #include"lanczos_hamiltonian.h"
 #include<ctime>
 #include<sstream>

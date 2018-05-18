@@ -55,15 +55,14 @@ long basis::common_divisor(int n, int m) {
 void basis::init() {
     long n,i,j,Ki,count,q,C;
     unsigned long config;
+    C=common_divisor(nphi,nel_up);
+    q=nphi/C;
     std::unordered_map<unsigned long,long>::iterator it;
     count=j=config=Ki=0;
     generate(count,j,Ki,config);
 
     // shrink the up-layer basis to an unique subset L
     // and with nel_up/nel_down in each layer
-    C=common_divisor(nphi,nel_up);
-    q=nphi/C;
-
     if(K>=0) {
         unsigned long c_up,c_down,config_v,mask_d,mask_u;
         for(it=basis_set.begin(); it!=basis_set.end();) {
@@ -76,9 +75,7 @@ void basis::init() {
 
             bool delete_flag=false;
             for(n=1; n<C; n++) {
-                // left rotate the bits in the upper-layer: c_up
-                c_up=((c_up >>q)|(c_up<<(nphi-q)))&mask_d ;
-                // right rotate the bits in the down-layer: c_down
+                // right rotate the bits in the down-layer: c_down , relative rotation to upper layer with q*n
                 c_down=((c_down<<q)|(c_down>>(nphi-q)))&mask_d;
                 config=((c_up<<nphi)&mask_u | c_down);
                 // if translation could generate this configuration, delete it
@@ -300,7 +297,7 @@ void basis::prlong() {
                 cout<<n-nphi<<" ";
         }
         cout<<"> ";
-        cout<<bitset<20>(it->first).to_string()<<" "<<setw(6)<<it->first<<" "<<it->second<<"     C:="<<basis_C[count]<<endl;
+        cout<<bitset<20>(it->first).to_string()<<" "<<setw(6)<<it->first<<" "<<it->second<<endl;
 	count++;
     }
     cout<<"---------------------------------------"<<endl;
@@ -321,6 +318,24 @@ void basis::prlong() {
     cout<<"---------------------------------------"<<endl;
     */
 }
+/*
+unsigned long basis::translate_u(unsigned long c, int k, int &sign) {
+        unsigned long config,mask_d,mask_u,c_d,c_u,mask_sign;
+        int nsign;
+        int bits=k*nphi/C;
+        int reverse_bits=nphi-bits;
+        mask_sign=(1<<bits)-1;
+        mask_d=(1<<nphi)-1;
+        mask_u=mask_d<<nphi;
+        c_d= c & mask_d;
+        c_u=(c & mask_u)>>nphi;
+        nsign=popcount_table[(mask_sign<<reverse_bits) & c_u]*(nel_up-1);
+        c_u=((c_u<<bits)|(c_u>>reverse_bits))&mask_d;
+        config=((c_u<<nphi)|c_d);
+        sign=(nsign%2==0?1:-1);
+        return config;
+    }
+*/
 
 unsigned long basis::translate(unsigned long c, int k, int &sign) {
         unsigned long config,mask_d,mask_u,c_d,c_u,mask_sign;
@@ -331,14 +346,32 @@ unsigned long basis::translate(unsigned long c, int k, int &sign) {
         mask_d=(1<<nphi)-1;
         mask_u=mask_d<<nphi;
         c_d= c & mask_d;
-        c_u=(c & mask_u)>>nphi;
-        nsign=popcount_table[(mask_sign<<reverse_bits) & c_u]*(nel_up-1)+popcount_table[mask_sign & c_d]*(nel_down-1);
-        c_u=((c_u<<bits)|(c_u>>reverse_bits))&mask_d;
+        c_u=c & mask_u;
+        nsign=popcount_table[mask_sign & c_d]*(nel_down-1);
         c_d=((c_d>>bits)|(c_d<<reverse_bits))&mask_d;
+        config=(c_u|c_d);
+        sign=(nsign%2==0?1:-1);
+        return config;
+    }
+
+/*
+unsigned long basis::inv_translate_u(unsigned long c, int k,int &sign) {
+        unsigned long config,mask_d,mask_u,c_d,c_u,mask_sign;
+        int nsign;
+        int bits=k*nphi/C;
+        int reverse_bits=nphi-bits;
+        mask_sign=(1<<bits)-1;
+        mask_d=(1<<nphi)-1;
+        mask_u=mask_d<<nphi;
+        c_d=c&mask_d;
+        c_u=(c&mask_u)>>nphi;
+        nsign=popcount_table[mask_sign & c_u]*(nel_up-1);
+        c_u=((c_u>>bits)|(c_u<<reverse_bits))&mask_d;
         config=((c_u<<nphi)|c_d);
         sign=(nsign%2==0?1:-1);
         return config;
     }
+*/
 
 unsigned long basis::inv_translate(unsigned long c, int k,int &sign) {
         unsigned long config,mask_d,mask_u,c_d,c_u,mask_sign;
@@ -349,11 +382,10 @@ unsigned long basis::inv_translate(unsigned long c, int k,int &sign) {
         mask_d=(1<<nphi)-1;
         mask_u=mask_d<<nphi;
         c_d=c&mask_d;
-        c_u=(c&mask_u)>>nphi;
-        nsign=popcount_table[mask_sign & c_u]*(nel_up-1)+popcount_table[(mask_sign<<reverse_bits) &c_d]*(nel_down-1);
-        c_u=((c_u>>bits)|(c_u<<reverse_bits))&mask_d;
+        c_u=c&mask_u;
+        nsign=popcount_table[(mask_sign<<reverse_bits) &c_d]*(nel_down-1);
         c_d=((c_d<<bits)|(c_d>>reverse_bits))&mask_d;
-        config=((c_u<<nphi)|c_d);
+        config=(c_u|c_d);
         sign=(nsign%2==0?1:-1);
         return config;
     }
