@@ -97,6 +97,7 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
         // i for each thread
         i=_i+id*nbatch;
         matrix_elements.assign(nHilbert,0);
+
         // determine the size of relative translate of this basis
         Dl=sector.C;
         for(D=1; D<sector.C; D++)
@@ -106,10 +107,10 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
             }
         // if parameter kx<0, do not perform basis translation
         Dl=(kx<0?1:Dl);
-        Dl=1;
+
         for(ql=0; ql<Dl; ql++) {
             _signl=1;
-            _lbasis=(ql==0?sector.id[i]:sector.translate(sector.id[i],ql,_signl));
+            _lbasis=(ql==0?sector.id[i]:sector.relative_translate(sector.id[i],ql,_signl));
             // determine the size of translate of this basis
             Cl=sector.C;
             for(C=1; C<sector.C; C++)
@@ -122,7 +123,7 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
             for(kl=0; kl<Cl; kl++) {
                 signl=1;
                 // translation with 0 bits is not necessary
-                lbasis=(kl==0?_lbasis:sector.relative_translate(_lbasis,kl,signl));
+                lbasis=(kl==0?_lbasis:sector.translate(_lbasis,kl,signl));
                 //down-layer
                 for(n=0; n<nphi-1; n++)
                     for(m = n+1; m < nphi; m++) {
@@ -161,7 +162,7 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                     // determine the right side size of the translation
                                     Cr=sector.C;
                                     for(C=1; C<sector.C; C++)
-                                        if(sector.relative_translate(rbasis_0,C,signr)==rbasis_0) {
+                                        if(sector.translate(rbasis_0,C,signr)==rbasis_0) {
                                             Cr=C;
                                             break;
                                         }
@@ -170,31 +171,29 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                     for(kr=0; kr<Cr; kr++) {
                                         signr=1;
                                         // 0 bits shifting is not performed
-                                        _rbasis=(kr==0?rbasis_0:sector.relative_inv_translate(rbasis_0,kr,signr));
+                                        _rbasis=(kr==0?rbasis_0:sector.inv_translate(rbasis_0,kr,signr));
                                         // determine the right side size of the relative_translation
-					/*
+					
                                         Dr=sector.C;
                                         for(D=1; D<sector.C; D++)
-                                            if(sector.translate(_rbasis,D,_signr)==_rbasis) {
+                                            if(sector.relative_translate(_rbasis,D,_signr)==_rbasis) {
                                                 Dr=D;
                                                 break;
                                             }
-					*/
+					
                                         // if parameter kx<0, do not perform basis translation
-                                        //Dr=(kx<0?1:Dr);
-					Dr=Dl;
-                                        //for(qr=0; qr<Dr; qr++) {
-                                            //_signr=1;
-                                            //rbasis=(qr==0?_rbasis:sector.inv_translate(_rbasis,qr,_signr));
+                                        Dr=(kx<0?1:Dr);
+					if(kl==kr)
+                                        for(qr=0; qr<Dr; qr++) {
+                                            _signr=1;
+                                            rbasis=(qr==0?_rbasis:sector.relative_inv_translate(_rbasis,qr,_signr));
 					    //rbasis=sector.inv_translate(_rbasis,ql,_signr);
-					    _signr=1;
-					    rbasis=_rbasis;
                                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                                 j = sector.basis_set[rbasis];
                                                 sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr*_signl*_signr;
-                                                matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
+                                                matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*sector.C+qr]/sqrt(Cl*Cr*Dl*Dl);
                                             }
-                                        //}
+                                        }
                                     }
                                 }
                             }
@@ -202,6 +201,7 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                     }
 
                 // upper-layer
+
                 for(n=nphi; n<2*nphi-1; n++)
                     for(m = n+1; m < 2*nphi; m++) {
                         mask = (1 << n) + (1 << m);
@@ -236,7 +236,7 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                     // determine the right side size of the translation
                                     Cr=sector.C;
                                     for(C=1; C<sector.C; C++)
-                                        if(sector.relative_translate(rbasis_0,C,signr)==rbasis_0) {
+                                        if(sector.translate(rbasis_0,C,signr)==rbasis_0) {
                                             Cr=C;
                                             break;
                                         }
@@ -245,37 +245,35 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                     for(kr=0; kr<Cr; kr++) {
                                         signr=1;
                                         // 0 bits shifting is not performed
-                                        _rbasis=(kr==0?rbasis_0:sector.relative_inv_translate(rbasis_0,kr,signr));
+                                        _rbasis=(kr==0?rbasis_0:sector.inv_translate(rbasis_0,kr,signr));
                                         // determine the right side size of the relative_translation
-					/*
+					
                                         Dr=sector.C;
                                         for(D=1; D<sector.C; D++)
-                                            if(sector.translate(_rbasis,D,_signr)==_rbasis) {
+                                            if(sector.relative_translate(_rbasis,D,_signr)==_rbasis) {
                                                 Dr=D;
                                                 break;
                                             }
-					*/
+					
                                         // if parameter kx<0, do not perform basis translation
-                                        //Dr=(kx<0?1:Dr);
-					Dr=Dl;
-                                        //for(qr=0; qr<Dr; qr++) {
-                                            //_signr=1;
-                                            //rbasis=(qr==0?_rbasis:sector.inv_translate(_rbasis,qr,_signr));
+                                        Dr=(kx<0?1:Dr);
+					if(kl==kr)
+                                        for(qr=0; qr<Dr; qr++) {
+                                            _signr=1;
+                                            rbasis=(qr==0?_rbasis:sector.relative_inv_translate(_rbasis,qr,_signr));
 					    //rbasis=sector.inv_translate(_rbasis,ql,_signr);
-					    _signr=1;
-					    rbasis=_rbasis;
                                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                                 j = sector.basis_set[rbasis];
                                                 sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr*_signl*_signr;
-                                                matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr);
+                                                matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*sector.C+qr]/sqrt(Cl*Cr*Dl*Dl);
                                             }
-                                        //}
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-
+		
                 /*
                     for(n=0; n<nphi; n++)
                         for(m = nphi; m < 2*nphi; m++) {

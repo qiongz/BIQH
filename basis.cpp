@@ -72,7 +72,7 @@ void basis::init() {
     // shrink the up-layer basis to an unique subset L
     // and with nel_up/nel_down in each layer
     if(K>=0) {
-/*
+
         for(it=basis_set.begin(); it!=basis_set.end();) {
             unsigned long c=it->first;
             bool delete_flag=false;
@@ -89,7 +89,7 @@ void basis::init() {
             else
                 ++it;
         }
-*/	
+	
 
         for(it=basis_set.begin(); it!=basis_set.end();) {
             unsigned long c=it->first;
