@@ -77,24 +77,6 @@ void basis::init() {
             unsigned long c=it->first;
             bool delete_flag=false;
             for(n=1; n<C; n++) {
-		config=translate(c,n,sign);
-                // if translation could generate this configuration, delete it
-                if(basis_set.find(config)!=basis_set.end()&& config!=c) {
-                    delete_flag=true;
-                    break;
-                }
-            }
-            if(delete_flag)
-                basis_set.erase(it++);
-            else
-                ++it;
-        }
-	
-
-        for(it=basis_set.begin(); it!=basis_set.end();) {
-            unsigned long c=it->first;
-            bool delete_flag=false;
-            for(n=1; n<C; n++) {
 		config=relative_translate(c,n,sign);
                 // if translation could generate this configuration, delete it
                 if(basis_set.find(config)!=basis_set.end()&& config!=c) {
@@ -107,6 +89,25 @@ void basis::init() {
             else
                 ++it;
         }
+	
+/*
+        for(it=basis_set.begin(); it!=basis_set.end();) {
+            unsigned long c=it->first;
+            bool delete_flag=false;
+            for(n=1; n<C; n++) {
+		config=translate(c,n,sign);
+                // if translation could generate this configuration, delete it
+                if(basis_set.find(config)!=basis_set.end()&& config!=c) {
+                    delete_flag=true;
+                    break;
+                }
+            }
+            if(delete_flag)
+                basis_set.erase(it++);
+            else
+                ++it;
+        }
+*/
 
 
     }

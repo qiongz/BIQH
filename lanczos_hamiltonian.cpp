@@ -107,7 +107,6 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
             }
         // if parameter kx<0, do not perform basis translation
         Dl=(kx<0?1:Dl);
-
         for(ql=0; ql<Dl; ql++) {
             _signl=1;
             _lbasis=(ql==0?sector.id[i]:sector.relative_translate(sector.id[i],ql,_signl));
@@ -120,11 +119,13 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                 }
             // if parameter kx<0, do not perform basis translation
             Cl=(kx<0?1:Cl);
+            //Cl=1;
             for(kl=0; kl<Cl; kl++) {
                 signl=1;
                 // translation with 0 bits is not necessary
                 lbasis=(kl==0?_lbasis:sector.translate(_lbasis,kl,signl));
                 //down-layer
+
                 for(n=0; n<nphi-1; n++)
                     for(m = n+1; m < nphi; m++) {
                         mask = (1 << n) + (1 << m);
@@ -168,30 +169,31 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                         }
                                     // if parameter kx<0, do not perform basis translation
                                     Cr=(kx<0?1:Cr);
+                                    //Cr=1;
                                     for(kr=0; kr<Cr; kr++) {
                                         signr=1;
                                         // 0 bits shifting is not performed
                                         _rbasis=(kr==0?rbasis_0:sector.inv_translate(rbasis_0,kr,signr));
                                         // determine the right side size of the relative_translation
-					
+
                                         Dr=sector.C;
                                         for(D=1; D<sector.C; D++)
                                             if(sector.relative_translate(_rbasis,D,_signr)==_rbasis) {
                                                 Dr=D;
                                                 break;
                                             }
-					
+
                                         // if parameter kx<0, do not perform basis translation
                                         Dr=(kx<0?1:Dr);
-					if(kl==kr)
+					if(kr==kl)
                                         for(qr=0; qr<Dr; qr++) {
                                             _signr=1;
                                             rbasis=(qr==0?_rbasis:sector.relative_inv_translate(_rbasis,qr,_signr));
-					    //rbasis=sector.inv_translate(_rbasis,ql,_signr);
+                                            //rbasis=sector.inv_translate(_rbasis,ql,_signr);
                                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                                 j = sector.basis_set[rbasis];
                                                 sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr*_signl*_signr;
-                                                matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*sector.C+qr]/sqrt(Cl*Cr*Dl*Dl);
+                                                matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*sector.C+qr]/sqrt(Cl*Cr*Dl*Dr);
                                             }
                                         }
                                     }
@@ -242,30 +244,31 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                         }
                                     // if parameter kx<0, do not perform basis translation
                                     Cr=(kx<0?1:Cr);
+                                    //Cr=1;
                                     for(kr=0; kr<Cr; kr++) {
                                         signr=1;
                                         // 0 bits shifting is not performed
                                         _rbasis=(kr==0?rbasis_0:sector.inv_translate(rbasis_0,kr,signr));
                                         // determine the right side size of the relative_translation
-					
+
                                         Dr=sector.C;
                                         for(D=1; D<sector.C; D++)
                                             if(sector.relative_translate(_rbasis,D,_signr)==_rbasis) {
                                                 Dr=D;
                                                 break;
                                             }
-					
+
                                         // if parameter kx<0, do not perform basis translation
                                         Dr=(kx<0?1:Dr);
-					if(kl==kr)
+					if(kr==kl)
                                         for(qr=0; qr<Dr; qr++) {
                                             _signr=1;
                                             rbasis=(qr==0?_rbasis:sector.relative_inv_translate(_rbasis,qr,_signr));
-					    //rbasis=sector.inv_translate(_rbasis,ql,_signr);
+                                            //rbasis=sector.inv_translate(_rbasis,ql,_signr);
                                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                                 j = sector.basis_set[rbasis];
                                                 sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr*_signl*_signr;
-                                                matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*sector.C+qr]/sqrt(Cl*Cr*Dl*Dl);
+                                                matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*sector.C+qr]/sqrt(Cl*Cr*Dl*Dr);
                                             }
                                         }
                                     }
@@ -273,77 +276,77 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                             }
                         }
                     }
-		
-                /*
-                    for(n=0; n<nphi; n++)
-                        for(m = nphi; m < 2*nphi; m++) {
-                            mask = (1 << n) + (1 << m);
-                            // if there is one electron at site n in upper-layer
-                            // and one electron at site m in lower-layer
-                            if((lbasis &mask) == mask) {
-                                // b is the rest electon positions for upper-layer electrons
-                                b = lbasis ^ mask;
-                                // perform translation along x-direction
-                                for(t = -nphi/2; t <= nphi/2 ; t++) {
-                                    if(n + t>=nphi)
-                                        nt = n + t - nphi;
-                                    else if (n+t <0)
-                                        nt = n + t +nphi;
-                                    else
-                                        nt = n + t;
-                                    if(m - t <nphi)
-                                        mt = m - t + nphi;
-                                    else if (m - t >=2*nphi)
-                                        mt = m - t -nphi;
-                                    else
-                                        mt = m - t;
-                                    s=abs(mt-nphi-n);
-                                    // the translated electron index
-                                    mask_t = (1 << nt)+(1<<mt);
-                                    // occupation of electons on the translated position
-                                    occ_t = mask_t & b;
-                                    // if there're no electon on the translated position
-                                    // which is a valid translation, can be applied
-                                    // the translated indices
-                                    rbasis_0=mask_t+b;
-                                    if(occ_t == 0 ) {
-                		// determine the right side size of the translation
-                		Cr=sector.C;
-                                        for(C=1;C<sector.C;C++)
-                	           if(sector.relative_translate(rbasis_0,C,signr)==rbasis_0){
-                			Cr=C;
-                			break;
-                		      }
+
+                for(n=0; n<nphi; n++)
+                    for(m = nphi; m < 2*nphi; m++) {
+                        mask = (1 << n) + (1 << m);
+                        // if there is one electron at site n in upper-layer
+                        // and one electron at site m in lower-layer
+                        if((lbasis &mask) == mask) {
+                            // b is the rest electon positions for upper-layer electrons
+                            b = lbasis ^ mask;
+                            // perform translation along x-direction
+                            for(t = -nphi/2; t <= nphi/2 ; t++) {
+                                if(n + t>=nphi)
+                                    nt = n + t - nphi;
+                                else if (n+t <0)
+                                    nt = n + t +nphi;
+                                else
+                                    nt = n + t;
+                                if(m - t <nphi)
+                                    mt = m - t + nphi;
+                                else if (m - t >=2*nphi)
+                                    mt = m - t -nphi;
+                                else
+                                    mt = m - t;
+                                s=abs(mt-nphi-n);
+                                // the translated electron index
+                                mask_t = (1 << nt)+(1<<mt);
+                                // occupation of electons on the translated position
+                                occ_t = mask_t & b;
+                                // if there're no electon on the translated position
+                                // which is a valid translation, can be applied
+                                // the translated indices
+                                rbasis_0=mask_t+b;
+                                if(occ_t == 0 ) {
+                                    // determine the right side size of the translation
+                                    Cr=sector.C;
+                                    for(C=1; C<sector.C; C++)
+                                        if(sector.translate(rbasis_0,C,signr)==rbasis_0) {
+                                            Cr=C;
+                                            break;
+                                        }
+                                    // if parameter kx<0, do not perform basis translation
+                                    Cr=(kx<0?1:Cr);
+                                    //Cr=1;
+                                    for(kr=0; kr<Cr; kr++) {
+                                        signr=1;
+                                        // 0 bits shifting is not performed
+                                        _rbasis=(kr==0?rbasis_0:sector.inv_translate(rbasis_0,kr,signr));
+                                        // determine the right side size of the translation
+                                        Dr=sector.C;
+                                        for(D=1; D<sector.C; D++)
+                                            if(sector.relative_translate(_rbasis,D,_signr)==_rbasis) {
+                                                Dr=D;
+                                                break;
+                                            }
                                         // if parameter kx<0, do not perform basis translation
-                		Cr=(kx<0?1:Cr);
-                                        for(kr=0; kr<Cr; kr++) {
-                                            signr=1;
-                                            // 0 bits shifting is not performed
-                                            _rbasis=(kr==0?rbasis_0:sector.relative_inv_translate(rbasis_0,kr,signr));
-                		    // determine the right side size of the translation
-                		    Dr=sector.C;
-                		    for(D=1;D<sector.C;D++)
-                			 if(sector.translate(_rbasis,D,_signr)==_rbasis){
-                		            Dr=D;
-                			    break;
-                			 }
-                                            // if parameter kx<0, do not perform basis translation
-                		    Dr=(kx<0?1:Dr);
-                		    for(qr=0;qr<Dr;qr++){
-                	              _signr=1;
-                		      rbasis=(qr==0?_rbasis:sector.inv_translate(_rbasis,qr,_signr));
+                                        Dr=(kx<0?1:Dr);
+					if(kr==kl)
+                                        for(qr=0; qr<Dr; qr++) {
+                                            _signr=1;
+                                            rbasis=(qr==0?_rbasis:sector.relative_inv_translate(_rbasis,qr,_signr));
                                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                                 j = sector.basis_set[rbasis];
                                                 sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr*_signl*_signr;
-                                                matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[kl*sector.C+kr]/sqrt(Cl*Cr*Dl*Dr);
+                                                matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*sector.C+qr]/sqrt(Cl*Cr*Dl*Dr);
                                             }
-                		    }
                                         }
                                     }
                                 }
                             }
                         }
-                */
+                    }
             }
         }
 
