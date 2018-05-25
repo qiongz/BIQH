@@ -61,14 +61,20 @@ int main(int argc,char *argv[]) {
 /*
     lhamil lconfig(lambda,seed);
     lconfig.sector.init(nphi,nel_up,nel_down,J,kx);
-    for(int i=0;i<40;i++){
-    lconfig.set_hamil(lx,ly,nphi,nLL,i*0.1+0.05,4);
+    for(int i=0;i<60;i++){
+    d=i*0.05+0.05;
+    lconfig.set_hamil(lx,ly,nphi,nLL,d,nthread);
     lconfig.coeff_explicit_update();
     lconfig.diag(); 
     lconfig.eigenstates_reconstruction();
-    cout<<i*0.1+0.05<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<endl;
+    cout<<d<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.eigenvalues[0]<<" ";
+    for(int n=1;n<lambda;n++)
+       if((abs(lconfig.eigenvalues[n]-lconfig.eigenvalues[0])>1e-6 && d>1 )|| (abs(lconfig.eigenvalues[n]-lconfig.eigenvalues[0])>1e-3 && d<1)){
+	cout<<lconfig.eigenvalues[n]<<endl;
+        break;
+       }
     }
-    */
+*/
 
 
 
@@ -93,8 +99,7 @@ int main(int argc,char *argv[]) {
     */
     
 
-
-   
+  
     cout<<"-----------Lanczos results---------"<<endl;
     lhamil lconfig(lambda,seed);
     auto t1=std::chrono::high_resolution_clock::now();
@@ -126,8 +131,8 @@ int main(int argc,char *argv[]) {
     cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
     //cout<<"Ec:= "<<lconfig.Ec<<endl;
     //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
-    
-    
+  
+
     
 
    
