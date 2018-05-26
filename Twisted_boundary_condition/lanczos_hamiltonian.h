@@ -2,23 +2,32 @@
 #define LANCZOS_HAMILTONIAN_H
 #include"matrix.h"
 #include"basis.h"
+#include<thread>
+#include<mutex>
+#include<gsl/gsl_integration.h>
+#include <gsl/gsl_sf_bessel.h>
 void swap(Vec *a,Vec *b,Vec *c);
+
 
 class lhamil {
 public:
     unsigned seed;  //!< Seed for RNGs
     long nHilbert;  //!< Hilbert space size
     long lambda;    //!< Lanczos update steps
-    long nsite,nphi;
-    double lx,ly,d,E0;      //!< Ground state eigen energy
-    basis sector;   //!< Basis
+    long nLL,nphi;
+    double lx,ly,d;
+    double E0,Ec;      //!< Ground state eigen energy
+    // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
+    vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
+    vector<complex<double> > FT;
+    basis sector;
     Mat H;  //!< Hamiltonian matrix in CSR format
     //Mat O;  //!< Operator matrix in CSR format
     std::vector<double> norm; //!< Normalization coefficients vector in Lanczos update
-    std::vector< complex<double> > overlap; //!< Overlap coefficients vector in Lanczos update
+    std::vector<double> overlap; //!< Overlap coefficients vector in Lanczos update
     std::vector< complex<double> > psir_0; //!< Ground state wave function in real-space
-    std::vector< complex<double> > psi_0; //!<Ground state eigenvector in Krylov subspace
-    std::vector< complex<double> > psi_n0; //!<First element of eigenvectors in Krylov subspace
+    std::vector<double> psi_0; //!<Ground state eigenvector in Krylov subspace
+    std::vector<double> psi_n0; //!<First element of eigenvectors in Krylov subspace
     std::vector<double> eigenvalues; //!< Eigenvalues
     lhamil();  //!< Empty constructor
     /**
@@ -33,23 +42,25 @@ public:
      \param _lambda Lanczos update steps
      \param _seed Seed for RNGs
     */
-    lhamil(basis & _sector,double d,long _lambda,unsigned _seed); //!< Constructor with basis sector as input
+    lhamil(long _lambda,unsigned _seed); //!< Constructor with basis sector as input
     ~lhamil(); //!< Destructor
-    void init(basis &_sector,double d, long _lambda,unsigned _seed);
     const lhamil & operator=(const lhamil &);
     /** \param _sector Basis sector
     */
-    void set_hamil(basis & _sector ,double _lx, double _ly, long _nphi,double _d);  //!< Initialize hamiltonian matrix
+    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,int nthread);  //!< Initialize hamiltonian matrix
+    void peer_set_hamil(int,long,long);
+    void Gram_Schmidt_orthogonalization(Vec &, int);
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays
     void coeff_update_wopt(vector< complex<double> > O_phi_0);
     void diag();  //!< Diagonalize the full Lanczos hamiltonian
-    void diag(int l); //!< Diagonalize the Lanczos hamiltonain with first lxl elements
 
     void eigenstates_reconstruction(); //!< Transform |psi_0> to |psir_0>
-    double Coulomb_interaction(int alpha,int beta, int q_x, int q_y);
+    double Coulomb_interaction(int alpha,int q_x, int q_y);
     double ground_state_energy();    //!< Ground state energy
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version
+    void init_Coulomb_matrix();
+    void print_hamil_CSR(); //!< print the hamiltonian matrix in the CSR format
     void print_hamil(int n); //!< print the full hamiltonian matrix
     void print_lhamil(int n);  //!< print the Lanczos hamiltonian matrix with first n x n elements
     void print_eigen(int n);  //!< print the first n eigenvalues

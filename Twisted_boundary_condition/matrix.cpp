@@ -30,47 +30,48 @@ void Vec::assign(long  _size,const complex<double> _init) {
 }
 
 void Vec::init_random(unsigned seed) {
-    complex<double> norm=0;
+    double norm=0;
     #if __cplusplus > 199711L
     std::mt19937 rng(seed);
     for(int i = 0; i < size; i++) {
         value[i] = complex<double>(rng() * 1.0 / rng.max()-0.5,rng()*1.0/rng.max()-0.5 );
-        norm += conj(value[i]) * value[i];
+        norm += std::norm(value[i]);
     }
     #else
     init_genrand64(seed);
     for(int i = 0; i < size; i++) {
         value[i]=complex<double>(genrand64_real3()-0.5,genrand64_real3()-0.5);
-        norm += conj(value[i]) * value[i];
+        //value[i]=complex<double>(genrand64_real3()-0.5,genrand64_real3()-0.5);
+        norm += std::norm(value[i]);
     }
     #endif
-    double normsq = abs(norm);
-    //#pragma omp parallel for schedule(static)
+    norm = sqrt(norm);
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
-        value[i] /= normsq;
+        value[i] /= norm;
 }
 
 void Vec::init_random(long _size,unsigned seed) {
     size=_size;
     value.resize(size);
-    complex<double> norm=0;
+    double norm=0;
     #if __cplusplus > 199711L
     std::mt19937 rng(seed);
     for(int i = 0; i < size; i++) {
         value[i] = complex<double>(rng() * 1.0 / rng.max()-0.5,rng()*1.0/rng.max()-0.5 );
-        norm += conj(value[i]) * value[i];
+        norm += std::norm(value[i]);
     }
     #else
     init_genrand64(seed);
     for(int i = 0; i < size; i++) {
         value[i]=complex<double>(genrand64_real3()-0.5,genrand64_real3()-0.5);
-        norm +=conj(value[i]) * value[i];
+        norm += std::norm(value[i]);
     }
     #endif
-    double normsq = abs(norm);
-    //#pragma omp parallel for schedule(static)
+    norm = sqrt(norm);
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
-        value[i] /= normsq;
+        value[i] /= norm;
 }
 
 void Vec::clear() {
@@ -80,17 +81,29 @@ void Vec::clear() {
     }
 }
 
-double Vec::normalize() {
+double Vec::normed() {
     int i;
-    complex<double> norm = 0;
-    //#pragma omp parallel for reduction(+:norm)
+    double norm = 0;
+    #pragma omp parallel for reduction(+:norm)
     for(i = 0; i < size; i++)
-        norm += conj(value[i]) * value[i];
-    double normsq = abs(norm);
-    //#pragma omp parallel for schedule(static)
+        norm += std::norm(value[i]);
+    double normsq = sqrt(norm);
+    #pragma omp parallel for schedule(static)
     for(i = 0; i < size; i++)
         value[i] /= normsq;
     return normsq;
+}
+
+void Vec::normalize() {
+    int i;
+    double norm = 0;
+    #pragma omp parallel for reduction(+:norm)
+    for(i = 0; i < size; i++)
+        norm += std::norm(value[i]);
+    double normsq = sqrt(norm);
+    #pragma omp parallel for schedule(static)
+    for(i = 0; i < size; i++)
+        value[i] /= normsq;
 }
 
 Vec & Vec::operator=(const Vec & rhs) {
@@ -103,7 +116,7 @@ Vec & Vec::operator=(const Vec & rhs) {
 Vec & Vec::operator-=(const Vec & rhs) {
     if(this==&rhs)
         return *this;
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
         value[i] -= rhs.value[i];
     return *this;
@@ -112,28 +125,28 @@ Vec & Vec::operator-=(const Vec & rhs) {
 Vec & Vec::operator+=(const Vec & rhs) {
     if(this==&rhs)
         return *this;
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
         value[i] += rhs.value[i];
     return *this;
 }
 
 Vec & Vec::operator*=(const double & rhs) {
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
         value[i] *=rhs;
     return *this;
 }
 
 Vec & Vec::operator*=(const complex<double> & rhs) {
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
         value[i] *=rhs;
     return *this;
 }
 
 Vec & Vec::operator/=(const double & rhs) {
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
         value[i] /= rhs;
     return *this;
@@ -141,7 +154,7 @@ Vec & Vec::operator/=(const double & rhs) {
 
 Vec Vec::operator+(const Vec & rhs) {
     Vec rt(rhs.size);
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
         rt.value[i] = value[i] + (rhs.value)[i];
     return rt;
@@ -149,7 +162,7 @@ Vec Vec::operator+(const Vec & rhs) {
 
 Vec Vec::operator-(const Vec & rhs) {
     Vec rt(rhs.size);
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
         rt.value[i] = value[i] - (rhs.value)[i];
     return rt;
@@ -157,7 +170,7 @@ Vec Vec::operator-(const Vec & rhs) {
 
 Vec Vec::operator/(const double &rhs) {
     Vec rt(size);
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
         rt.value[i] = value[i] / rhs;
     return rt;
@@ -165,7 +178,7 @@ Vec Vec::operator/(const double &rhs) {
 
 Vec Vec::operator*(const double &rhs) {
     Vec rt(size);
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
         rt.value[i] = value[i]* rhs;
     return rt;
@@ -173,7 +186,7 @@ Vec Vec::operator*(const double &rhs) {
 
 Vec Vec::operator*(const complex<double> &rhs) {
     Vec rt(size);
-    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for(int i = 0; i < size; i++)
         rt.value[i] = value[i]* rhs;
     return rt;
@@ -230,24 +243,24 @@ Mat & Mat::operator=(const Mat & rhs) {
 
 Vec Mat::operator*(const Vec &rhs)const {
     Vec phi(rhs.size,0);
-    if(rhs.size!=outer_starts.size()-1) return phi;
-    //#pragma omp parallel for schedule(guided,4)
-    for(int i=0; i<outer_starts.size()-1; i++) {
-    //#pragma ivdep
-        for(int idx=outer_starts[i]; idx<outer_starts[i+1]; idx++)
+    if(rhs.size!=outer_starts.size()) return phi;
+    #pragma omp parallel for schedule(guided,4)
+    for(int i=0; i<outer_starts.size(); i++) {
+        #pragma ivdep
+       for(int idx=outer_starts[i];idx<outer_starts[i]+outer_size[i];idx++)
             phi.value[i]+=value[idx]*rhs.value[inner_indices[idx]];
     }
     return phi;
 }
 
-vector<complex<double> > Mat::operator*(const vector<complex<double> > &rhs)const {
+vector<complex<double> > Mat::operator*(const vector< complex<double> > &rhs)const {
     vector< complex<double> > phi;
     phi.assign(rhs.size(),0);
-    if(rhs.size()!=outer_starts.size()-1) return phi;
-    //#pragma omp parallel for schedule(guided,4)
-    for(int i=0; i<outer_starts.size()-1; i++) {
-    //#pragma ivdep
-        for(int idx=outer_starts[i]; idx<outer_starts[i+1]; idx++)
+    if(rhs.size()!=outer_starts.size()) return phi;
+    #pragma omp parallel for schedule(guided,4)
+    for(int i=0; i<outer_starts.size(); i++) {
+        #pragma ivdep
+       for(int idx=outer_starts[i];idx<outer_starts[i]+outer_size[i];idx++)
             phi[i]+=value[idx]*rhs[inner_indices[idx]];
     }
     return phi;
@@ -272,21 +285,28 @@ void Mat::print() {
 }
 
 /*
-void diag_zheev(complex<double> *hamiltonian, double *energy, int l){
-    char jobz,uplo;
+void diag_dsyev(double *h, double *e, int l) {
+    char jobz, uplo;
     int info;
     jobz = 'V';
     uplo = 'U';
-    int lwork = 3*l-1;
-    complex<double> *work=new complex<double>[lwork];
-    double *rwork = new double[3*l-2];
-    zheev_(&jobz, &uplo, &l, hamiltonian, &l, energy, work, &lwork, rwork, &info);
+    int lda = l;
+    int lwork = 3 * l - 1;
+    double *work = new double[lwork];
+    dsyev_(&jobz, &uplo, &l, h, &lda, e, work, &lwork, &info);
     delete [] work;
-    delete [] rwork;
 }
 */
 
-// diagonalization wrapper for mkl zheevd
+void diag_dsyev(double *hamiltonian, double *energy, int l){
+    char jobz,uplo;
+    int info,lda;
+    jobz = 'V';
+    uplo = 'U';
+    lda=l;
+    info=LAPACKE_dsyev(LAPACK_COL_MAJOR,jobz, uplo, l,hamiltonian,lda, energy);
+}
+
 void diag_zheev(complex<double> *hamiltonian, double *energy, int l){
     char jobz,uplo;
     int info,lda;
@@ -294,4 +314,51 @@ void diag_zheev(complex<double> *hamiltonian, double *energy, int l){
     uplo = 'U';
     lda=l;
     info=LAPACKE_zheevd(LAPACK_COL_MAJOR,jobz, uplo, l,hamiltonian,lda, energy);
+}
+
+
+double func_ExpInt(double t, void *params) {
+    double z = *(double *)params;
+    double ret_value = 1.0/sqrt(t)*exp(-z*t);
+    return ret_value;
+}
+
+struct my_params{
+    double r;
+    double d;
+};
+   
+double func_BesselInt(double k, void *p){
+    struct my_params *params =(struct my_params *)p;
+     
+    double f = gsl_sf_bessel_J0(k*params->r)*exp(-k*params->d)/(k+1e-10);
+    return f;
+}
+
+double Integrate_ExpInt(double x) {
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(50000);
+    double result,error;
+
+    gsl_function F;
+    F.function = &func_ExpInt;
+    F.params= & x;
+
+    gsl_integration_qagiu(& F,1.0,1.0e-6, 1.0e-6, 50000,w, &result, & error);
+    return result;
+}
+
+double Integrate_BesselInt(double r,double d) {
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(50000);
+    double result,error;
+
+    my_params params;
+    params.r=r;
+    params.d=d;
+
+    gsl_function F;
+    F.function = &func_BesselInt;
+    F.params= & params;
+
+    gsl_integration_qagiu(& F,0.0,1.0e-6, 1.0e-6, 50000,w, &result, & error);
+    return result;
 }

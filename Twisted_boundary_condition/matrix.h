@@ -1,5 +1,5 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#ifndef MAdoubleRIX_H
+#define MAdoubleRIX_H
 #include<cmath>
 #include<complex>
 #include<iostream>
@@ -12,6 +12,8 @@
 #include<omp.h>
 #define MKL_Complex16 std::complex<double>
 #include"mkl.h"
+#include<gsl/gsl_integration.h>
+#include<gsl/gsl_sf.h>
 
 #if __cplusplus > 199711L
 #include<random>
@@ -19,10 +21,13 @@
 #include"mt19937-64.h"
 #endif
 using namespace std;
-
-// for LAPACK zheev usage
-//extern "C" int zheev_(char *, char *, int *,complex<double>*,int *, double *,complex<double>*, int *, double *, int *);
-void diag_zheev(complex<double> *hamiltonian, double *energy, int l);
+//extern "C" int dsyev_(char *, char *, int *, double *, int*, double *, double *, int *, int *);
+void diag_dsyev(double *h, double *e, int l);
+void diag_zheev(complex<double> *h, double *e, int l);
+double func_ExpInt(double t, void *params);
+double Integrate_ExpInt(double z) ;
+double func_BesselInt(double k, void *params);
+double Integrate_BesselInt(double r,double d) ;
 
 class Vec {
 public:
@@ -39,7 +44,8 @@ public:
     void init_random(unsigned);
     void init_random(long,unsigned);
     void clear();
-    double normalize();
+    double normed();
+    void normalize();
 
     // operator overloading
     Vec & operator=(const Vec & rhs);
@@ -59,8 +65,9 @@ public:
 
 class Mat {
 public:
-    // compressed Sparse Row (CSR) Data Structure
-    std::vector<long> outer_starts,inner_indices;
+    // doublehe compressed Sparse Row (CSR) Data Structure
+    // outer_size for multi-threads storing, for which inner_indices are stored randomly
+    std::vector<long> outer_starts,outer_size,inner_indices;
     std::vector< complex<double> > value;
 
     Mat();
