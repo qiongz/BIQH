@@ -2,6 +2,8 @@
 #define HAMILTONIAN_H
 #include"basis.h"
 #include"matrix.h"
+#include<thread>
+#include<mutex>
 class hamil {
 public:
     /** Size of the Hilbert space */
@@ -14,6 +16,7 @@ public:
     basis sector;
     // index: alpha*nphi*off_head*nphi*nphi+q_y*off_head*nphi*nphi+q_x*nphi*nphi+n*nphi+m
     std::vector<double> Coulomb_matrix; //!< store the Coulomb interaction matrix elements
+    vector<complex<double> > FT;
     /** Hamiltonian matrix in CSR format */
     std::vector< complex<double> > hamiltonian;
     /** Eigenvalues of the hamiltonian */
@@ -30,7 +33,8 @@ public:
      \param t hopping strength,
      \param U onsite replusive interaction strength
      */
-    void set_hamil(double _lx, double _ly, long nphi,long nLL, double _d);
+    void peer_set_hamil(int id, long nbatch,long nrange);
+    void set_hamil(double _lx, double _ly, long _nphi,long _nLL, double _d,int nthread);
     const hamil & operator=(const hamil &);
     /** Return the ground state energy of the system */
     double ground_state_energy();
