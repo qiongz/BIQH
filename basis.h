@@ -31,6 +31,7 @@ public:
     std::unordered_map<unsigned long, long> basis_set; // basis set of up/down-layer electrons, I-J table
 
     vector<unsigned long> id;     // reversal table, J->I, Lin's Table is a 2D array
+    vector<short> basis_C;
     explicit basis();
     basis(int _nphi,int _nel_up, int _nel_down);
     basis(int _nphi,int _nel_up, int _nel_down,int _J,int _K);
@@ -45,12 +46,6 @@ public:
     int get_sign(unsigned long c,int n,int m,int nt,int mt);
     unsigned long translate(unsigned long c, int k, int &sign) ;
     unsigned long inv_translate(unsigned long c, int k, int &sign) ;
-    unsigned long relative_translate(unsigned long c, int k, int &sign) ;
-    unsigned long relative_inv_translate(unsigned long c, int k, int &sign) ;
-    unsigned long translate_u(unsigned long c, int k, int &sign) ;
-    unsigned long inv_translate_u(unsigned long c, int k, int &sign) ;
-    unsigned long translate_d(unsigned long c, int k, int &sign) ;
-    unsigned long inv_translate_d(unsigned long c, int k, int &sign) ;
     void clear();
     void prlong();
 };
