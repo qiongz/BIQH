@@ -44,8 +44,8 @@ public:
     void init(int _nphi,int _nel_up, int _nel_down,int _J,int _K);
     void generate(long,long,long,unsigned long);
     int get_sign(unsigned long c,int n,int m,int nt,int mt);
-    unsigned long translate(unsigned long c, int k, int &sign) ;
-    unsigned long inv_translate(unsigned long c, int k, int &sign) ;
+    unsigned long translate(unsigned long c, int k, int &nsign_u,int &nsign_d,int &sign) ;
+    unsigned long inv_translate(unsigned long c, int k, int &nsign_u, int &nsign_d,int &sign) ;
     void clear();
     void prlong();
 };

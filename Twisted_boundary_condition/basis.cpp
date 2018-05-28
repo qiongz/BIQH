@@ -246,7 +246,7 @@ void basis::prlong() {
     cout<<"---------------------------------------"<<endl;
     */
 }
-unsigned long basis::translate(unsigned long c, int k, int &sign) {
+unsigned long basis::translate(unsigned long c, int k, int &nsign_u,int &nsign_d,int &sign) {
         unsigned long config,mask_d,mask_u,c_d,c_u,mask_sign;
         int nsign;
 	int q=nphi/C;
@@ -259,6 +259,8 @@ unsigned long basis::translate(unsigned long c, int k, int &sign) {
 
         mask_sign=(1<<bits)-1;
         nsign=popcount_table[(mask_sign<<(nphi-bits)) & c_u]*(nel_up-1)+popcount_table[(mask_sign<<(nphi-bits)) & c_d]*(nel_down-1);
+        nsign_u=popcount_table[(mask_sign<<(nphi-bits)) & c_u];
+        nsign_d=popcount_table[(mask_sign<<(nphi-bits)) & c_d];
 
         c_u=((c_u<<bits)|(c_u>>(nphi-bits)))&mask_d;
         c_d=((c_d<<bits)|(c_d>>(nphi-bits)))&mask_d;
@@ -268,7 +270,7 @@ unsigned long basis::translate(unsigned long c, int k, int &sign) {
         return config;
     }
 
-unsigned long basis::inv_translate(unsigned long c, int k, int &sign) {
+unsigned long basis::inv_translate(unsigned long c, int k, int & nsign_u, int &nsign_d,int &sign) {
         unsigned long config,mask_d,mask_u,c_d,c_u,mask_sign;
         int nsign;
 	int q=nphi/C;
@@ -281,6 +283,8 @@ unsigned long basis::inv_translate(unsigned long c, int k, int &sign) {
 
         mask_sign=(1<<bits)-1;
         nsign=popcount_table[mask_sign & c_u]*(nel_up-1)+popcount_table[mask_sign & c_d]*(nel_down-1);
+        nsign_u=popcount_table[mask_sign & c_u];
+        nsign_d=popcount_table[mask_sign & c_d];
 
         c_u=((c_u>>bits)|(c_u<<(nphi-bits)))&mask_d;
         c_d=((c_d>>bits)|(c_d<<(nphi-bits)))&mask_d;
