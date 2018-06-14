@@ -1,6 +1,6 @@
 #include"init.h"
 #include"basis.h"
-//#include"hamiltonian.h"
+#include"hamiltonian.h"
 #include"lanczos_hamiltonian.h"
 #include<ctime>
 #include<sstream>
@@ -19,12 +19,12 @@ int main(int argc,char *argv[]) {
     double d,mu;
 
     nLL=0;
-    nphi=8;
-    nel=8;
-    nel_up=4;
-    nel_down=4;
+    nphi=9;
+    nel=9;
+    nel_up=3;
+    nel_down=6;
     gamma=1.0;
-    nthread=1;
+    nthread=32;
     J=-1;
     kx=-1;
 
@@ -47,7 +47,7 @@ int main(int argc,char *argv[]) {
 
 
   
-
+/*
     cout<<"nphi: = "<<nphi<<endl;
     cout<<"nel_up: = "<<nel_up<<endl;
     cout<<"nel_down: = "<<nel_up<<endl;
@@ -57,6 +57,7 @@ int main(int argc,char *argv[]) {
     cout<<"J: = "<<J<<endl;
     cout<<"kx: = "<<kx<<endl;
 
+*/
   
 /*
     lhamil lconfig(lambda,seed);
@@ -99,25 +100,25 @@ int main(int argc,char *argv[]) {
     */
     
 
-  
-    cout<<"-----------Lanczos results---------"<<endl;
+ 
+    //cout<<"-----------Lanczos results---------"<<endl;
     lhamil lconfig(lambda,seed);
     auto t1=std::chrono::high_resolution_clock::now();
     lconfig.sector.init(nphi,nel_up,nel_down,J,kx);
     //lconfig.sector.prlong();
     auto t2=std::chrono::high_resolution_clock::now();
-    cout<<"Stage-1: Basis initialized !"<<endl;
+    //cout<<"Stage-1: Basis initialized !"<<endl;
     cout<<"nHilbert: ="<<lconfig.sector.nbasis<<endl;
-    cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t2-t1).count()/1.0e6<<" seconds."<<endl;
+    //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t2-t1).count()/1.0e6<<" seconds."<<endl;
      
     auto t3=std::chrono::high_resolution_clock::now();
 
     lconfig.set_hamil(lx,ly,nphi,nLL,d,nthread);
 
     auto t4=std::chrono::high_resolution_clock::now();
-    cout<<"Stage-2: Hamiltonian matrix initialized !"<<endl;
+    //cout<<"Stage-2: Hamiltonian matrix initialized !"<<endl;
 
-    cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
+    //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
     //lconfig.print_hamil(4);
     t3=std::chrono::high_resolution_clock::now();
     lconfig.coeff_explicit_update();
@@ -126,12 +127,12 @@ int main(int argc,char *argv[]) {
     lconfig.eigenstates_reconstruction();
     double Egs=lconfig.ground_state_energy()/nel;
     t4=std::chrono::high_resolution_clock::now();
-    cout<<"Stage-3: Groundstate wavefunction reconstructed !"<<endl;
+    //cout<<"Stage-3: Groundstate wavefunction reconstructed !"<<endl;
     cout<<"E_gs:= "<<setprecision(6)<<Egs<<endl;
-    cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
+    //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
     //cout<<"Ec:= "<<lconfig.Ec<<endl;
     //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
-  
+ 
 
     
 
@@ -162,32 +163,48 @@ int main(int argc,char *argv[]) {
 
 
 
-/*
-   
+
+/*  
         basis sector0(nphi,nel_up,nel_down,0,0);
         double t0,s0;
         t0=s0=0;
 
-        int N=sector0.common_divisor(nphi,nel_up);
-        lhamil config(lambda,seed);
+        //int N=sector0.common_divisor(nphi,nel_up);
+	int N=nphi;
+        //lhamil config(lambda,seed);
         for(int t=0; t<N; t++)
             for(int s=0; s<N; s++){
+	        //hamil config;
+	        lhamil config(lambda,seed);
 		config.sector.init(nphi,nel_up,nel_down,t,s);
                 config.set_hamil(lx,ly,nphi,nLL,d,nthread);
-		config.coeff_update();
+		config.coeff_explicit_update();
                 config.diag();
 		config.eigenstates_reconstruction();
 
                 double K=sqrt((s-s0)*(s-s0)+(t-t0)*(t-t0)*gamma*gamma)*sqrt(2.0*M_PI/nphi/gamma);
                 cout<<t<<" "<<s<<" "<<K<<" ";
+		cout<<config.ground_state_energy()/nel<<" ";
                 //for(int n=0; n<5; n++)
-                //    cout<<config.eigenvalues[n]<<" ";
-		cout<<config.ground_state_energy()/nel;
-                cout<<endl;
-		config.sector.clear();
-
+                 //   cout<<config.eigenvalues[n]<<" ";
+		//cout<<config.ground_state_energy()/nel;
+                //cout<<endl;
+		//config.sector.clear();
+	        cout<<config.eigenvalues[0]<<" ";
+		
+                int i=0;
+                int count=0;
+                do{
+                 i++;
+                 if(config.eigenvalues[i]-config.eigenvalues[i-1]>1e-5) {
+                   cout<<config.eigenvalues[i]<<" ";
+                   count++;
+                    }
+                  }while(count<6 && count<config.norm.size());
+                 cout<<endl;
              }
 */
+
     
 
 

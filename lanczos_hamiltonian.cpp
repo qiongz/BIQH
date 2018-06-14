@@ -72,16 +72,16 @@ void lhamil::init_Coulomb_matrix() {
             }
     // store FT coefficients
     int kx=sector.K;
-    FT.assign(sector.C*sector.C,0);
-    for(int kl=0; kl<sector.C; kl++)
-        for(int kr=0; kr<sector.C; kr++)
-            FT[kl*sector.C+kr]=complex<double>(cos(2.0*M_PI*(kl-kr)*kx/sector.C),sin(2.0*M_PI*(kl-kr)*kx/sector.C));
+    FT.assign(nphi*nphi,0);
+    for(int kl=0; kl<nphi; kl++)
+        for(int kr=0; kr<nphi; kr++)
+            FT[kl*nphi+kr]=complex<double>(cos(2.0*M_PI*(kl-kr)*kx/nphi),sin(2.0*M_PI*(kl-kr)*kx/nphi));
 }
 
 inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
     int kx=sector.K;
     unsigned long lbasis,rbasis,rbasis_0,mask,mask_t,occ_t,b;
-    int n,m,s,t,nt,mt,sign,signl,signr;
+    int n,m,s,t,nt,mt,sign,signl,signr,signTx;
     int ql,qr,Dl,Dr,D;
 
 
@@ -137,8 +137,8 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                             // which is a valid translation, can be applied
                             if(occ_t == 0 && nt!=mt) {
                                 // determine the right side size of the translation
-                                Dr=sector.C;
-                                for(D=1; D<sector.C; D++)
+                                Dr=nphi;
+                                for(D=1; D<nphi; D++)
                                     if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
                                         Dr=D;
                                         break;
@@ -146,12 +146,13 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                 // if parameter kx<0, do not perform basis translation
                                 Dr=(kx<0?1:Dr);
                                 for(qr=0; qr<Dr; qr++) {
+				    //signTx=(((ql+qr)*(nphi-1))%2==0?1:-1);
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
-                                        matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*sector.C+qr]/sqrt(Dl*Dr);
+                                        matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -191,8 +192,8 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                             rbasis_0=mask_t+b;
                             if(occ_t == 0 && nt!=mt) {
                                 // determine the right side size of the translation
-                                Dr=sector.C;
-                                for(D=1; D<sector.C; D++)
+                                Dr=nphi;
+                                for(D=1; D<nphi; D++)
                                     if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
                                         Dr=D;
                                         break;
@@ -201,13 +202,13 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                 // if parameter kx<0, do not perform basis translation
                                 Dr=(kx<0?1:Dr);
                                 for(qr=0; qr<Dr; qr++) {
+				    //signTx=(((ql+qr)*(nphi-1))%2==0?1:-1);
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
-                                    //rbasis=sector.inv_translate(_rbasis,ql,_signr);
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
-                                        matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*sector.C+qr]/sqrt(Dl*Dr);
+                                        matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -248,8 +249,8 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                             rbasis_0=mask_t+b;
                             if(occ_t == 0 ) {
                                 // determine the right side size of the translation
-                                Dr=sector.C;
-                                for(D=1; D<sector.C; D++)
+                                Dr=nphi;
+                                for(D=1; D<nphi; D++)
                                     if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
                                         Dr=D;
                                         break;
@@ -257,12 +258,13 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                 // if parameter kx<0, do not perform basis translation
                                 Dr=(kx<0?1:Dr);
                                 for(qr=0; qr<Dr; qr++) {
+				    //signTx=(((ql+qr)*(nphi-1))%2==0?1:-1);
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
-                                        matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*sector.C+qr]/sqrt(Dl*Dr);
+                                        matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -274,7 +276,7 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
         matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
         long count=0;
         for(k=0; k<nHilbert; k++)
-            if(abs(matrix_elements[k])>1e-10) {
+            if(abs(matrix_elements[k])>1e-12) {
                 inner_indices.push_back(k);
                 value.push_back(matrix_elements[k]);
                 count++;
