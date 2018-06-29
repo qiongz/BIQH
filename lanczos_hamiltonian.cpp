@@ -146,7 +146,6 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                 // if parameter kx<0, do not perform basis translation
                                 Dr=(kx<0?1:Dr);
                                 for(qr=0; qr<Dr; qr++) {
-				    //signTx=(((ql+qr)*(nphi-1))%2==0?1:-1);
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
@@ -202,7 +201,6 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                 // if parameter kx<0, do not perform basis translation
                                 Dr=(kx<0?1:Dr);
                                 for(qr=0; qr<Dr; qr++) {
-				    //signTx=(((ql+qr)*(nphi-1))%2==0?1:-1);
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
@@ -258,7 +256,6 @@ inline void lhamil::peer_set_hamil(int id, long nbatch,long nrange) {
                                 // if parameter kx<0, do not perform basis translation
                                 Dr=(kx<0?1:Dr);
                                 for(qr=0; qr<Dr; qr++) {
-				    //signTx=(((ql+qr)*(nphi-1))%2==0?1:-1);
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
