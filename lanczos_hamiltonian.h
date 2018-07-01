@@ -48,6 +48,7 @@ public:
     /** \param _sector Basis sector
     */
     void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,int nthread);  //!< Initialize hamiltonian matrix
+    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,double _theta_u1, double theta_u2, double _theta_d1,double _theta_d2, int nthread);  //!< Initialize hamiltonian matrix
     void peer_set_hamil(int,long,long);
     void Gram_Schmidt_orthogonalization(Vec &, int);
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
@@ -58,8 +59,10 @@ public:
     void eigenstates_reconstruction(); //!< Transform |psi_0> to |psir_0>
     double Coulomb_interaction(int alpha,int q_x, int q_y);
     double ground_state_energy();    //!< Ground state energy
+    double occupatation_number(int alpha,int j);
+
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version
-    void init_Coulomb_matrix();
+    void init_Coulomb_matrix(double _theta_u1,double _theta_u2,double _theta_d1,double _theta_d2 );
     void print_hamil_CSR(); //!< print the hamiltonian matrix in the CSR format
     void print_hamil(int n); //!< print the full hamiltonian matrix
     void print_lhamil(int n);  //!< print the Lanczos hamiltonian matrix with first n x n elements
