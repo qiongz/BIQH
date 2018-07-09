@@ -4,22 +4,22 @@ using namespace std;
 basis::basis() {
 }
 
-basis::basis(int _nphi,int _nel_up, int _nel_down):nphi(_nphi),nel_up(_nel_up),nel_down(_nel_down) {
+basis::basis(int _nphi,int _nel, int _nel_up):nphi(_nphi),nel(_nel),nel_up(_nel_up) {
     K=-1;
     J=-1;
-    nel=nel_up+nel_down;
+    nel_down=nel-nel_up;
 }
 
 
-basis::basis(int _nphi,int _nel_up, int _nel_down,int _J,int _K):nphi(_nphi),nel_up(_nel_up),nel_down(_nel_down),J(_J),K(_K) {
-    nel=nel_up+nel_down;
+basis::basis(int _nphi,int _nel, int _nel_up,int _J,int _K):nphi(_nphi),nel(_nel),nel_up(_nel_up),J(_J),K(_K) {
+    nel=nel-nel_up;
 }
 
 const basis & basis::operator =(const basis & _basis) {
     if(this !=&_basis) {
         nphi=_basis.nphi;
+        nel=_basis.nel;
         nel_up=_basis.nel_up;
-        nel_down=_basis.nel_down;
         nbasis=_basis.nbasis;
         basis_set=_basis.basis_set;
         id=_basis.id;
@@ -58,7 +58,10 @@ void basis::init() {
     //C=common_divisor(nphi,nel_up);
     std::unordered_map<unsigned long,long>::iterator it;
     count=j=config=Ki=0;
-    generate(count,j,Ki,config);
+    if(nel_up<0)
+      generate_all_density(count,j,Ki,config);
+    else 
+      generate(count,j,Ki,config);
     // initialize the bit sets count table
     for(i=0; i<pow(2,nphi); i++) {
         int count=0;
@@ -70,7 +73,6 @@ void basis::init() {
     // shrink the up-layer basis to an unique subset L
     // and with nel_up/nel_down in each layer
     if(K>=0) {
-	
         for(it=basis_set.begin(); it!=basis_set.end();) {
             unsigned long c=it->first;
             bool delete_flag=false;
@@ -95,10 +97,11 @@ void basis::init() {
 
     sort(id.begin(),id.end());
     basis_set.clear();
-    for(i=0; i<id.size(); i++)
+    for(i=0; i<id.size(); i++){
         basis_set.insert(pair<unsigned long, long>(id[i],i));
-    nbasis=id.size();
 
+	}
+    nbasis=id.size();
     basis_C.assign(nbasis,nphi);
     for(i=0;i<id.size();i++)
        for(n=1; n<nphi; n++)
@@ -106,22 +109,23 @@ void basis::init() {
                 basis_C[i]=n;
                 break;
     }
+
 }
 
-void basis::init(int _nphi, int _nel_up, int _nel_down) {
+void basis::init(int _nphi, int _nel, int _nel_up) {
     nphi=_nphi;
     nel_up=_nel_up;
-    nel_down=_nel_down;
+    nel=_nel;
     init();
 }
 
-void basis::init(int _nphi,int _nel_up, int _nel_down,int _J,int _K) {
+void basis::init(int _nphi,int _nel, int _nel_up,int _J,int _K) {
     nphi=_nphi;
     nel_up=_nel_up;
-    nel_down=_nel_down;
+    nel=_nel;
     J=_J;
     K=_K;
-    nel=nel_up+nel_down;
+    nel_down=nel-nel_up;
     init();
 }
 
@@ -132,7 +136,7 @@ void basis::clear(){
 }
 
 
-int basis::get_sign(unsigned long c,int n, int m, int nt, int mt) {
+int basis::get_sign(unsigned long c,int n, int m, int nt, int mt,int t) {
     int k,kl,kr,nsign,sign;
     unsigned long b,mask, mask_k;
     mask=(1<<n)+(1<<m);
@@ -143,22 +147,39 @@ int basis::get_sign(unsigned long c,int n, int m, int nt, int mt) {
     kl=nt<n?nt:n;
     kr=nt<n?n:nt;
     for(k=kl+1; k<kr; k++) {
-        mask_k=(1<<k);
-        if((b&mask_k)==mask_k)
-            nsign++;
+      mask_k=(1<<k);
+      if((b&mask_k)==mask_k)
+        nsign++;
     }
     kl=mt<m?mt:m;
     kr=mt<m?m:mt;
     for(k=kl+1; k<kr; k++) {
-        mask_k=(1<<k);
-        if((b&mask_k)==mask_k)
-            nsign++;
+      mask_k=(1<<k);
+      if((b&mask_k)==mask_k)
+        nsign++;
     }
     // if there're crossings between two electrons
     if(nt>mt && m>n || mt>nt && m<n)
-        nsign++;
+       nsign++;
+     
+    sign=(nsign%2==0?1:-1);
+    return sign;
+}
+
+// sign change function for electron hopping from one layer to another
+int basis::get_sign(unsigned long c, int n,int nt){
+    unsigned long c_sign,mask_sign;
+    int nsign,sign;
+    int bits=(nt>n?n:nt)+1;
+    mask_sign=(1<<(nphi-1))-1;
+    c_sign= (c & (mask_sign<<bits) )>>bits;
+    nsign=popcount_table[mask_sign &c_sign];
 
     sign=(nsign%2==0?1:-1);
+    //cout<<"(n,nt)=("<<n<<","<<nt<<")"<<endl;
+    //cout<<"c_sign=  "<<bitset<8>(c_sign).to_string()<<endl;
+    //cout<<"c= "<<bitset<16>(c).to_string()<<endl;
+    //cout<<"sign="<<sign<<endl;
     return sign;
 }
 
@@ -202,6 +223,26 @@ void basis::generate(long count,long j, long Ji, unsigned long config) {
     }
 }
 
+void basis::generate_all_density(long count,long j, long Ji, unsigned long config) {
+  int i,id,k,c;
+  count++;
+  config=(count==1?0:config);
+  j=(count==1?0:j+1);
+  for(i=j;i<2*nphi-(nel-count);i++){
+    // total sum of k
+    k=Ji+i%nphi;
+    c=config+(1<<i);
+    if(count<nel){
+       generate_all_density(count,i,k,c);
+     }
+    else{
+      if(J<0)
+        basis_set[c]=c;
+      else if(k%nphi==J)
+        basis_set[c]=c;
+    }
+  }
+}
 
 
 void basis::prlong() {
@@ -221,27 +262,13 @@ void basis::prlong() {
                 cout<<n-nphi<<" ";
         }
         cout<<"> ";
-        cout<<bitset<20>(it->first).to_string()<<" "<<setw(6)<<it->first<<" "<<it->second<<" "<<basis_C[count]<<endl;
+        cout<<bitset<12>(it->first).to_string()<<" "<<setw(6)<<it->first<<" "<<it->second<<" "<<basis_C[count]<<endl;
 	count++;
     }
     cout<<"---------------------------------------"<<endl;
     cout<<"No. basis: "<<setw(6)<<nbasis<<endl;
-    /*
-    cout<<"---------------------------------------"<<endl;
-    cout<<"Lin's Table:"<<endl;
-    cout<<"---------------------------------------"<<endl;
-    cout<<"spin-up electrons:"<<endl;
-    cout<<"---------------------------------------"<<endl;
-    for(auto &x: id_up)
-       cout<<x<<endl;
-    cout<<"---------------------------------------"<<endl;
-    cout<<"spin-down electrons:"<<endl;
-    cout<<"---------------------------------------"<<endl;
-    for(auto &x: id_down)
-       cout<<x<<endl;
-    cout<<"---------------------------------------"<<endl;
-    */
 }
+
 unsigned long basis::translate(unsigned long c, int k, int &sign) {
         unsigned long config,mask_d,mask_u,c_d,c_u,mask_sign;
         int nsign;
@@ -256,20 +283,10 @@ unsigned long basis::translate(unsigned long c, int k, int &sign) {
         mask_sign=(1<<bits)-1;
         int ncross_up=popcount_table[(mask_sign<<inv_bits) & c_u];
         int ncross_down=popcount_table[(mask_sign<<inv_bits) & c_d];
-        nsign=(nel_up-ncross_up)*ncross_up+(nel_down-ncross_down)*ncross_down;
-        /*
-        cout<<bitset<9>(mask_sign<<inv_bits).to_string()<<"  "<<bitset<9>(c_u).to_string()<<" "<<bitset<9>((mask_sign<<inv_bits)&c_u).to_string()<<endl;
-        cout<<"ncross_up:="<<ncross_up<<endl;
-        
-        cout<<bitset<9>(mask_sign<<inv_bits).to_string()<<"  "<<bitset<9>(c_d).to_string()<<" "<<bitset<9>((mask_sign<<inv_bits)&c_d).to_string()<<endl;
-        cout<<"ncross_down:="<<ncross_down<<endl;
-        cout<<"nsign:="<<nsign<<endl;
-        */
-        
-        //if(nsign<0)
-	//  cout<<"error in nsign"<<endl;
-        //nsign=popcount_table[(mask_sign_u<<(nphi-bits_u)) & c_u]*(nel_up-1)+popcount_table[(mask_sign_d<<(nphi-bits_d)) & c_d]*(nel_down-1);
-
+        int _nel_up=popcount_table[c_u];
+        int _nel_down=nel-_nel_up;
+         
+        nsign=(_nel_up-ncross_up)*ncross_up+(_nel_down-ncross_down)*ncross_down;
         c_u=((c_u<<bits)|(c_u>>inv_bits))&mask_u;
         c_d=((c_d<<bits)|(c_d>>inv_bits))&mask_u;
 
@@ -292,11 +309,9 @@ unsigned long basis::inv_translate(unsigned long c, int k, int &sign) {
         mask_sign=(1<<bits)-1;
         int ncross_up=popcount_table[mask_sign & c_u];
         int ncross_down=popcount_table[mask_sign & c_d];
-        nsign=(nel_up-ncross_up)*ncross_up+(nel_down-ncross_down)*ncross_down;
-        //if(nsign<0)
-	//  cout<<"error in inv nsign"<<endl;
-        //nsign=popcount_table[mask_sign_u & c_u]*(nel_up-1)+popcount_table[mask_sign_d & c_d]*(nel_down-1);
-
+        int _nel_up=popcount_table[c_u];
+        int _nel_down=nel-_nel_up;
+        nsign=(_nel_up-ncross_up)*ncross_up+(_nel_down-ncross_down)*ncross_down;
         c_u=((c_u>>bits)|(c_u<<inv_bits))&mask_u;
         c_d=((c_d>>bits)|(c_d<<inv_bits))&mask_u;
         config=((c_d<<nphi)|c_u);

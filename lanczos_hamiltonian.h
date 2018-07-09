@@ -26,7 +26,9 @@ public:
     std::vector<double> norm; //!< Normalization coefficients vector in Lanczos update
     std::vector<double> overlap; //!< Overlap coefficients vector in Lanczos update
     std::vector< complex<double> > psir_0; //!< Ground state wave function in real-space
+    std::vector< complex<double> > psir_1; //!< first excited wave function in real-space
     std::vector<double> psi_0; //!<Ground state eigenvector in Krylov subspace
+    std::vector<double> psi_1; //!<first excited state eigenvector in Krylov subspace
     std::vector<double> psi_n0; //!<First element of eigenvectors in Krylov subspace
     std::vector<double> eigenvalues; //!< Eigenvalues
     lhamil();  //!< Empty constructor
@@ -47,9 +49,8 @@ public:
     const lhamil & operator=(const lhamil &);
     /** \param _sector Basis sector
     */
-    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,int nthread);  //!< Initialize hamiltonian matrix
-    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,double _theta_u1, double theta_u2, double _theta_d1,double _theta_d2, int nthread);  //!< Initialize hamiltonian matrix
-    void peer_set_hamil(int,long,long);
+    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,double _Delta_SAS,double _Delta_V,int nthread);  //!< Initialize hamiltonian matrix
+    void peer_set_hamil(double,double,int,long,long);
     void Gram_Schmidt_orthogonalization(Vec &, int);
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays
@@ -60,9 +61,11 @@ public:
     double Coulomb_interaction(int alpha,int q_x, int q_y);
     double ground_state_energy();    //!< Ground state energy
     double occupatation_number(int alpha,int j);
+    double density_imbalance();
+    double pseudospin_Sx();
 
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version
-    void init_Coulomb_matrix(double _theta_u1,double _theta_u2,double _theta_d1,double _theta_d2 );
+    void init_Coulomb_matrix();
     void print_hamil_CSR(); //!< print the hamiltonian matrix in the CSR format
     void print_hamil(int n); //!< print the full hamiltonian matrix
     void print_lhamil(int n);  //!< print the Lanczos hamiltonian matrix with first n x n elements
