@@ -63,8 +63,8 @@ int main(int argc,char *argv[]) {
 */
 
 
-  
-/*
+ /* 
+
     lhamil lconfig(lambda,seed);
     lconfig.sector.init(nphi,nel,nel_up,J,kx);
     for(int i=0;i<50;i++){
@@ -75,11 +75,22 @@ int main(int argc,char *argv[]) {
     lconfig.diag(); 
     lconfig.eigenstates_reconstruction();
     //cout<<d<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.eigenvalues[0]<<endl;
-    cout<<d<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.density_imbalance()<<" "<<lconfig.pseudospin_Sx()/nel<<endl;
+    double sx=lconfig.pseudospin_Sx()/nel;
+    double Et=lconfig.ground_state_energy()/nel;
+    lconfig.set_hamil(lx,ly,nphi,nLL,d,0,Delta_V,nthread);
+    lconfig.coeff_explicit_update();
+    lconfig.diag(); 
+    lconfig.eigenstates_reconstruction();
+    double E0=lconfig.ground_state_energy()/nel;
+    
+    cout<<d<<setprecision(6)<<" "<<(E0-Et)/Delta_SAS<<" "<<sx<<endl;
+    //cout<<d<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.density_imbalance()<<" "<<lconfig.pseudospin_Sx()/nel<<endl;
     //cout<<d<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.pseudospin_Sx()/nel<<endl;
     //cout<<d<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.density_imbalance()<<endl;
     }
+
 */
+
 
 
 
@@ -222,10 +233,11 @@ int main(int argc,char *argv[]) {
     cout<<"E_gs:= "<<setprecision(6)<<Egs<<endl;
     //cout<<"E0:="<<setprecision(6)<<lconfig.eigenvalues[0]<<endl;
     //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
-    cout<<"Sz:="<<lconfig.density_imbalance()/nel<<endl; 
-    cout<<"Sx:="<<lconfig.pseudospin_Sx()/nel<<endl; 
+    cout<<"Sz:="<<lconfig.pseudospin_Sz()<<endl; 
+    cout<<"Sx:="<<lconfig.pseudospin_Sx()<<endl; 
     //cout<<"Ec:= "<<lconfig.Ec<<endl;
     //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
+/*
     cout<<"eigenvalues:="<<lconfig.eigenvalues[0]<<" ";
     int i=0;
     int count=0;
@@ -241,9 +253,9 @@ int main(int argc,char *argv[]) {
 
       
    
-/*
+
     for(int i=0;i<lconfig.nHilbert;i++)
-        if(abs(lconfig.psir_0[i])>0.03){
+        if(abs(lconfig.psir_0[i])>0.01){
           cout<<i<<" :   |";
           unsigned long long u=lconfig.sector.id[i];
           for(int n=0;n<nphi;n++)
@@ -257,6 +269,7 @@ int main(int argc,char *argv[]) {
           cout<<bitset<12>((lconfig.sector.id[i])).to_string()<<": "<<bitset<12>((lconfig.sector.id[i])>>nphi).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
         }
 */
+
 
 
 

@@ -61,7 +61,7 @@ public:
     double Coulomb_interaction(int alpha,int q_x, int q_y);
     double ground_state_energy();    //!< Ground state energy
     double occupatation_number(int alpha,int j);
-    double density_imbalance();
+    double pseudospin_Sz();
     double pseudospin_Sx();
 
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version

@@ -284,7 +284,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                 }
 	    // interlayer tunneling 
             if(Delta_SAS>0)
-            for(n=0; n<2*nphi; n++){
+            for(n=0; n<nphi; n++){
 	      nt=(n<nphi?n+nphi:n-nphi);
               mask = (1 << n)+(1<<nt);
 	      unsigned long Kn=mask & lbasis;
@@ -762,25 +762,35 @@ double lhamil::ground_state_energy() {
 
 double lhamil::occupatation_number(int alpha,int j){
       complex<double> occ=0;
-      unsigned long mask;
+      unsigned long mask,lbasis;
+      int sign,q,D;
       // '0' for upper-layer, '1' for down-layer
       if(alpha==0)
          mask = (1 << j);
       else 
          mask = (1 << (j+nphi));
-      for(int n=0;n<nHilbert;n++){
-	 if((mask& sector.id[n])==mask)
-	    occ+=conj(psir_0[n])*psir_0[n];
+       
+      for(int i=0;i<nHilbert;i++){
+        D=(sector.K<0?1:sector.basis_C[i]);
+        for(q=0; q<D; q++) {
+         sign=1;
+         lbasis=(q==0?sector.id[i]:sector.translate(sector.id[i],q,sign));
+	 if((mask& lbasis)==mask)
+	    occ+=conj(psir_0[i])*psir_0[i]*FT[q*nphi+q]/D;
        }
+      }
       return occ.real();
 }
 
-double lhamil::density_imbalance(){
-     double nu_upper=0;
-     for(int i=0;i<sector.nphi;i++) 
-	nu_upper+=occupatation_number(0,i);
-     nu_upper/=sector.nphi; 
-     return fabs(1.0-2.0*nu_upper);
+double lhamil::pseudospin_Sz(){
+     double Nel_upper=0;
+     unsigned long mask;
+     int sign,q,D;
+     mask=(1<<nphi)-1;
+     for(int i=0;i<nHilbert;i++)
+       Nel_upper+=sector.popcount_table[mask&sector.id[i]]*std::norm(psir_0[i]);
+     
+     return (2.0*Nel_upper-sector.nel)/(2.0*sector.nel);
 }
 
 double lhamil::pseudospin_Sx(){
@@ -796,7 +806,7 @@ double lhamil::pseudospin_Sx(){
          lbasis=(ql==0?sector.id[i]:sector.translate(sector.id[i],ql,signl));
 	 //lbasis=sector.id[i];
 	 // interlayer tunneling 
-         for(n=0; n<2*nphi; n++){
+         for(n=0; n<nphi; n++){
 	      nt=(n<nphi?n+nphi:n-nphi);
               mask = (1 << n)+(1<<nt);
 	      unsigned long Kn=mask & lbasis;
@@ -827,7 +837,7 @@ double lhamil::pseudospin_Sx(){
             }
        }
     }
-    return abs(Sx_mean);
+    return abs(Sx_mean)/sector.nel;
 }
 
 
