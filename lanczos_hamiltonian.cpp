@@ -37,9 +37,9 @@ const lhamil & lhamil::operator =(const lhamil & _config) {
 double lhamil::Coulomb_interaction(int alpha,int q_x, int q_y) {
     double q=sqrt(q_x*q_x/(lx*lx)+q_y*q_y/(ly*ly))*2.0*M_PI;
     if(alpha==1)
-        return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0-q*d)*pow(1.0-exp(-q*q/2.0),nLL*2);
+        return 2.0*M_PI/q*exp(-q*q/2.0-q*d)*pow(1.0-exp(-q*q/2.0),nLL*2);
     else
-        return 2.0*M_PI/(q+1e-30)*exp(-q*q/2.0)*pow(1.0-exp(-q*q/2.0),nLL*2);
+        return 2.0*M_PI/q*exp(-q*q/2.0)*pow(1.0-exp(-q*q/2.0),nLL*2);
 }
 
 void lhamil::init_Coulomb_matrix() {
@@ -59,13 +59,14 @@ void lhamil::init_Coulomb_matrix() {
         for(int s = 0; s < nphi; s++)
             for(int q_y = 0; q_y <nphi; q_y++) {
                 double V=0;
-                for(int q_x = -nphi/2; q_x <=nphi/2; q_x++)
+                for(int q_x = -nphi; q_x <=nphi; q_x++)
                     if(!(q_x==0 && q_y==0))
                         V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
 
                 if(alpha==1) {
                     V=0;
-                    for(int q_x = -50*nphi/(d+0.1); q_x <50*nphi/(d+0.1); q_x++)
+                    for(int q_x = -10*nphi/(d+0.1); q_x <10*nphi/(d+0.1); q_x++)
+                    //for(int q_x = -nphi; q_x <=nphi; q_x++)
                         if(!(q_x==0 &&q_y==0))
                             V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
                 }
@@ -110,12 +111,13 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                     // consider the upper-layer two electrons
                     // looking up the corresponding basis in id_up
                     // if there're two electrons on n and m;
-                    if((lbasis &mask) == mask ) {
+                    if((lbasis &mask) == mask) {
                         // b is the rest electon positions
                         b = lbasis ^ mask;
                         // mt=j3, nt=j4
                         // perform translation along x-direction (q_y), positive q_y
-                        for(t = -nphi/2; t <= nphi/2; t++) {
+                        //for(t = -nphi/2; t <= nphi/2; t++) {
+                        for(t = -nphi+1; t < nphi; t++) {
                             if(n + t >=nphi){
                                 nt = n + t - nphi;
                             } 
@@ -170,11 +172,12 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                     mask = (1 << n) + (1 << m);
                     // consider the lower-layer two electrons
                     // if there're two electrons on n and m;
-                    if((lbasis &mask) == mask && n!=m) {
+                    if((lbasis &mask) == mask) {
                         // p is the rest electon positions
                         b = lbasis ^ mask;
                         // perform translation in x-direction, negative q_y
-                        for(t = -nphi/2; t <= nphi/2; t++) {
+                        //for(t = -nphi/2; t <= nphi/2; t++) {
+                        for(t = -nphi+1; t < nphi; t++) {
                             if(n + t >=2*nphi){
                                 nt = n + t - nphi;
 			    }
@@ -229,11 +232,12 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                     mask = (1 << n) + (1 << m);
                     // if there is one electron at site n in upper-layer
                     // and one electron at site m in lower-layer
-                    if((lbasis &mask) == mask) {
+                    if((lbasis &mask) == mask ) {
                         // b is the rest electon positions for upper-layer electrons
                         b = lbasis ^ mask;
                         // perform translation along x-direction
-                        for(t = -nphi/2; t <= nphi/2 ; t++) {
+                        //for(t = -nphi/2; t <= nphi/2 ; t++) {
+                        for(t = -nphi+1; t < nphi ; t++) {
                             if(n + t>=nphi){
                                 nt = n + t - nphi;
 			    }
@@ -282,6 +286,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                         }
                     }
                 }
+
 	    // interlayer tunneling 
             if(Delta_SAS>0)
             for(n=0; n<nphi; n++){
@@ -324,10 +329,14 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
 		       matrix_elements[i]-=0.5*Delta_V;
 		    }
             }
+	    
         }
-
+        // background charge energy
         matrix_elements[i]+=Ec*sector.nel;
-        //matrix_elements[i]+=Ec*(sector.nel_up_table[i]+sector.nel_down);
+        // charging energy
+        mask=(1<<nphi)-1;
+        matrix_elements[i]+=-d*(sector.popcount_table[sector.id[i]&mask])*(sector.nel-sector.popcount_table[sector.id[i]&mask])/sector.nphi;
+         
         long count=0;
         for(k=0; k<nHilbert; k++)
             if(abs(matrix_elements[k])>1e-10) {

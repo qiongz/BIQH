@@ -63,6 +63,7 @@ public:
     double occupatation_number(int alpha,int j);
     double pseudospin_Sz();
     double pseudospin_Sx();
+    double pseudospin_Chi();
 
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version
     void init_Coulomb_matrix();

@@ -47,7 +47,6 @@ int main(int argc,char *argv[]) {
     #endif
     Sz=nel_up-nel_down;
 
-
   
 /*
     cout<<"nphi: = "<<nphi<<endl;
@@ -63,33 +62,58 @@ int main(int argc,char *argv[]) {
 */
 
 
- /* 
+/*
 
     lhamil lconfig(lambda,seed);
     lconfig.sector.init(nphi,nel,nel_up,J,kx);
-    for(int i=0;i<50;i++){
-    //Delta_V=i*0.00005+0.00001;
-    d=i*0.1;
+    for(int n=0;n<20;n++){
+    d=n*0.1+2.5;
+    for(int i=0;i<20;i++){
+    Delta_V=i*0.01;
+    for(int j=0;j<5;j++){
+    Delta_SAS=j*0.0001;
+    //d=i*0.1;
     lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,nthread);
     lconfig.coeff_explicit_update();
     lconfig.diag(); 
     lconfig.eigenstates_reconstruction();
-    //cout<<d<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.eigenvalues[0]<<endl;
-    double sx=lconfig.pseudospin_Sx()/nel;
     double Et=lconfig.ground_state_energy()/nel;
-    lconfig.set_hamil(lx,ly,nphi,nLL,d,0,Delta_V,nthread);
+    double Sx=lconfig.pseudospin_Sx();
+    double Sz=lconfig.pseudospin_Sz();
+     
+    lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS+0.00001,Delta_V,nthread);
     lconfig.coeff_explicit_update();
     lconfig.diag(); 
     lconfig.eigenstates_reconstruction();
-    double E0=lconfig.ground_state_energy()/nel;
+    double Chi=(lconfig.pseudospin_Sx()-Sx)/(0.00001*nel);
     
-    cout<<d<<setprecision(6)<<" "<<(E0-Et)/Delta_SAS<<" "<<sx<<endl;
+    //cout<<d<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.eigenvalues[0]<<endl;
     //cout<<d<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.density_imbalance()<<" "<<lconfig.pseudospin_Sx()/nel<<endl;
-    //cout<<d<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.pseudospin_Sx()/nel<<endl;
+    cout<<d<<" "<<Delta_V<<" "<<Delta_SAS<<" "<<Sx<<" "<<Chi<<" "<<Sz<<endl;
+    //cout<<d<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.density_imbalance()<<endl;
+    }
+    }
+    }
+*/
+
+
+    lhamil lconfig(lambda,seed);
+    lconfig.sector.init(nphi,nel,nel_up,J,kx);
+    for(int j=0;j<20;j++){
+    Delta_V=j*0.01;
+    //d=i*0.1;
+    lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,nthread);
+    lconfig.coeff_explicit_update();
+    lconfig.diag(); 
+    lconfig.eigenstates_reconstruction();
+    double Sx=lconfig.pseudospin_Sx();
+    double Sz=lconfig.pseudospin_Sz();
+    //cout<<d<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.eigenvalues[0]<<endl;
+    //cout<<d<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.density_imbalance()<<" "<<lconfig.pseudospin_Sx()/nel<<endl;
+    cout<<Delta_V<<" "<<Sx<<" "<<Sz<<endl;
     //cout<<d<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.density_imbalance()<<endl;
     }
 
-*/
 
 
 
@@ -196,9 +220,9 @@ int main(int argc,char *argv[]) {
     
    
 
- 
-    //cout<<"-----------Lanczos results---------"<<endl;
 
+    //cout<<"-----------Lanczos results---------"<<endl;
+/*
     lhamil lconfig(lambda,seed);
     //auto t1=std::chrono::high_resolution_clock::now();
     lconfig.sector.init(nphi,nel,nel_up,J,kx);
@@ -227,14 +251,22 @@ int main(int argc,char *argv[]) {
     lconfig.eigenstates_reconstruction();
 
     
-    double Egs=lconfig.ground_state_energy()/nel;
+    double Egs=lconfig.ground_state_energy();
+    double Ed=-d*nel_up*nel_down/nphi; 
     //t4=std::chrono::high_resolution_clock::now();
    // cout<<"Stage-3: Groundstate wavefunction reconstructed !"<<endl;
-    cout<<"E_gs:= "<<setprecision(6)<<Egs<<endl;
+    cout<<"E_gs:= "<<setprecision(10)<<Egs<<endl;
+    cout<<"E_d:= "<<Ed<<endl;
     //cout<<"E0:="<<setprecision(6)<<lconfig.eigenvalues[0]<<endl;
     //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
     cout<<"Sz:="<<lconfig.pseudospin_Sz()<<endl; 
     cout<<"Sx:="<<lconfig.pseudospin_Sx()<<endl; 
+*/
+
+
+
+
+
     //cout<<"Ec:= "<<lconfig.Ec<<endl;
     //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
 /*
