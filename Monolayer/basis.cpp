@@ -266,7 +266,8 @@ unsigned long basis::translate(unsigned long c, int k, int &sign) {
         mask_sign=(1<<bits)-1;
         mask=(1<<nphi)-1;
         c= c & mask;
-        nsign=popcount_table[(mask_sign<<reverse_bits) & c]*(nel-1);
+        int ncross=popcount_table[(mask_sign<<reverse_bits) & c];
+        nsign=ncross*(nel-ncross);
         config=((c<<bits)|(c>>reverse_bits))&mask;
         sign=(nsign%2==0?1:-1);
         return config;
@@ -280,7 +281,8 @@ unsigned long basis::inv_translate(unsigned long c, int k,int &sign) {
         mask_sign=(1<<bits)-1;
         mask=(1<<nphi)-1;
         c=c&mask;
-        nsign=popcount_table[mask_sign & c]*(nel-1);
+        int ncross=popcount_table[mask_sign & c];
+        nsign=ncross*(nel-ncross);
         config=((c>>bits)|(c<<reverse_bits))&mask;
         sign=(nsign%2==0?1:-1);
         return config;
