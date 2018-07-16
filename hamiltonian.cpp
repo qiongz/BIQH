@@ -25,13 +25,13 @@ void hamil::init_Coulomb_matrix() {
         for(int s = 0; s < nphi; s++)
             for(int q_y = 0; q_y < nphi; q_y++) {
                 double V=0;
-                for(int q_x = -nphi/2; q_x <=nphi/2; q_x++)
+                for(int q_x = -nphi; q_x <=nphi; q_x++)
                     if(!(q_x==0 && q_y==0))
                         V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
 
                 if(alpha==1) {
                     V=0;
-                    for(int q_x = -50*nphi/d; q_x <50*nphi/d; q_x++)
+                    for(int q_x = -10*nphi/(d+0.1); q_x <10*nphi/(d+0.1); q_x++)
                         if(!(q_x==0 &&q_y==0))
                             V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
                 }
@@ -46,8 +46,7 @@ void hamil::init_Coulomb_matrix() {
             FT[kl*nphi+kr]=complex<double>(cos(2.0*M_PI*(kl-kr)*kx/nphi),sin(2.0*M_PI*(kl-kr)*kx/nphi));
 }
 
-inline void hamil::peer_set_hamil(int id, long nbatch,long nrange) 
-{
+inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long nbatch,long nrange) {
     int kx=sector.K;
     unsigned long lbasis,rbasis,rbasis_0,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signl,signr;
@@ -77,7 +76,7 @@ inline void hamil::peer_set_hamil(int id, long nbatch,long nrange)
                         b = lbasis ^ mask;
                         // mt=j3, nt=j4
                         // perform translation along x-direction (q_y), positive q_y
-                        for(t = -nphi/2; t <= nphi/2; t++) {
+                        for(t = -nphi+1; t < nphi; t++) {
                             if(n + t >=nphi)
                                 nt = n + t - nphi;
                             else if (n+t <0)
@@ -114,7 +113,7 @@ inline void hamil::peer_set_hamil(int id, long nbatch,long nrange)
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
-                                        sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
+                                        sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
@@ -132,7 +131,7 @@ inline void hamil::peer_set_hamil(int id, long nbatch,long nrange)
                         // p is the rest electon positions
                         b = lbasis ^ mask;
                         // perform translation in x-direction, negative q_y
-                        for(t = -nphi/2; t <= nphi/2; t++) {
+                        for(t = -nphi+1; t < nphi; t++) {
                             if(n + t >=2*nphi)
                                 nt = n + t - nphi;
                             else if (n+t <nphi)
@@ -170,7 +169,7 @@ inline void hamil::peer_set_hamil(int id, long nbatch,long nrange)
                                     //rbasis=sector.inv_translate(_rbasis,ql,_signr);
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
-                                        sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
+                                        sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
@@ -188,7 +187,7 @@ inline void hamil::peer_set_hamil(int id, long nbatch,long nrange)
                         // b is the rest electon positions for upper-layer electrons
                         b = lbasis ^ mask;
                         // perform translation along x-direction
-                        for(t = -nphi/2; t <= nphi/2 ; t++) {
+                        for(t = -nphi+1; t < nphi ; t++) {
                             if(n + t>=nphi)
                                 nt = n + t - nphi;
                             else if (n+t <0)
@@ -225,7 +224,7 @@ inline void hamil::peer_set_hamil(int id, long nbatch,long nrange)
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
-                                        sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
+                                        sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
@@ -233,9 +232,56 @@ inline void hamil::peer_set_hamil(int id, long nbatch,long nrange)
                         }
                     }
                 }
+	    // interlayer tunneling 
+            if(Delta_SAS>0)
+            for(n=0; n<nphi; n++){
+	      nt=(n<nphi?n+nphi:n-nphi);
+              mask = (1 << n)+(1<<nt);
+	      unsigned long Kn=mask & lbasis;
+              if(Kn!=mask && Kn!=0){
+	      unsigned long Ln=Kn ^ mask; 
+	      rbasis_0=lbasis-Kn+Ln;
+              // determine the right side size of the translation
+              Dr=nphi;
+              for(D=1; D<nphi; D++)
+                if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                  Dr=D;
+                  break;
+                }
+                // if parameter kx<0, do not perform basis translation
+                Dr=(kx<0?1:Dr);
+                for(qr=0; qr<Dr; qr++) {
+                  signr=1;
+                  rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                    if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                    j = sector.basis_set[rbasis];
+                    sign=sector.get_sign(lbasis,n,nt)*signl*signr;
+                    //cout<<"i:=  "<<bitset<6>(lbasis).to_string()<<"    j:="<<bitset<6>(rbasis).to_string()<<"    sign:="<<sign<<endl;
+                    matrix_elements[j]-=0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                  }
+                }
+	      }
+            }
+	    // bias-voltage
+            if(Delta_V>0)
+            for(n=0; n<2*nphi; n++){
+                    mask = 1 << n;
+		    // if there's an electron on site n
+                    if((lbasis &mask) == mask){
+		     if(n<nphi)
+                       matrix_elements[i]+=0.5*Delta_V;
+		     else
+		       matrix_elements[i]-=0.5*Delta_V;
+		    }
+            }
+
         }
 
         matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
+        // charging energy
+        mask=(1<<nphi)-1;
+        matrix_elements[i]+=-d*(sector.popcount_table[sector.id[i]&mask])*(sector.nel-sector.popcount_table[sector.id[i]&mask])/sector.nphi;
+
         mutex_update.lock();
         for(k=0; k<nHilbert; k++)
 	    hamiltonian[i*nHilbert+k]=matrix_elements[k]; 
@@ -244,7 +290,7 @@ inline void hamil::peer_set_hamil(int id, long nbatch,long nrange)
     matrix_elements.clear();
 }
 
-void hamil::set_hamil(double _lx, double _ly, long _nphi,long _nLL, double _d,int nthread){
+void hamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, double Delta_SAS,double Delta_V,int nthread) {
     d = _d;
     lx = _lx;
     ly = _ly;
@@ -257,12 +303,12 @@ void hamil::set_hamil(double _lx, double _ly, long _nphi,long _nLL, double _d,in
     long  nbatch=nHilbert/nthread;
     long nresidual=nHilbert%nthread;
     for(int id = 0; id < nthread; id++)
-        threads.push_back(std::thread(&hamil::peer_set_hamil,this,id,nbatch,nbatch));
+        threads.push_back(std::thread(&hamil::peer_set_hamil,this,Delta_SAS,Delta_V,id,nbatch,nbatch));
     for(auto &th:threads)
         if(th.joinable())
             th.join();
     if(nresidual!=0)
-        peer_set_hamil(nthread,nbatch,nresidual);
+        peer_set_hamil(Delta_SAS,Delta_V,nthread,nbatch,nresidual);
 }
 
 hamil::~hamil() {}
@@ -294,6 +340,64 @@ double hamil::ground_state_energy() {
     return E_gs.real();
 }
 
+double hamil::pseudospin_Sz(){
+     double Nel_upper=0;
+     unsigned long mask;
+     int sign,q,D;
+     mask=(1<<nphi)-1;
+     for(int i=0;i<nHilbert;i++)
+       Nel_upper+=sector.popcount_table[mask&sector.id[i]]*std::norm(psi_0[i]);
+     
+     return (2.0*Nel_upper-sector.nel)/(2.0*sector.nel);
+}
+
+double hamil::pseudospin_Sx(){
+       unsigned long mask,mask_t,b,occ_t,lbasis,rbasis,rbasis_0;
+       long i,j;
+       int n,nt,sign,signl,signr;
+       int ql,qr,Dl,Dr,D;
+       complex<double> Sx_mean=0;
+       for(i=0;i<nHilbert;i++){
+        Dl=(sector.K<0?1:sector.basis_C[i]);
+        for(ql=0; ql<Dl; ql++) {
+         signl=1;
+         lbasis=(ql==0?sector.id[i]:sector.translate(sector.id[i],ql,signl));
+	 //lbasis=sector.id[i];
+	 // interlayer tunneling 
+         for(n=0; n<nphi; n++){
+	      nt=(n<nphi?n+nphi:n-nphi);
+              mask = (1 << n)+(1<<nt);
+	      unsigned long Kn=mask & lbasis;
+              if(Kn!=mask && Kn!=0){
+	      unsigned long Ln=Kn ^ mask; 
+	      rbasis_0=lbasis-Kn+Ln;
+              // determine the right side size of the translation
+	      
+              Dr=nphi;
+              for(D=1; D<nphi; D++)
+                if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                  Dr=D;
+                  break;
+                }
+                // if parameter kx<0, do not perform basis translation
+                Dr=(sector.K<0?1:Dr);
+                for(qr=0; qr<Dr; qr++) {
+                   signr=1;
+                   rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                   if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                   j = sector.basis_set[rbasis];
+                   sign=sector.get_sign(lbasis,n,nt)*signl*signr;
+                   //sign=sector.get_sign(lbasis,n,nt);
+		   Sx_mean+=conj(psi_0[i])*psi_0[j]*sign*0.5*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                  }
+                }
+	      }
+            }
+       }
+    }
+    return abs(Sx_mean)/sector.nel;
+}
+
 void hamil::diag() {
     int i;
     complex<double> *h = new complex<double>[nHilbert * nHilbert];
@@ -303,11 +407,13 @@ void hamil::diag() {
         h[i]=hamiltonian[i];
     diag_zheev(h, en, nHilbert);
     psi_0.assign(nHilbert, 0);
+    psi_1.assign(nHilbert, 0);
     psi_n0.assign(nHilbert, 0);
     eigenvalues.assign(nHilbert, 0);
     for(i = 0; i < nHilbert; i++) {
         eigenvalues[i] = en[i];
         psi_0[i] = h[i];
+        psi_1[i] = h[i+nHilbert];
         psi_n0[i] = h[i * nHilbert];
     }
     delete h, en;

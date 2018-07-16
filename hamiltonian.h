@@ -23,6 +23,8 @@ public:
     std::vector<double> eigenvalues;
     /** Ground state wave function */
     std::vector< complex<double> > psi_0;
+    /** first excited state wave function */
+    std::vector< complex<double> > psi_1;
     /** First element of all wave functions */
     std::vector< complex<double> > psi_n0;
 
@@ -33,11 +35,15 @@ public:
      \param t hopping strength,
      \param U onsite replusive interaction strength
      */
-    void peer_set_hamil(int id, long nbatch,long nrange);
-    void set_hamil(double _lx, double _ly, long _nphi,long _nLL, double _d,int nthread);
+    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,double _Delta_SAS,double _Delta_V,int nthread);  //!< Initialize hamiltonian matrix
+    void peer_set_hamil(double,double,int,long,long);
+
     const hamil & operator=(const hamil &);
     /** Return the ground state energy of the system */
     double ground_state_energy();
+    double pseudospin_Sz();
+    double pseudospin_Sx();
+
     /** Diagonalize the full hamiltonian */
     void init_Coulomb_matrix();
     double Coulomb_interaction(int alpha,int q_x, int q_y);

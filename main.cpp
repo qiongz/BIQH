@@ -96,7 +96,7 @@ int main(int argc,char *argv[]) {
     }
 */
 
-
+/*
     lhamil lconfig(lambda,seed);
     lconfig.sector.init(nphi,nel,nel_up,J,kx);
     for(int j=0;j<20;j++){
@@ -113,6 +113,7 @@ int main(int argc,char *argv[]) {
     cout<<Delta_V<<" "<<Sx<<" "<<Sz<<endl;
     //cout<<d<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.density_imbalance()<<endl;
     }
+*/
 
 
 
@@ -122,15 +123,15 @@ int main(int argc,char *argv[]) {
 
 
 
-/*
+
   
     hamil config;
-    config.sector.init(nphi,nel_up,nel_down,J,kx);
+    config.sector.init(nphi,nel,nel_up,J,kx);
     //cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
     //cout<<"-----------Ground state---------"<<endl;
 
    // auto _t1=std::chrono::high_resolution_clock::now();
-    config.set_hamil(lx,ly,nphi,nLL,d,nthread);
+    config.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,nthread);
     //auto _t2=std::chrono::high_resolution_clock::now();
     //cout<<"Full Hamiltonian matrix initialized !"<<endl;
     //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(_t2-_t1).count()/1.0e6<<" seconds."<<endl;
@@ -144,9 +145,11 @@ int main(int argc,char *argv[]) {
     cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
     cout<<"E0:="<<config.eigenvalues[0]<<endl;
     cout<<"E1:="<<config.eigenvalues[1]<<endl;
+    cout<<"Sz:="<<config.pseudospin_Sz()<<endl;
+    cout<<"Sx:="<<config.pseudospin_Sx()<<endl;
     cout<<"# ground state wave function"<<endl;
     for(int i=0;i<config.nHilbert;i++)
-        if(abs(config.psi_0[i])>0.11){
+        if(abs(config.psi_0[i])>0.05){
           cout<<i<<" :   |";
           unsigned long long u=config.sector.id[i];
           for(int n=0;n<nphi;n++)
@@ -160,9 +163,10 @@ int main(int argc,char *argv[]) {
           cout<<bitset<8>((config.sector.id[i])).to_string()<<": "<<bitset<8>((config.sector.id[i])>>nphi).to_string()<<"  "<<abs(config.psi_0[i])<<endl;
 	}
 
+    /*
     cout<<"# first excited state wave function"<<endl;
     for(int i=0;i<config.nHilbert;i++)
-        if(abs(config.psi_1[i])>0.11){
+        if(abs(config.psi_1[i])>0.01){
           cout<<i<<" :   |";
           unsigned long long u=config.sector.id[i];
           for(int n=0;n<nphi;n++)
@@ -175,7 +179,8 @@ int main(int argc,char *argv[]) {
           cout<<")   ";
           cout<<bitset<8>((config.sector.id[i])).to_string()<<": "<<bitset<8>((config.sector.id[i])>>nphi).to_string()<<"  "<<abs(config.psi_1[i])<<endl;
 	}
-*/
+    */
+
 
 /*
    lhamil lconfig(lambda,seed);
@@ -222,7 +227,7 @@ int main(int argc,char *argv[]) {
 
 
     //cout<<"-----------Lanczos results---------"<<endl;
-/*
+
     lhamil lconfig(lambda,seed);
     //auto t1=std::chrono::high_resolution_clock::now();
     lconfig.sector.init(nphi,nel,nel_up,J,kx);
@@ -255,13 +260,12 @@ int main(int argc,char *argv[]) {
     double Ed=-d*nel_up*nel_down/nphi; 
     //t4=std::chrono::high_resolution_clock::now();
    // cout<<"Stage-3: Groundstate wavefunction reconstructed !"<<endl;
-    cout<<"E_gs:= "<<setprecision(10)<<Egs<<endl;
-    cout<<"E_d:= "<<Ed<<endl;
+    cout<<"E_gs:= "<<setprecision(10)<<Egs/nel<<endl;
     //cout<<"E0:="<<setprecision(6)<<lconfig.eigenvalues[0]<<endl;
     //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
     cout<<"Sz:="<<lconfig.pseudospin_Sz()<<endl; 
     cout<<"Sx:="<<lconfig.pseudospin_Sx()<<endl; 
-*/
+
 
 
 
@@ -281,13 +285,13 @@ int main(int argc,char *argv[]) {
        }
      }while(count<8 && count<lconfig.norm.size());
      cout<<endl;
-
+*/
 
       
    
 
     for(int i=0;i<lconfig.nHilbert;i++)
-        if(abs(lconfig.psir_0[i])>0.01){
+        if(abs(lconfig.psir_0[i])>0.05){
           cout<<i<<" :   |";
           unsigned long long u=lconfig.sector.id[i];
           for(int n=0;n<nphi;n++)
@@ -300,7 +304,7 @@ int main(int argc,char *argv[]) {
           cout<<")   ";
           cout<<bitset<12>((lconfig.sector.id[i])).to_string()<<": "<<bitset<12>((lconfig.sector.id[i])>>nphi).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
         }
-*/
+
 
 
 
