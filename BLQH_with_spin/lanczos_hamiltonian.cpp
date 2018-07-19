@@ -1009,7 +1009,7 @@ double lhamil::occupatation_number(int alpha,int j) {
             sign=1;
             lbasis=(q==0?sector.id[i]:sector.translate(sector.id[i],q,sign));
             if((mask& lbasis)==mask)
-                occ+=conj(psir_0[i])*psir_0[i]*FT[q*nphi+q]/D;
+                occ+=conj(psir_0[i])*psir_0[i]*FT[q*nphi+q]/(1.0*D);
         }
     }
     return occ.real();
@@ -1018,7 +1018,7 @@ double lhamil::occupatation_number(int alpha,int j) {
 double lhamil::pseudospin_Sz() {
     double Nel_upper=0;
     unsigned long mask;
-    int sign,q,D;
+    int sign;
     mask=(1<<nphi)-1;
     for(int i=0; i<nHilbert; i++)
         Nel_upper+=(sector.popcount_table[mask&sector.id[i]]+sector.popcount_table[(mask<<(2*nphi))& sector.id[i]])*std::norm(psir_0[i]);
@@ -1074,8 +1074,7 @@ double lhamil::pseudospin_Sx() {
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                             j = sector.basis_set[rbasis];
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                            //sign=sector.get_sign(lbasis,n,nt);
-                            Sx_mean+=conj(psir_0[i])*psir_0[j]*sign*0.5*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.5/sqrt(Dl*Dr));
                         }
                     }
                 }
@@ -1105,8 +1104,7 @@ double lhamil::pseudospin_Sx() {
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                             j = sector.basis_set[rbasis];
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                            //sign=sector.get_sign(lbasis,n,nt);
-                            Sx_mean+=conj(psir_0[i])*psir_0[j]*sign*0.5*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.5/sqrt(Dl*Dr));
                         }
                     }
                 }
