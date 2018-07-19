@@ -388,7 +388,7 @@ double hamil::pseudospin_Sx(){
                    j = sector.basis_set[rbasis];
                    sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                    //sign=sector.get_sign(lbasis,n,nt);
-		   Sx_mean+=conj(psi_0[i])*psi_0[j]*sign*0.5*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+		   Sx_mean+=conj(psi_0[i])*psi_0[j]*FT[ql*nphi+qr]*double(0.5*sign/sqrt(Dl*Dr));
                   }
                 }
 	      }

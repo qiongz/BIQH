@@ -159,7 +159,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                        matrix_elements[j]+=FT[ql*nphi+qr]*double(Coulomb_matrix[s*nphi+abs(t)]*sign/sqrt(Dl*Dr));
                                     }
                                 }
                             }
@@ -219,7 +219,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                        matrix_elements[j]+=FT[ql*nphi+qr]*double(Coulomb_matrix[s*nphi+abs(t)]*sign/sqrt(Dl*Dr));
                                     }
                                 }
                             }
@@ -279,7 +279,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                        matrix_elements[j]+=FT[ql*nphi+qr]*double(Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign/sqrt(Dl*Dr));
                                     }
                                 }
                             }
@@ -785,7 +785,7 @@ double lhamil::occupatation_number(int alpha,int j){
          sign=1;
          lbasis=(q==0?sector.id[i]:sector.translate(sector.id[i],q,sign));
 	 if((mask& lbasis)==mask)
-	    occ+=conj(psir_0[i])*psir_0[i]*FT[q*nphi+q]/D;
+	    occ+=conj(psir_0[i])*psir_0[i]*FT[q*nphi+q]/(1.0*D);
        }
       }
       return occ.real();
@@ -839,7 +839,7 @@ double lhamil::pseudospin_Sx(){
                    j = sector.basis_set[rbasis];
                    sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                    //sign=sector.get_sign(lbasis,n,nt);
-		   Sx_mean+=conj(psir_0[i])*psir_0[j]*sign*0.5*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+		   Sx_mean+=conj(psir_0[i])*psir_0[j]*FT[ql*nphi+qr]*double(0.5/sqrt(Dl*Dr)*sign);
                   }
                 }
 	      }
