@@ -320,12 +320,12 @@ unsigned long basis::translate(unsigned long c, int bits, int &sign) {
         int n_ru=popcount_table[c_ru]; 
         int n_rd=popcount_table[c_rd]; 
         
-        nsign=(n_lu-ncross_lu)*n_lu+(n_ld-ncross_ld)*n_ld+(n_ru-ncross_ru)*n_ru+(n_rd-ncross_rd)*n_rd; 
+        nsign=(n_lu-ncross_lu)*ncross_lu+(n_ld-ncross_ld)*ncross_ld+(n_ru-ncross_ru)*ncross_ru+(n_rd-ncross_rd)*ncross_rd; 
         
         c_lu = ((c_lu<<bits)| (c_lu>>inv_bits)) & mask_lu; 
-        c_ld = ((c_ld<<bits)| (c_ld>>inv_bits)) & mask_ld; 
-        c_ru = ((c_ru<<bits)| (c_ru>>inv_bits)) & mask_ru; 
-        c_rd = ((c_rd<<bits)| (c_rd>>inv_bits)) & mask_rd; 
+        c_ld = ((c_ld<<bits)| (c_ld>>inv_bits)) & mask_lu; 
+        c_ru = ((c_ru<<bits)| (c_ru>>inv_bits)) & mask_lu; 
+        c_rd = ((c_rd<<bits)| (c_rd>>inv_bits)) & mask_lu; 
 
         config=(c_lu | (c_ld<<(2*nphi)) | (c_ru<<nphi) | (c_rd<<(3*nphi)) );   
 
@@ -359,12 +359,12 @@ unsigned long basis::inv_translate(unsigned long c, int bits, int &sign) {
         int n_ru=popcount_table[c_ru]; 
         int n_rd=popcount_table[c_rd]; 
         
-        nsign=(n_lu-ncross_lu)*n_lu+(n_ld-ncross_ld)*n_ld+(n_ru-ncross_ru)*n_ru+(n_rd-ncross_rd)*n_rd; 
-        
+        nsign=(n_lu-ncross_lu)*ncross_lu+(n_ld-ncross_ld)*ncross_ld+(n_ru-ncross_ru)*ncross_ru+(n_rd-ncross_rd)*ncross_rd; 
+
         c_lu = ((c_lu>>bits)|(c_lu<<inv_bits)) & mask_lu; 
-        c_ld = ((c_ld>>bits)|(c_ld<<inv_bits)) & mask_ld; 
-        c_ru = ((c_ru>>bits)|(c_ru<<inv_bits)) & mask_ru; 
-        c_rd = ((c_rd>>bits)|(c_rd<<inv_bits)) & mask_rd; 
+        c_ld = ((c_ld>>bits)|(c_ld<<inv_bits)) & mask_lu; 
+        c_ru = ((c_ru>>bits)|(c_ru<<inv_bits)) & mask_lu; 
+        c_rd = ((c_rd>>bits)|(c_rd<<inv_bits)) & mask_lu; 
 
         config=(c_lu | (c_ld<<(2*nphi)) | (c_ru<<nphi) | (c_rd<<(3*nphi)) );   
 
