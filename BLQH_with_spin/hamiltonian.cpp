@@ -504,6 +504,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             matrix_elements[i]-=0.5*Delta_V;
                     }
                 }
+            // Zeemann energy
             if(Delta_Z>0)
                 for(n=0; n<4*nphi; n++) {
                     mask = 1 << n;
@@ -584,23 +585,15 @@ double hamil::ground_state_energy() {
 
 double hamil::pseudospin_Sz(){
     double Nel_upper=0;
-    unsigned long mask;
-    int sign,q,D;
-    mask=(1<<nphi)-1;
     for(int i=0; i<nHilbert; i++)
 	Nel_upper+=sector.get_nel_upper_layer(i)*std::norm(psi_0[i]);
-
     return (2.0*Nel_upper-sector.nel)/(2.0*sector.nel);
 }
 
 double hamil::Sz(){
     double Nel_Su=0;
-    unsigned long mask;
-    int sign,q,D;
-    mask=(1<<nphi)-1;
     for(int i=0; i<nHilbert; i++)
 	Nel_Su+=sector.get_nel_spin_up(i)*std::norm(psi_0[i]);
-
     return (2.0*Nel_Su-sector.nel)/(2.0*sector.nel);
 }
 double hamil::pseudospin_Sx(){

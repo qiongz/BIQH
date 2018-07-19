@@ -282,7 +282,7 @@ int basis::get_nel_upper_layer(long i){
     mask_ld =mask_lu<<(2*nphi);
     c_lu=id[i] & mask_lu;
     c_ld=(id[i] & mask_ld)>>(2*nphi);
-    return popcount_table[c_lu&mask_lu]+popcount_table[c_ld&mask_ld]; 
+    return popcount_table[c_lu]+popcount_table[c_ld]; 
 }
 
 int basis::get_nel_spin_up(long i){
@@ -291,7 +291,7 @@ int basis::get_nel_spin_up(long i){
     mask_ru =mask_lu<<nphi;
     c_lu=id[i] & mask_lu;
     c_ru=(id[i] & mask_ru)>>nphi;
-    return popcount_table[c_lu&mask_lu]+popcount_table[c_ru&mask_ru]; 
+    return popcount_table[c_lu]+popcount_table[c_ru]; 
 }
 
 unsigned long basis::translate(unsigned long c, int bits, int &sign) {

@@ -1015,9 +1015,6 @@ double lhamil::occupatation_number(int alpha,int j) {
 
 double lhamil::pseudospin_Sz() {
     double Nel_upper=0;
-    unsigned long mask;
-    int sign;
-    mask=(1<<nphi)-1;
     for(int i=0; i<nHilbert; i++)
 	Nel_upper+=sector.get_nel_upper_layer(i)*std::norm(psir_0[i]);
 
@@ -1026,9 +1023,6 @@ double lhamil::pseudospin_Sz() {
 
 double lhamil::Sz() {
     double Nel_su=0;
-    unsigned long mask;
-    int sign,q,D;
-    mask=(1<<nphi)-1;
     for(int i=0; i<nHilbert; i++)
 	Nel_su+=sector.get_nel_spin_up(i)*std::norm(psir_0[i]);
 

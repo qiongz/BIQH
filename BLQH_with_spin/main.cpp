@@ -131,7 +131,7 @@ int main(int argc,char *argv[]) {
 */
 
 
- /* 
+ 
     hamil config;
     config.sector.init(nphi,nel,nel_up,J,kx);
     cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
@@ -157,13 +157,10 @@ int main(int argc,char *argv[]) {
     cout<<"Px:="<<config.pseudospin_Sx()<<endl;
     cout<<"Sz:="<<config.Sz()<<endl;
 
-    */
-
-
-    /*
+    
     cout<<"# ground state wave function"<<endl;
     for(int i=0;i<config.nHilbert;i++)
-        if(abs(config.psi_0[i])>0.05){
+        if(abs(config.psi_0[i])>0.01){
           cout<<i<<" :   |";
           unsigned long long u=config.sector.id[i];
           for(int n=0;n<nphi;n++)
@@ -182,9 +179,9 @@ int main(int argc,char *argv[]) {
              if((u>>n)%2==1)
                 cout<<n-nphi*3<<" ";
           cout<<")   ";
-          cout<<bitset<8>((config.sector.id[i])).to_string()<<": "<<bitset<8>((config.sector.id[i])>>nphi).to_string()<<"  "<<abs(config.psi_0[i])<<endl;
+          cout<<bitset<24>((config.sector.id[i])).to_string()<<" "<<abs(config.psi_0[i])<<endl;
 	} 
-
+/*
     cout<<"# first excited state wave function"<<endl;
     for(int i=0;i<config.nHilbert;i++)
         if(abs(config.psi_1[i])>0.01){
@@ -202,12 +199,12 @@ int main(int argc,char *argv[]) {
 	}
     */
 
-
+/*
     //cout<<"-----------Lanczos results---------"<<endl;
     lhamil lconfig(lambda,seed);
     //auto t1=std::chrono::high_resolution_clock::now();
     lconfig.sector.init(nphi,nel,nel_up,J,kx);
-    //lconfig.sector.prlong();
+    lconfig.sector.prlong();
     //auto t2=std::chrono::high_resolution_clock::now();
     //cout<<"Stage-1: Basis initialized !"<<endl;
     cout<<"nHilbert: ="<<lconfig.sector.nbasis<<endl;
@@ -233,7 +230,6 @@ int main(int argc,char *argv[]) {
 
     
     double Egs=lconfig.ground_state_energy();
-    double Ed=-d*nel_up*nel_down/nphi; 
     //t4=std::chrono::high_resolution_clock::now();
    // cout<<"Stage-3: Groundstate wavefunction reconstructed !"<<endl;
     cout<<"E_gs:= "<<setprecision(10)<<Egs/nel<<endl;
@@ -252,7 +248,7 @@ int main(int argc,char *argv[]) {
     int count=0;
      do{
         i++;
-       if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-2) {
+       if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-4) {
           cout<<lconfig.eigenvalues[i]<<" ";
           count++;
        }
@@ -261,10 +257,8 @@ int main(int argc,char *argv[]) {
 
 
       
-/*   
-
     for(int i=0;i<lconfig.nHilbert;i++)
-        if(abs(lconfig.psir_0[i])>0.05){
+        if(abs(lconfig.psir_0[i])>0.01){
           cout<<i<<" :   |";
           unsigned long long u=lconfig.sector.id[i];
           for(int n=0;n<nphi;n++)
@@ -274,11 +268,19 @@ int main(int argc,char *argv[]) {
           for(int n=nphi;n<2*nphi;n++)
              if((u>>n)%2==1)
                 cout<<n+1-nphi<<" ";
+          cout<<")|";
+          for(int n=2*nphi;n<3*nphi;n++)
+             if((u>>n)%2==1)
+                cout<<n+1<<" ";
+          cout<<")|";
+          for(int n=3*nphi;n<4*nphi;n++)
+             if((u>>n)%2==1)
+                cout<<n+1<<" ";
           cout<<")   ";
-          cout<<bitset<12>((lconfig.sector.id[i])).to_string()<<": "<<bitset<12>((lconfig.sector.id[i])>>nphi).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
+          cout<<bitset<24>((lconfig.sector.id[i])).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
         }
-*/
 
+*/
 
 
 
