@@ -131,16 +131,11 @@ int main(int argc,char *argv[]) {
 */
 
 
-
-
-
-
-
-  
+ /* 
     hamil config;
     config.sector.init(nphi,nel,nel_up,J,kx);
     cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
-    config.sector.prlong(); 
+    //config.sector.prlong(); 
     //cout<<"-----------Ground state---------"<<endl;
 
    // auto _t1=std::chrono::high_resolution_clock::now();
@@ -161,6 +156,11 @@ int main(int argc,char *argv[]) {
     cout<<"Pz:="<<config.pseudospin_Sz()<<endl;
     cout<<"Px:="<<config.pseudospin_Sx()<<endl;
     cout<<"Sz:="<<config.Sz()<<endl;
+
+    */
+
+
+    /*
     cout<<"# ground state wave function"<<endl;
     for(int i=0;i<config.nHilbert;i++)
         if(abs(config.psi_0[i])>0.05){
@@ -183,10 +183,8 @@ int main(int argc,char *argv[]) {
                 cout<<n-nphi*3<<" ";
           cout<<")   ";
           cout<<bitset<8>((config.sector.id[i])).to_string()<<": "<<bitset<8>((config.sector.id[i])>>nphi).to_string()<<"  "<<abs(config.psi_0[i])<<endl;
-	}
+	} 
 
-
-    /*
     cout<<"# first excited state wave function"<<endl;
     for(int i=0;i<config.nHilbert;i++)
         if(abs(config.psi_1[i])>0.01){
@@ -205,52 +203,7 @@ int main(int argc,char *argv[]) {
     */
 
 
-/*
-   lhamil lconfig(lambda,seed);
-   lconfig.sector.init(nphi,nel_up,nel_down,J,kx);
-   //lconfig.sector.prlong();
-   unsigned long basis_i,basis_j;
-   int sign;
-   basis_i=lconfig.sector.id[120];
-   basis_j=lconfig.sector.translate(basis_i,kx,sign);
-
-   cout<<"basis i:  ";
-        unsigned long c=basis_i;
-        cout<<" | ";
-        for(int n=0; n<nphi; n++) {
-            if((c>>n)%2==1)
-                cout<<n<<" ";
-        }
-        cout<<">| ";
-        for(int n=nphi; n<2*nphi; n++) {
-            if((c>>n)%2==1)
-                cout<<n-nphi<<" ";
-        }
-        cout<<"> ";
-   cout<<"  "<<bitset<20>(basis_i).to_string()<<endl;
-   cout<<"basis j:   ";
-        c=basis_j;
-        cout<<" | ";
-        for(int n=0; n<nphi; n++) {
-            if((c>>n)%2==1)
-                cout<<n<<" ";
-        }
-        cout<<">| ";
-        for(int n=nphi; n<2*nphi; n++) {
-            if((c>>n)%2==1)
-                cout<<n-nphi<<" ";
-        }
-        cout<<"> ";
-   cout<<bitset<20>(basis_j).to_string()<<endl;
-   cout<<"sign: "<<sign<<endl;
-*/
-
-    
-   
-
-/*
     //cout<<"-----------Lanczos results---------"<<endl;
-
     lhamil lconfig(lambda,seed);
     //auto t1=std::chrono::high_resolution_clock::now();
     lconfig.sector.init(nphi,nel,nel_up,J,kx);
@@ -262,7 +215,7 @@ int main(int argc,char *argv[]) {
      
     //auto t3=std::chrono::high_resolution_clock::now();
 
-    lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,nthread);
+    lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,nthread);
 
     //auto t4=std::chrono::high_resolution_clock::now();
     //cout<<"Stage-2: Hamiltonian matrix initialized !"<<endl;
@@ -284,14 +237,10 @@ int main(int argc,char *argv[]) {
     //t4=std::chrono::high_resolution_clock::now();
    // cout<<"Stage-3: Groundstate wavefunction reconstructed !"<<endl;
     cout<<"E_gs:= "<<setprecision(10)<<Egs/nel<<endl;
-    //cout<<"E0:="<<setprecision(6)<<lconfig.eigenvalues[0]<<endl;
     //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
-    cout<<"Sz:="<<lconfig.pseudospin_Sz()<<endl; 
-    cout<<"Sx:="<<lconfig.pseudospin_Sx()<<endl; 
-
-*/
-
-
+    cout<<"Px:="<<lconfig.pseudospin_Sx()<<endl; 
+    cout<<"Pz:="<<lconfig.pseudospin_Sz()<<endl; 
+    cout<<"Sz:="<<lconfig.Sz()<<endl;
 
 
 
