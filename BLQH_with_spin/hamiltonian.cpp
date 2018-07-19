@@ -522,8 +522,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
         matrix_elements[i]+=Ec*sector.nel;
         // charging energy
         mask=(1<<nphi)-1;
-        matrix_elements[i]+=-d*(sector.popcount_table[sector.id[i]&mask]+sector.popcount_table[sector.id[i] & (mask<<(2*nphi))])*(sector.nel-sector.popcount_table[sector.id[i]&mask]-sector.popcount_table[sector.id[i] &(mask<<(2*nphi))])/sector.nphi;
-
+        matrix_elements[i]+=-d*sector.get_nel_upper_layer(i)*(sector.nel-sector.get_nel_upper_layer(i))/sector.nphi;
 
         mutex_update.lock();
         for(k=0; k<nHilbert; k++)
@@ -589,20 +588,20 @@ double hamil::pseudospin_Sz(){
     int sign,q,D;
     mask=(1<<nphi)-1;
     for(int i=0; i<nHilbert; i++)
-        Nel_upper+=(sector.popcount_table[mask&sector.id[i]]+sector.popcount_table[(mask<<(2*nphi))& sector.id[i]])*std::norm(psi_0[i]);
+	Nel_upper+=sector.get_nel_upper_layer(i)*std::norm(psi_0[i]);
 
     return (2.0*Nel_upper-sector.nel)/(2.0*sector.nel);
 }
 
 double hamil::Sz(){
-    double Nel_upper=0;
+    double Nel_Su=0;
     unsigned long mask;
     int sign,q,D;
     mask=(1<<nphi)-1;
     for(int i=0; i<nHilbert; i++)
-        Nel_upper+=(sector.popcount_table[mask&sector.id[i]]+sector.popcount_table[(mask<<(nphi))& sector.id[i]])*std::norm(psi_0[i]);
+	Nel_Su+=sector.get_nel_spin_up(i)*std::norm(psi_0[i]);
 
-    return (2.0*Nel_upper-sector.nel)/(2.0*sector.nel);
+    return (2.0*Nel_Su-sector.nel)/(2.0*sector.nel);
 }
 double hamil::pseudospin_Sx(){
     unsigned long mask,mask_t,b,occ_t,lbasis,rbasis,rbasis_0;

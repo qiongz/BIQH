@@ -210,7 +210,7 @@ int main(int argc,char *argv[]) {
     //lconfig.sector.prlong();
     //auto t2=std::chrono::high_resolution_clock::now();
     //cout<<"Stage-1: Basis initialized !"<<endl;
-    //cout<<"nHilbert: ="<<lconfig.sector.nbasis<<endl;
+    cout<<"nHilbert: ="<<lconfig.sector.nbasis<<endl;
     //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t2-t1).count()/1.0e6<<" seconds."<<endl;
      
     //auto t3=std::chrono::high_resolution_clock::now();
@@ -246,19 +246,19 @@ int main(int argc,char *argv[]) {
 
     //cout<<"Ec:= "<<lconfig.Ec<<endl;
     //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
-/*
+
     cout<<"eigenvalues:="<<lconfig.eigenvalues[0]<<" ";
     int i=0;
     int count=0;
      do{
         i++;
-       if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-5) {
+       if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-2) {
           cout<<lconfig.eigenvalues[i]<<" ";
           count++;
        }
      }while(count<8 && count<lconfig.norm.size());
      cout<<endl;
-*/
+
 
       
 /*   

@@ -63,7 +63,7 @@ void basis::init() {
     //else 
     //  generate(count,j,Ki,config);
     // initialize the bit sets count table
-    for(i=0; i<pow(4,nphi); i++) {
+    for(i=0; i<pow(2,nphi); i++) {
         int count=0;
         for(n=0; n<nphi; n++)
             if((i>>n)%2==1)
@@ -176,10 +176,6 @@ int basis::get_sign(unsigned long c, int n,int nt){
     nsign=popcount_table[mask_sign &c_sign];
 
     sign=(nsign%2==0?1:-1);
-    //cout<<"(n,nt)=("<<n<<","<<nt<<")"<<endl;
-    //cout<<"c_sign=  "<<bitset<8>(c_sign).to_string()<<endl;
-    //cout<<"c= "<<bitset<16>(c).to_string()<<endl;
-    //cout<<"sign="<<sign<<endl;
     return sign;
 }
 
@@ -278,6 +274,24 @@ void basis::prlong() {
     }
     cout<<"---------------------------------------"<<endl;
     cout<<"No. basis: "<<setw(6)<<nbasis<<endl;
+}
+
+int basis::get_nel_upper_layer(long i){
+    unsigned long mask_lu,mask_ld,c_lu,c_ld;
+    mask_lu =(1<<nphi)-1;
+    mask_ld =mask_lu<<(2*nphi);
+    c_lu=id[i] & mask_lu;
+    c_ld=(id[i] & mask_ld)>>(2*nphi);
+    return popcount_table[c_lu&mask_lu]+popcount_table[c_ld&mask_ld]; 
+}
+
+int basis::get_nel_spin_up(long i){
+    unsigned long mask_lu,mask_ru,c_lu,c_ru;
+    mask_lu =(1<<nphi)-1;
+    mask_ru =mask_lu<<nphi;
+    c_lu=id[i] & mask_lu;
+    c_ru=(id[i] & mask_ru)>>nphi;
+    return popcount_table[c_lu&mask_lu]+popcount_table[c_ru&mask_ru]; 
 }
 
 unsigned long basis::translate(unsigned long c, int bits, int &sign) {
