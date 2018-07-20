@@ -734,7 +734,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                 j = sector.basis_set[rbasis];
                                 sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                                 //cout<<"i:=  "<<bitset<6>(lbasis).to_string()<<"    j:="<<bitset<6>(rbasis).to_string()<<"    sign:="<<sign<<endl;
-                                matrix_elements[j]-=0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                             }
                         }
                     }
@@ -764,7 +764,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                 j = sector.basis_set[rbasis];
                                 sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                                 //cout<<"i:=  "<<bitset<6>(lbasis).to_string()<<"    j:="<<bitset<6>(rbasis).to_string()<<"    sign:="<<sign<<endl;
-                                matrix_elements[j]-=0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                             }
                         }
                     }
@@ -778,9 +778,9 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                     if((lbasis &mask) == mask) {
 			// upper-layer electrons
                         if(n<nphi || n>=2*nphi && n<3*nphi)
-                            matrix_elements[i]+=0.5*Delta_V;
+                            matrix_elements[i]+=-0.5*Delta_V;
                         else 
-                            matrix_elements[i]-=0.5*Delta_V;
+                            matrix_elements[i]-=-0.5*Delta_V;
                     }
                 }
             if(Delta_Z>0)
@@ -790,9 +790,9 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                     if((lbasis &mask) == mask) {
 		        // spin-up electrons
                         if(n<2*nphi)
-                            matrix_elements[i]+=0.5*Delta_Z;
+                            matrix_elements[i]+=-0.5*Delta_Z;
                         else 
-                            matrix_elements[i]-=0.5*Delta_Z;
+                            matrix_elements[i]-=-0.5*Delta_Z;
                     }
                 }
 
