@@ -116,7 +116,6 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                         b = lbasis ^ mask;
                         // mt=j3, nt=j4
                         // perform translation along x-direction (q_y), positive q_y
-                        //for(t = -nphi/2; t <= nphi/2; t++) {
                         for(t = -nphi+1; t < nphi; t++) {
                             if(n + t >=nphi){
                                 nt = n + t - nphi;
@@ -159,7 +158,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=FT[ql*nphi+qr]*double(Coulomb_matrix[s*nphi+abs(t)]*sign/sqrt(Dl*Dr));
+                                        matrix_elements[j]+=FT[ql*nphi+qr]*Coulomb_matrix[s*nphi+abs(t)]*sign/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -176,7 +175,6 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                         // p is the rest electon positions
                         b = lbasis ^ mask;
                         // perform translation in x-direction, negative q_y
-                        //for(t = -nphi/2; t <= nphi/2; t++) {
                         for(t = -nphi+1; t < nphi; t++) {
                             if(n + t >=2*nphi){
                                 nt = n + t - nphi;
@@ -219,7 +217,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=FT[ql*nphi+qr]*double(Coulomb_matrix[s*nphi+abs(t)]*sign/sqrt(Dl*Dr));
+                                        matrix_elements[j]+=FT[ql*nphi+qr]*Coulomb_matrix[s*nphi+abs(t)]*sign/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -279,7 +277,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=FT[ql*nphi+qr]*double(Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign/sqrt(Dl*Dr));
+                                        matrix_elements[j]+=FT[ql*nphi+qr]*Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -334,8 +332,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
         // background charge energy
         matrix_elements[i]+=Ec*sector.nel;
         // charging energy
-        mask=(1<<nphi)-1;
-        matrix_elements[i]+=-d*(sector.popcount_table[sector.id[i]&mask])*(sector.nel-sector.popcount_table[sector.id[i]&mask])/sector.nphi;
+	matrix_elements[i]+=-d*(sector.get_nel_upper(i))*(sector.nel-sector.get_nel_upper(i))/sector.nphi;
          
         long count=0;
         for(k=0; k<nHilbert; k++)
@@ -382,7 +379,7 @@ void lhamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, 
     if(nresidual!=0)
         peer_set_hamil(Delta_SAS,Delta_V,nthread,nbatch,nresidual);
 }
-/*
+
 void lhamil::Gram_Schmidt_orthogonalization(Vec &phi, int n) {
     Vec phi_0,phi_1,phi_2;
     phi_0.init_random(nHilbert,seed);
@@ -410,7 +407,7 @@ void lhamil::Gram_Schmidt_orthogonalization(Vec &phi, int n) {
     phi_1.clear();
     phi_2.clear();
 }
-*/
+
 
 void lhamil::coeff_update() {
     Vec phi_0,phi_1,phi_2;

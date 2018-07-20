@@ -44,6 +44,7 @@ public:
     void init(int _nphi,int _nel, int _nel_up,int _J,int _K);
     void generate(long,long,long,unsigned long);
     void generate_all_density(long,long,long,unsigned long);
+    int get_nel_upper(long );
     int get_sign(unsigned long c,int n,int m,int nt,int mt,int t);
     int get_sign(unsigned long c,int n, int nt);
     unsigned long translate(unsigned long c, int k, int &sign) ;

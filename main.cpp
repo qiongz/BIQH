@@ -95,24 +95,38 @@ int main(int argc,char *argv[]) {
     }
     }
 */
-
 /*
+    Delta_SAS/=pow(nel,1.5);
+
     lhamil lconfig(lambda,seed);
     lconfig.sector.init(nphi,nel,nel_up,J,kx);
-    for(int j=0;j<20;j++){
-    Delta_V=j*0.01;
-    //d=i*0.1;
+    for(int j=0;j<50;j++){
+    //Delta_V=j*1e-4;
+    d=j*0.004+0.7;
+    //Delta_SAS=0.002*j+1e-6;
     lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,nthread);
     lconfig.coeff_explicit_update();
     lconfig.diag(); 
     lconfig.eigenstates_reconstruction();
-    double Sx=lconfig.pseudospin_Sx();
     double Sz=lconfig.pseudospin_Sz();
-    //cout<<d<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.eigenvalues[0]<<endl;
-    //cout<<d<<setprecision(6)<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.density_imbalance()<<" "<<lconfig.pseudospin_Sx()/nel<<endl;
-    cout<<Delta_V<<" "<<Sx<<" "<<Sz<<endl;
-    //cout<<d<<" "<<lconfig.ground_state_energy()/nel<<" "<<lconfig.density_imbalance()<<endl;
+    double Et=lconfig.ground_state_energy();
+    double Sx=lconfig.pseudospin_Sx();
+
+    lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS+0.0001,Delta_V,nthread);
+    lconfig.coeff_explicit_update();
+    lconfig.diag(); 
+    lconfig.eigenstates_reconstruction();
+    double E0=lconfig.ground_state_energy();
+    //double Sx=-(Et-E0)/Delta_SAS/nel;
+    double Chi=(lconfig.pseudospin_Sx()-Sx)/0.0001/nel;
+
+    
+
+    //cout<<d<<setprecision(6)<<" "<<-(E0-Et)/0.0001/nel<<" "<<Sx<<" "<<Chi<<endl;
+    cout<<d<<setprecision(6)<<" "<<Sx<<" "<<Chi<<endl; 
+    //cout<<Delta_V<<" "<<Sx<<" "<<Sz<<endl;
     }
+
 */
 
 
@@ -145,8 +159,9 @@ int main(int argc,char *argv[]) {
     cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
     cout<<"E0:="<<config.eigenvalues[0]<<endl;
     cout<<"E1:="<<config.eigenvalues[1]<<endl;
-    cout<<"Sz:="<<config.pseudospin_Sz()<<endl;
-    cout<<"Sx:="<<config.pseudospin_Sx()<<endl;
+    cout<<"Pz:="<<config.pseudospin_Sz()<<endl;
+    cout<<"Px:="<<config.pseudospin_Sx()<<endl;
+    /*
     cout<<"# ground state wave function"<<endl;
     for(int i=0;i<config.nHilbert;i++)
         if(abs(config.psi_0[i])>0.05){
@@ -162,6 +177,8 @@ int main(int argc,char *argv[]) {
           cout<<")   ";
           cout<<bitset<8>((config.sector.id[i])).to_string()<<": "<<bitset<8>((config.sector.id[i])>>nphi).to_string()<<"  "<<abs(config.psi_0[i])<<endl;
 	}
+    */
+
 
     /*
     cout<<"# first excited state wave function"<<endl;
@@ -221,12 +238,10 @@ int main(int argc,char *argv[]) {
    cout<<bitset<20>(basis_j).to_string()<<endl;
    cout<<"sign: "<<sign<<endl;
 */
-
     
    
 
-
-    //cout<<"-----------Lanczos results---------"<<endl;
+    cout<<"-----------Lanczos results---------"<<endl;
 
     lhamil lconfig(lambda,seed);
     //auto t1=std::chrono::high_resolution_clock::now();
@@ -257,39 +272,35 @@ int main(int argc,char *argv[]) {
 
     
     double Egs=lconfig.ground_state_energy();
-    double Ed=-d*nel_up*nel_down/nphi; 
     //t4=std::chrono::high_resolution_clock::now();
    // cout<<"Stage-3: Groundstate wavefunction reconstructed !"<<endl;
     cout<<"E_gs:= "<<setprecision(10)<<Egs/nel<<endl;
+    
     //cout<<"E0:="<<setprecision(6)<<lconfig.eigenvalues[0]<<endl;
     //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
-    cout<<"Sz:="<<lconfig.pseudospin_Sz()<<endl; 
-    cout<<"Sx:="<<lconfig.pseudospin_Sx()<<endl; 
+    cout<<"Pz:="<<lconfig.pseudospin_Sz()<<endl; 
+    cout<<"Px:="<<lconfig.pseudospin_Sx()<<endl; 
+   
 
 
 
-
-
-
-    //cout<<"Ec:= "<<lconfig.Ec<<endl;
-    //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
-/*
     cout<<"eigenvalues:="<<lconfig.eigenvalues[0]<<" ";
     int i=0;
     int count=0;
      do{
         i++;
-       if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-5) {
+       //if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-5) {
+	{
           cout<<lconfig.eigenvalues[i]<<" ";
           count++;
        }
      }while(count<8 && count<lconfig.norm.size());
      cout<<endl;
-*/
+
 
       
    
-
+/*
     for(int i=0;i<lconfig.nHilbert;i++)
         if(abs(lconfig.psir_0[i])>0.05){
           cout<<i<<" :   |";
@@ -304,6 +315,7 @@ int main(int argc,char *argv[]) {
           cout<<")   ";
           cout<<bitset<12>((lconfig.sector.id[i])).to_string()<<": "<<bitset<12>((lconfig.sector.id[i])>>nphi).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
         }
+*/
 
 
 

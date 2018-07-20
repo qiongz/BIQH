@@ -279,8 +279,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long n
 
         matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
         // charging energy
-        mask=(1<<nphi)-1;
-        matrix_elements[i]+=-d*(sector.popcount_table[sector.id[i]&mask])*(sector.nel-sector.popcount_table[sector.id[i]&mask])/sector.nphi;
+	matrix_elements[i]+=-d*(sector.get_nel_upper(i))*(sector.nel-sector.get_nel_upper(i))/sector.nphi;
 
         mutex_update.lock();
         for(k=0; k<nHilbert; k++)

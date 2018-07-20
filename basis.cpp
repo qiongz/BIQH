@@ -176,10 +176,6 @@ int basis::get_sign(unsigned long c, int n,int nt){
     nsign=popcount_table[mask_sign &c_sign];
 
     sign=(nsign%2==0?1:-1);
-    //cout<<"(n,nt)=("<<n<<","<<nt<<")"<<endl;
-    //cout<<"c_sign=  "<<bitset<8>(c_sign).to_string()<<endl;
-    //cout<<"c= "<<bitset<16>(c).to_string()<<endl;
-    //cout<<"sign="<<sign<<endl;
     return sign;
 }
 
@@ -244,6 +240,12 @@ void basis::generate_all_density(long count,long j, long Ji, unsigned long confi
   }
 }
 
+int basis::get_nel_upper(long i){
+    unsigned long mask_u,c_u;
+    mask_u =(1<<nphi)-1;
+    c_u=id[i] & mask_u;
+    return popcount_table[c_u & mask_u]; 
+}
 
 void basis::prlong() {
     std::unordered_map<unsigned long,long>::iterator it;
