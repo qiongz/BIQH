@@ -54,10 +54,6 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
 
     long i,j,k,l;
     vector<complex<double> > matrix_elements;
-    vector<long> inner_indices;
-    vector<complex<double> > value;
-    inner_indices.reserve(nphi);
-    value.reserve(nphi);
 
     for(int _i = 0; _i < nrange; _i++) {
         // i for each thread
@@ -190,6 +186,69 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                         }
                     }
                 }
+
+            // upper-layer spin-up and spin-down interspin interaction
+            for(n=0; n<nphi; n++)
+                for(m = 2*nphi; m < 3*nphi; m++) {
+                    mask = (1 << n) + (1 << m);
+                    // consider the upper-layer two electrons
+                    // looking up the corresponding basis in id_up
+                    // if there're two electrons on n and m;
+                    if((lbasis &mask) == mask) {
+                        // b is the rest electon positions
+                        b = lbasis ^ mask;
+                        // mt=j3, nt=j4
+                        // perform translation along x-direction (q_y), positive q_y
+                        for(t = -nphi+1; t < nphi; t++) {
+                            if(n + t >=nphi) {
+                                nt = n + t - nphi;
+                            }
+                            else if (n+t <0) {
+                                nt = n + t +nphi;
+                            }
+                            else
+                                nt = n + t;
+                            if(m - t <2*nphi) {
+                                mt = m - t + nphi;
+                            }
+                            else if (m - t >=3*nphi) {
+                                mt = m - t -nphi;
+                            }
+                            else
+                                mt = m - t;
+
+                            s=abs(mt-2*nphi-n);
+                            // the translated two electrons indices
+                            mask_t = (1 << nt) + (1 << mt);
+                            // occupation of electons on the translated position
+                            occ_t = mask_t & b;
+                            rbasis_0=mask_t+b;
+                            // if there're no electon on the translated position
+                            // which is a valid translation, can be applied
+                            if(occ_t == 0 && nt!=mt) {
+                                // determine the right side size of the translation
+                                Dr=nphi;
+                                for(D=1; D<nphi; D++)
+                                    if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                                        Dr=D;
+                                        break;
+                                    }
+                                // if parameter kx<0, do not perform basis translation
+                                Dr=(kx<0?1:Dr);
+                                for(qr=0; qr<Dr; qr++) {
+                                    signr=1;
+                                    rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                                    if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                                        j = sector.basis_set[rbasis];
+                                        sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
+                                        matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
             // down-layer spin-up interaction
             for( n=nphi; n<2*nphi-1; n++)
                 for( m = n+1; m < 2*nphi; m++) {
@@ -309,7 +368,67 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                     }
                 }
 
-            // upper-down layer interaction, spin-up
+            //down-layer spin-up and spin-down interspin interaction
+            for( n=nphi; n<2*nphi-1; n++)
+                for( m = 3*nphi; m < 4*nphi; m++) {
+                    mask = (1 << n) + (1 << m);
+                    // consider the lower-layer two electrons
+                    // if there're two electrons on n and m;
+                    if((lbasis &mask) == mask) {
+                        // p is the rest electon positions
+                        b = lbasis ^ mask;
+                        // perform translation in x-direction, negative q_y
+                        for(t = -nphi+1; t < nphi; t++) {
+                            if(n + t >=2*nphi) {
+                                nt = n + t - nphi;
+                            }
+                            else if (n+t <nphi) {
+                                nt = n + t +nphi;
+                            }
+                            else
+                                nt = n + t;
+                            if(m - t <3*nphi) {
+                                mt = m - t + nphi;
+                            }
+                            else if (m - t >=4*nphi) {
+                                mt = m - t -nphi;
+                            }
+                            else
+                                mt = m - t;
+                            s=abs(mt-2*nphi-n);
+                            // the translated two electrons indices
+                            mask_t = (1 << nt) + (1 << mt);
+                            // occupation of electons on the translated position
+                            occ_t = mask_t & b;
+                            // if there're no electon on the translated position
+                            // which is a valid translation, can be applied
+                            rbasis_0=mask_t+b;
+                            if(occ_t == 0 && nt!=mt) {
+                                // determine the right side size of the translation
+                                Dr=nphi;
+                                for(D=1; D<nphi; D++)
+                                    if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                                        Dr=D;
+                                        break;
+                                    }
+
+                                // if parameter kx<0, do not perform basis translation
+                                Dr=(kx<0?1:Dr);
+                                for(qr=0; qr<Dr; qr++) {
+                                    signr=1;
+                                    rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                                    if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                                        j = sector.basis_set[rbasis];
+                                        sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
+                                        matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            // upper-down layer spin-up electrons interaction
             for(n=0; n<nphi; n++)
                 for(m = nphi; m < 2*nphi; m++) {
                     mask = (1 << n) + (1 << m);
@@ -369,7 +488,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                     }
                 }
 
-            // upper-down layer interaction, spin-down
+            // upper-down layer spin-down electrons interaction
             for(n=2*nphi; n<3*nphi; n++)
                 for(m = 3*nphi; m < 4*nphi; m++) {
                     mask = (1 << n) + (1 << m);
@@ -392,6 +511,126 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                 mt = m - t + nphi;
                             }
                             else if (m - t >=4*nphi) {
+                                mt = m - t -nphi;
+                            }
+                            else
+                                mt = m - t;
+                            s=abs(mt-nphi-n);
+                            // the translated electron index
+                            mask_t = (1 << nt)+(1<<mt);
+                            // occupation of electons on the translated position
+                            occ_t = mask_t & b;
+                            // if there're no electon on the translated position
+                            // which is a valid translation, can be applied
+                            // the translated indices
+                            rbasis_0=mask_t+b;
+                            if(occ_t == 0 ) {
+                                // determine the right side size of the translation
+                                Dr=nphi;
+                                for(D=1; D<nphi; D++)
+                                    if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                                        Dr=D;
+                                        break;
+                                    }
+                                // if parameter kx<0, do not perform basis translation
+                                Dr=(kx<0?1:Dr);
+                                for(qr=0; qr<Dr; qr++) {
+                                    signr=1;
+                                    rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                                    if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                                        j = sector.basis_set[rbasis];
+                                        sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
+                                        matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            // upper-layer spin up to down-layer spin-down interaction
+            for(n=0; n<nphi; n++)
+                for(m = 3*nphi; m < 4*nphi; m++) {
+                    mask = (1 << n) + (1 << m);
+                    // if there is one electron at site n in upper-layer
+                    // and one electron at site m in lower-layer
+                    if((lbasis &mask) == mask ) {
+                        // b is the rest electon positions for upper-layer electrons
+                        b = lbasis ^ mask;
+                        // perform translation along x-direction
+                        for(t = -nphi+1; t < nphi ; t++) {
+                            if(n + t>=nphi) {
+                                nt = n + t - nphi;
+                            }
+                            else if (n+t <0) {
+                                nt = n + t +nphi;
+                            }
+                            else
+                                nt = n + t;
+                            if(m - t <3*nphi) {
+                                mt = m - t + nphi;
+                            }
+                            else if (m - t >=4*nphi) {
+                                mt = m - t -nphi;
+                            }
+                            else
+                                mt = m - t;
+                            s=abs(mt-3*nphi-n);
+                            // the translated electron index
+                            mask_t = (1 << nt)+(1<<mt);
+                            // occupation of electons on the translated position
+                            occ_t = mask_t & b;
+                            // if there're no electon on the translated position
+                            // which is a valid translation, can be applied
+                            // the translated indices
+                            rbasis_0=mask_t+b;
+                            if(occ_t == 0 ) {
+                                // determine the right side size of the translation
+                                Dr=nphi;
+                                for(D=1; D<nphi; D++)
+                                    if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                                        Dr=D;
+                                        break;
+                                    }
+                                // if parameter kx<0, do not perform basis translation
+                                Dr=(kx<0?1:Dr);
+                                for(qr=0; qr<Dr; qr++) {
+                                    signr=1;
+                                    rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                                    if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                                        j = sector.basis_set[rbasis];
+                                        sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
+                                        matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            // upper-layer spin down to down-layer spin-up interaction
+            for(n=nphi; n<2*nphi; n++)
+                for(m = 2*nphi; m < 3*nphi; m++) {
+                    mask = (1 << n) + (1 << m);
+                    // if there is one electron at site n in upper-layer
+                    // and one electron at site m in lower-layer
+                    if((lbasis &mask) == mask ) {
+                        // b is the rest electon positions for upper-layer electrons
+                        b = lbasis ^ mask;
+                        // perform translation along x-direction
+                        for(t = -nphi+1; t < nphi ; t++) {
+                            if(n + t>=2*nphi) {
+                                nt = n + t - nphi;
+                            }
+                            else if (n+t <nphi) {
+                                nt = n + t +nphi;
+                            }
+                            else
+                                nt = n + t;
+                            if(m - t <2*nphi) {
+                                mt = m - t + nphi;
+                            }
+                            else if (m - t >=3*nphi) {
                                 mt = m - t -nphi;
                             }
                             else
@@ -504,7 +743,6 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             matrix_elements[i]-=0.5*Delta_V;
                     }
                 }
-            // Zeemann energy
             if(Delta_Z>0)
                 for(n=0; n<4*nphi; n++) {
                     mask = 1 << n;
@@ -522,7 +760,6 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
         // background charge energy
         matrix_elements[i]+=Ec*sector.nel;
         // charging energy
-        mask=(1<<nphi)-1;
         matrix_elements[i]+=-d*sector.get_nel_upper_layer(i)*(sector.nel-sector.get_nel_upper_layer(i))/sector.nphi;
 
         mutex_update.lock();
