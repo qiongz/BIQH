@@ -131,7 +131,7 @@ int main(int argc,char *argv[]) {
 */
 
 
- 
+/* 
     hamil config;
     config.sector.init(nphi,nel,nel_up,J,kx);
     cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
@@ -181,6 +181,7 @@ int main(int argc,char *argv[]) {
           cout<<")   ";
           cout<<bitset<24>((config.sector.id[i])).to_string()<<" "<<abs(config.psi_0[i])<<endl;
 	} 
+*/
 /*
     cout<<"# first excited state wave function"<<endl;
     for(int i=0;i<config.nHilbert;i++)
@@ -199,12 +200,12 @@ int main(int argc,char *argv[]) {
 	}
     */
 
-/*
+
     //cout<<"-----------Lanczos results---------"<<endl;
     lhamil lconfig(lambda,seed);
     //auto t1=std::chrono::high_resolution_clock::now();
     lconfig.sector.init(nphi,nel,nel_up,J,kx);
-    lconfig.sector.prlong();
+    //lconfig.sector.prlong();
     //auto t2=std::chrono::high_resolution_clock::now();
     //cout<<"Stage-1: Basis initialized !"<<endl;
     cout<<"nHilbert: ="<<lconfig.sector.nbasis<<endl;
@@ -258,7 +259,7 @@ int main(int argc,char *argv[]) {
 
       
     for(int i=0;i<lconfig.nHilbert;i++)
-        if(abs(lconfig.psir_0[i])>0.01){
+        if(abs(lconfig.psir_0[i])>0.1){
           cout<<i<<" :   |";
           unsigned long long u=lconfig.sector.id[i];
           for(int n=0;n<nphi;n++)
@@ -280,7 +281,7 @@ int main(int argc,char *argv[]) {
           cout<<bitset<24>((lconfig.sector.id[i])).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
         }
 
-*/
+
 
 
 
