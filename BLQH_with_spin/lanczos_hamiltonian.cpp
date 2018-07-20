@@ -409,7 +409,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                 }
 
             //down-layer spin-up and spin-down interspin interaction
-            for( n=nphi; n<2*nphi-1; n++)
+            for( n=nphi; n<2*nphi; n++)
                 for( m = 3*nphi; m < 4*nphi; m++) {
                     mask = (1 << n) + (1 << m);
                     // consider the lower-layer two electrons
