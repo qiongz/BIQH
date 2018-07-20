@@ -64,7 +64,7 @@ int main(int argc,char *argv[]) {
 
 
 
-
+/*
     lhamil lconfig(lambda,seed);
     lconfig.sector.init(nphi,nel,nel_up,J,kx);
     for(int i=0; i<20; i++) {
@@ -82,6 +82,7 @@ int main(int argc,char *argv[]) {
             cout<<Delta_V<<" "<<Delta_SAS<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<endl;
         }
     }
+*/
 
     /*
         Delta_SAS/=pow(nel,1.5);
@@ -187,7 +188,7 @@ int main(int argc,char *argv[]) {
     	}
         */
 
-    /*
+    
         //cout<<"-----------Lanczos results---------"<<endl;
         lhamil lconfig(lambda,seed);
         //auto t1=std::chrono::high_resolution_clock::now();
@@ -266,7 +267,7 @@ int main(int argc,char *argv[]) {
               cout<<")   ";
               cout<<bitset<24>((lconfig.sector.id[i])).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
             }
-        */
+        
 
 
 

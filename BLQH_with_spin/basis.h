@@ -48,6 +48,7 @@ public:
     int get_sign(unsigned long c,int n, int nt);
     int get_nel_upper_layer(long);
     int get_nel_spin_up(long);
+    int get_nel(int,int,long);
     unsigned long translate(unsigned long c, int k, int &sign) ;
     unsigned long inv_translate(unsigned long c, int k, int &sign) ;
     void clear();
