@@ -303,7 +303,7 @@ int basis::get_nel(int alpha,int sigma,long i){
     c_lu=id[i] & mask_lu;
     c_ld=(id[i] & mask_ld)>>(2*nphi);
     c_ru=(id[i] & mask_ru)>>nphi;
-    c_ru=(id[i] & mask_ru)>>(3*nphi);
+    c_rd=(id[i] & mask_rd)>>(3*nphi);
     if(alpha==0 && sigma==0)
 	return popcount_table[c_lu &mask_lu];
     else if(alpha==1 && sigma==0)
