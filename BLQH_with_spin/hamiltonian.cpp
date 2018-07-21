@@ -64,6 +64,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
         for(ql=0; ql<Dl; ql++) {
             signl=1;
             lbasis=(ql==0?sector.id[i]:sector.translate(sector.id[i],ql,signl));
+
             // upper-layer spin-up interaction
             for(n=0; n<nphi-1; n++)
                 for(m = n+1; m < nphi; m++) {
@@ -125,9 +126,10 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                         }
                     }
                 }
+
             // upper-layer spin-down interaction
-            for(n=2*nphi; n<3*nphi-1; n++)
-                for(m = n+1; m < 3*nphi; m++) {
+            for(n=nphi; n<2*nphi-1; n++)
+                for(m = n+1; m < 2*nphi; m++) {
                     mask = (1 << n) + (1 << m);
                     // consider the upper-layer two electrons
                     // looking up the corresponding basis in id_up
@@ -138,18 +140,18 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                         // mt=j3, nt=j4
                         // perform translation along x-direction (q_y), positive q_y
                         for(t = -nphi+1; t < nphi; t++) {
-                            if(n + t >=3*nphi) {
+                            if(n + t >=2*nphi) {
                                 nt = n + t - nphi;
                             }
-                            else if (n+t <2*nphi) {
+                            else if (n+t <nphi) {
                                 nt = n + t +nphi;
                             }
                             else
                                 nt = n + t;
-                            if(m - t <2*nphi) {
+                            if(m - t <nphi) {
                                 mt = m - t + nphi;
                             }
-                            else if (m - t >=3*nphi) {
+                            else if (m - t >=2*nphi) {
                                 mt = m - t -nphi;
                             }
                             else
@@ -189,7 +191,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
 
             // upper-layer spin-up and spin-down interspin interaction
             for(n=0; n<nphi; n++)
-                for(m = 2*nphi; m < 3*nphi; m++) {
+                for(m = nphi; m < 2*nphi; m++) {
                     mask = (1 << n) + (1 << m);
                     // consider the upper-layer two electrons
                     // looking up the corresponding basis in id_up
@@ -208,16 +210,16 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             }
                             else
                                 nt = n + t;
-                            if(m - t <2*nphi) {
+                            if(m - t <nphi) {
                                 mt = m - t + nphi;
                             }
-                            else if (m - t >=3*nphi) {
+                            else if (m - t >=2*nphi) {
                                 mt = m - t -nphi;
                             }
                             else
                                 mt = m - t;
 
-                            s=abs(mt-2*nphi-n);
+                            s=abs(mt-nphi-n);
                             // the translated two electrons indices
                             mask_t = (1 << nt) + (1 << mt);
                             // occupation of electons on the translated position
@@ -250,8 +252,8 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                 }
 
             // down-layer spin-up interaction
-            for( n=nphi; n<2*nphi-1; n++)
-                for( m = n+1; m < 2*nphi; m++) {
+            for( n=2*nphi; n<3*nphi-1; n++)
+                for( m = n+1; m < 3*nphi; m++) {
                     mask = (1 << n) + (1 << m);
                     // consider the lower-layer two electrons
                     // if there're two electrons on n and m;
@@ -260,18 +262,18 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                         b = lbasis ^ mask;
                         // perform translation in x-direction, negative q_y
                         for(t = -nphi+1; t < nphi; t++) {
-                            if(n + t >=2*nphi) {
+                            if(n + t >=3*nphi) {
                                 nt = n + t - nphi;
                             }
-                            else if (n+t <nphi) {
+                            else if (n+t <2*nphi) {
                                 nt = n + t +nphi;
                             }
                             else
                                 nt = n + t;
-                            if(m - t <nphi) {
+                            if(m - t <2*nphi) {
                                 mt = m - t + nphi;
                             }
-                            else if (m - t >=2*nphi) {
+                            else if (m - t >=3*nphi) {
                                 mt = m - t -nphi;
                             }
                             else
@@ -369,7 +371,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                 }
 
             //down-layer spin-up and spin-down interspin interaction
-            for( n=nphi; n<2*nphi; n++)
+            for( n=2*nphi; n<3*nphi; n++)
                 for( m = 3*nphi; m < 4*nphi; m++) {
                     mask = (1 << n) + (1 << m);
                     // consider the lower-layer two electrons
@@ -379,10 +381,10 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                         b = lbasis ^ mask;
                         // perform translation in x-direction, negative q_y
                         for(t = -nphi+1; t < nphi; t++) {
-                            if(n + t >=2*nphi) {
+                            if(n + t >=3*nphi) {
                                 nt = n + t - nphi;
                             }
-                            else if (n+t <nphi) {
+                            else if (n+t <2*nphi) {
                                 nt = n + t +nphi;
                             }
                             else
@@ -395,7 +397,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             }
                             else
                                 mt = m - t;
-                            s=abs(mt-2*nphi-n);
+                            s=abs(mt-nphi-n);
                             // the translated two electrons indices
                             mask_t = (1 << nt) + (1 << mt);
                             // occupation of electons on the translated position
@@ -430,7 +432,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
 
             // upper-down layer spin-up electrons interaction
             for(n=0; n<nphi; n++)
-                for(m = nphi; m < 2*nphi; m++) {
+                for(m = 2*nphi; m < 3*nphi; m++) {
                     mask = (1 << n) + (1 << m);
                     // if there is one electron at site n in upper-layer
                     // and one electron at site m in lower-layer
@@ -447,15 +449,15 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             }
                             else
                                 nt = n + t;
-                            if(m - t <nphi) {
+                            if(m - t <2*nphi) {
                                 mt = m - t + nphi;
                             }
-                            else if (m - t >=2*nphi) {
+                            else if (m - t >=3*nphi) {
                                 mt = m - t -nphi;
                             }
                             else
                                 mt = m - t;
-                            s=abs(mt-nphi-n);
+                            s=abs(mt-2*nphi-n);
                             // the translated electron index
                             mask_t = (1 << nt)+(1<<mt);
                             // occupation of electons on the translated position
@@ -489,7 +491,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                 }
 
             // upper-down layer spin-down electrons interaction
-            for(n=2*nphi; n<3*nphi; n++)
+            for(n=nphi; n<2*nphi; n++)
                 for(m = 3*nphi; m < 4*nphi; m++) {
                     mask = (1 << n) + (1 << m);
                     // if there is one electron at site n in upper-layer
@@ -499,10 +501,10 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                         b = lbasis ^ mask;
                         // perform translation along x-direction
                         for(t = -nphi+1; t < nphi ; t++) {
-                            if(n + t>=3*nphi) {
+                            if(n + t>=2*nphi) {
                                 nt = n + t - nphi;
                             }
-                            else if (n+t <2*nphi) {
+                            else if (n+t <nphi) {
                                 nt = n + t +nphi;
                             }
                             else
@@ -515,7 +517,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             }
                             else
                                 mt = m - t;
-                            s=abs(mt-nphi-n);
+                            s=abs(mt-2*nphi-n);
                             // the translated electron index
                             mask_t = (1 << nt)+(1<<mt);
                             // occupation of electons on the translated position
@@ -672,7 +674,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                 //spin-up interlayer tunneling
                 for(n=0; n<nphi; n++) {
                     //nt=(n<nphi?n+nphi:n-nphi);
-                    nt=n+nphi;
+                    nt=n+2*nphi;
                     mask = (1 << n)+(1<<nt);
                     unsigned long Kn=mask & lbasis;
                     if(Kn!=mask && Kn!=0) {
@@ -693,16 +695,15 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                 j = sector.basis_set[rbasis];
                                 sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                                //cout<<"i:=  "<<bitset<6>(lbasis).to_string()<<"    j:="<<bitset<6>(rbasis).to_string()<<"    sign:="<<sign<<endl;
-                                matrix_elements[j]-=0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                             }
                         }
                     }
                 }
                 //spin-down interlayer tunneling
-                for(n=2*nphi; n<3*nphi; n++) {
+                for(n=nphi; n<2*nphi; n++) {
                     //nt=(n<nphi?n+nphi:n-nphi);
-                    nt=n+nphi;
+                    nt=n+2*nphi;
                     mask = (1 << n)+(1<<nt);
                     unsigned long Kn=mask & lbasis;
                     if(Kn!=mask && Kn!=0) {
@@ -723,45 +724,22 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                 j = sector.basis_set[rbasis];
                                 sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                                //cout<<"i:=  "<<bitset<6>(lbasis).to_string()<<"    j:="<<bitset<6>(rbasis).to_string()<<"    sign:="<<sign<<endl;
-                                matrix_elements[j]-=0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                             }
                         }
                     }
                 }
             }
             // bias-voltage (pseudospin Zeemann energy)
-            if(Delta_V>0)
-                for(n=0; n<4*nphi; n++) {
-                    mask = 1 << n;
-                    // if there's an electron on site n
-                    if((lbasis &mask) == mask) {
-			// upper-layer electrons
-                        if(n<nphi || n>=2*nphi && n<3*nphi)
-                            matrix_elements[i]+=0.5*Delta_V;
-                        else 
-                            matrix_elements[i]-=0.5*Delta_V;
-                    }
-                }
-            if(Delta_Z>0)
-                for(n=0; n<4*nphi; n++) {
-                    mask = 1 << n;
-                    // if there's an electron on site n
-                    if((lbasis &mask) == mask) {
-		        // spin-up electrons
-                        if(n<2*nphi)
-                            matrix_elements[i]+=0.5*Delta_Z;
-                        else 
-                            matrix_elements[i]-=0.5*Delta_Z;
-                    }
-                }
+            matrix_elements[i]+=-0.5*Delta_V*(sector.get_nel(0,lbasis)+sector.get_nel(1,lbasis)-sector.get_nel(2,lbasis)-sector.get_nel(3,lbasis));
+	    // Zeemann energy
+            matrix_elements[i]+=-0.5*Delta_Z*(sector.get_nel(0,lbasis)+sector.get_nel(2,lbasis)-sector.get_nel(1,lbasis)-sector.get_nel(3,lbasis));
 
         }
         // background charge energy
         matrix_elements[i]+=Ec*sector.nel;
         // charging energy
-        matrix_elements[i]+=-d*sector.get_nel_upper_layer(i)*(sector.nel-sector.get_nel_upper_layer(i))/sector.nphi;
-
+        matrix_elements[i]+=-d*(sector.get_nel(0,i)+sector.get_nel(1,i))*(sector.get_nel(2,i)+sector.get_nel(3,i))/sector.nphi;
         mutex_update.lock();
         for(k=0; k<nHilbert; k++)
 	    hamiltonian[i*nHilbert+k]=matrix_elements[k]; 
@@ -821,18 +799,19 @@ double hamil::ground_state_energy() {
 }
 
 double hamil::pseudospin_Sz(){
-    double Nel_upper=0;
-    for(int i=0; i<nHilbert; i++)
-	Nel_upper+=sector.get_nel_upper_layer(i)*std::norm(psi_0[i]);
-    return (2.0*Nel_upper-sector.nel)/(2.0*sector.nel);
+    double nel_up=0;
+    for(long i=0; i<nHilbert; i++)
+	nel_up+=(sector.get_nel(0,i)+sector.get_nel(1,i))*std::norm(psi_0[i]);
+    return (2.0*nel_up-sector.nel)/(2.0*sector.nel);
 }
 
 double hamil::Sz(){
-    double Nel_Su=0;
-    for(int i=0; i<nHilbert; i++)
-	Nel_Su+=sector.get_nel_spin_up(i)*std::norm(psi_0[i]);
-    return (2.0*Nel_Su-sector.nel)/(2.0*sector.nel);
+    double nel_up=0;
+    for(long i=0; i<nHilbert; i++)
+	nel_up+=(sector.get_nel(0,i)+sector.get_nel(2,i))*std::norm(psi_0[i]);
+    return (2.0*nel_up-sector.nel)/(2.0*sector.nel);
 }
+
 double hamil::pseudospin_Sx(){
     unsigned long mask,mask_t,b,occ_t,lbasis,rbasis,rbasis_0;
     long i,j;
@@ -848,7 +827,7 @@ double hamil::pseudospin_Sx(){
             // spin-up interlayer tunneling 
             for(n=0; n<nphi; n++) {
                 //nt=(n<nphi?n+nphi:n-nphi);
-		nt=n+nphi;
+		nt=n+2*nphi;
                 mask = (1 << n)+(1<<nt);
                 unsigned long Kn=mask & lbasis;
                 if(Kn!=mask && Kn!=0) {
@@ -870,14 +849,73 @@ double hamil::pseudospin_Sx(){
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                             j = sector.basis_set[rbasis];
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                            Sx_mean+=conj(psi_0[i])*psi_0[j]*FT[ql*nphi+qr]*double(0.5*sign/sqrt(Dl*Dr));
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psi_0[i])*psi_0[j]*double(sign*0.5/sqrt(Dl*Dr));
                         }
                     }
                 }
             }
             // spin-down interlayer tunneling 
-            for(n=2*nphi; n<3*nphi; n++) {
-                //nt=(n<nphi?n+nphi:n-nphi);
+            for(n=nphi; n<2*nphi; n++) {
+		nt=n+2*nphi;
+                mask = (1 << n)+(1<<nt);
+                unsigned long Kn=mask & lbasis;
+                if(Kn!=mask && Kn!=0) {
+                    unsigned long Ln=Kn ^ mask;
+                    rbasis_0=lbasis-Kn+Ln;
+                    // determine the right side size of the translation
+
+                    Dr=nphi;
+                    for(D=1; D<nphi; D++)
+                        if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                            Dr=D;
+                            break;
+                        }
+                    // if parameter kx<0, do not perform basis translation
+                    Dr=(sector.K<0?1:Dr);
+                    for(qr=0; qr<Dr; qr++) {
+                        signr=1;
+                        rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                        if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                            j = sector.basis_set[rbasis];
+                            sign=sector.get_sign(lbasis,n,nt)*signl*signr;
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psi_0[i])*psi_0[j]*double(sign*0.5/sqrt(Dl*Dr));
+                        }
+                    }
+                }
+            }
+
+            // spin-up spin-down interlayer tunneling 
+            for(n=0; n<nphi; n++) {
+		nt=n+3*nphi;
+                mask = (1 << n)+(1<<nt);
+                unsigned long Kn=mask & lbasis;
+                if(Kn!=mask && Kn!=0) {
+                    unsigned long Ln=Kn ^ mask;
+                    rbasis_0=lbasis-Kn+Ln;
+                    // determine the right side size of the translation
+
+                    Dr=nphi;
+                    for(D=1; D<nphi; D++)
+                        if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                            Dr=D;
+                            break;
+                        }
+                    // if parameter kx<0, do not perform basis translation
+                    Dr=(sector.K<0?1:Dr);
+                    for(qr=0; qr<Dr; qr++) {
+                        signr=1;
+                        rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                        if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                            j = sector.basis_set[rbasis];
+                            sign=sector.get_sign(lbasis,n,nt)*signl*signr;
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psi_0[i])*psi_0[j]*double(sign*0.5/sqrt(Dl*Dr));
+                        }
+                    }
+                }
+            }
+            
+            // spin-down spin-up interlayer tunneling 
+            for(n=nphi; n<2*nphi; n++) {
 		nt=n+nphi;
                 mask = (1 << n)+(1<<nt);
                 unsigned long Kn=mask & lbasis;
@@ -900,7 +938,7 @@ double hamil::pseudospin_Sx(){
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                             j = sector.basis_set[rbasis];
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                            Sx_mean+=conj(psi_0[i])*psi_0[j]*FT[ql*nphi+qr]*double(0.5*sign/sqrt(Dl*Dr));
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psi_0[i])*psi_0[j]*double(sign*0.5/sqrt(Dl*Dr));
                         }
                     }
                 }
@@ -909,6 +947,7 @@ double hamil::pseudospin_Sx(){
     }
     return abs(Sx_mean)/sector.nel;
 }
+
 void hamil::diag() {
     int i;
     complex<double> *h = new complex<double>[nHilbert * nHilbert];

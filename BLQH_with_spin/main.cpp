@@ -19,8 +19,8 @@ int main(int argc,char *argv[]) {
     double d,mu;
 
     nLL=0;
-    nphi=8;
-    nel=8;
+    nphi=6;
+    nel=6;
     nel_up=-1;
     nel_down=-1;
     gamma=1.0;
@@ -32,7 +32,7 @@ int main(int argc,char *argv[]) {
     Delta_Z=0;
 
     d=100.0;
-    lambda=200;
+    lambda=400;
     init_argv(nLL,nphi,nel,nel_up,J,kx,d,Delta_SAS,Delta_V,Delta_Z,gamma,lambda,nthread,argc,argv);
     //gamma=nel_up/4.0;
     ly=sqrt(nphi*2.0*M_PI/gamma);
@@ -40,14 +40,13 @@ int main(int argc,char *argv[]) {
 
     nel_down=nel-nel_up;
 
-#if __cplusplus > 199711L
+    #if __cplusplus > 199711L
     seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-#else
+    #else
     Timer tmr;
     seed=tmr.nanoseconds();
-#endif
+    #endif
     Sz=nel_up-nel_down;
-
 
     /*
         cout<<"nphi: = "<<nphi<<endl;
@@ -63,14 +62,14 @@ int main(int argc,char *argv[]) {
     */
 
 
+   /*
 
-/*
     lhamil lconfig(lambda,seed);
     lconfig.sector.init(nphi,nel,nel_up,J,kx);
-    for(int i=0; i<20; i++) {
-        Delta_V=i*0.1;
-        for(int j=0; j<20; j++) {
-            Delta_SAS=j*0.02;
+    //for(int i=0; i<20; i++) {
+     //   Delta_SAS=i*0.025;
+        for(int j=0; j<100; j++) {
+            Delta_SAS=j*0.007;
             lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,nthread);
             lconfig.coeff_explicit_update();
             lconfig.diag();
@@ -79,10 +78,13 @@ int main(int argc,char *argv[]) {
             double Px=lconfig.pseudospin_Sx();
             double Pz=lconfig.pseudospin_Sz();
 	    double Sz=lconfig.Sz();
-            cout<<Delta_V<<" "<<Delta_SAS<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<endl;
+
+            cout<<Delta_SAS<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<endl;
         }
-    }
-*/
+      //  cout<<endl;
+    //}
+   */
+
 
     /*
         Delta_SAS/=pow(nel,1.5);
@@ -119,7 +121,7 @@ int main(int argc,char *argv[]) {
     */
 
 
-    /*
+   /* 
         hamil config;
         config.sector.init(nphi,nel,nel_up,J,kx);
         cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
@@ -169,7 +171,8 @@ int main(int argc,char *argv[]) {
               cout<<")   ";
               cout<<bitset<24>((config.sector.id[i])).to_string()<<" "<<abs(config.psi_0[i])<<endl;
     	}
-    */
+*/
+    
     /*
         cout<<"# first excited state wave function"<<endl;
         for(int i=0;i<config.nHilbert;i++)
@@ -188,7 +191,7 @@ int main(int argc,char *argv[]) {
     	}
         */
 
-    
+   
         //cout<<"-----------Lanczos results---------"<<endl;
         lhamil lconfig(lambda,seed);
         //auto t1=std::chrono::high_resolution_clock::now();
@@ -211,9 +214,8 @@ int main(int argc,char *argv[]) {
         //lconfig.print_hamil_CSR();
         //t3=std::chrono::high_resolution_clock::now();
         lconfig.coeff_explicit_update();
-       // cout<<"Stage-2: Lanczos update completed !"<<endl;
+        //cout<<"Stage-2: Lanczos update completed !"<<endl;
         lconfig.diag();
-
 
         lconfig.eigenstates_reconstruction();
 
@@ -231,7 +233,7 @@ int main(int argc,char *argv[]) {
 
         //cout<<"Ec:= "<<lconfig.Ec<<endl;
         //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
-
+         
         cout<<"eigenvalues:="<<lconfig.eigenvalues[0]<<" ";
         int i=0;
         int count=0;
@@ -244,43 +246,37 @@ int main(int argc,char *argv[]) {
          }while(count<8 && count<lconfig.norm.size());
          cout<<endl;
 
-
+    
         for(int i=0;i<lconfig.nHilbert;i++)
-            if(abs(lconfig.psir_0[i])>0.15){
-              cout<<i<<" :   |";
+            if(abs(lconfig.psir_0[i])>0.05){
+              cout<<setw(4)<<i<<" :   |";
               unsigned long long u=lconfig.sector.id[i];
               for(int n=0;n<nphi;n++)
                  if((u>>n)%2==1)
-                    cout<<n+1<<" ";
+                    cout<<setw(3)<<n;
+		 else 
+		    cout<<setw(3)<<"_";
               cout<<")|";
               for(int n=nphi;n<2*nphi;n++)
                  if((u>>n)%2==1)
-                    cout<<n+1-nphi<<" ";
+                    cout<<setw(3)<<n-nphi;
+		 else 
+		    cout<<setw(3)<<"_";
               cout<<")|";
               for(int n=2*nphi;n<3*nphi;n++)
                  if((u>>n)%2==1)
-                    cout<<n+1<<" ";
+                    cout<<setw(3)<<n;
+		 else 
+		    cout<<setw(3)<<"_";
               cout<<")|";
               for(int n=3*nphi;n<4*nphi;n++)
                  if((u>>n)%2==1)
-                    cout<<n+1<<" ";
+                    cout<<setw(3)<<n;
+		 else 
+		    cout<<setw(3)<<"_";
               cout<<")   ";
               cout<<bitset<24>((lconfig.sector.id[i])).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
             }
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

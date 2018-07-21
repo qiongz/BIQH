@@ -167,13 +167,12 @@ int basis::get_sign(unsigned long c,int n, int m, int nt, int mt,int t) {
 }
 
 // sign change function for electron hopping from one layer to another
-int basis::get_sign(unsigned long c, int n,int nt){
-    unsigned long c_sign,mask_sign;
+int basis::get_sign(unsigned long basis_i, int n,int nt){
     int nsign,sign;
-    int bits=(nt>n?n:nt)+1;
-    mask_sign=(1<<(nphi-1))-1;
-    c_sign= (c & (mask_sign<<bits) )>>bits;
-    nsign=popcount_table[mask_sign &c_sign];
+    nsign=1;
+    for(int i=n;i<=nt;i++)
+	if((basis_i>>i)%2==0)
+	 nsign++;
 
     sign=(nsign%2==0?1:-1);
     return sign;
@@ -276,42 +275,76 @@ void basis::prlong() {
     cout<<"No. basis: "<<setw(6)<<nbasis<<endl;
 }
 
-int basis::get_nel_upper_layer(long i){
-    unsigned long mask_lu,mask_ld,c_lu,c_ld;
-    mask_lu =(1<<nphi)-1;
-    mask_ld =mask_lu<<(2*nphi);
-    c_lu=id[i] & mask_lu;
-    c_ld=(id[i] & mask_ld)>>(2*nphi);
-    return popcount_table[c_lu & mask_lu]+popcount_table[c_ld & mask_lu]; 
-}
-
-int basis::get_nel_spin_up(long i){
-    unsigned long mask_lu,mask_ru,c_lu,c_ru;
-    mask_lu =(1<<nphi)-1;
-    mask_ru =mask_lu<<nphi;
-    c_lu=id[i] & mask_lu;
-    c_ru=(id[i] & mask_ru)>>nphi;
-    return popcount_table[c_lu & mask_lu]+popcount_table[c_ru & mask_lu]; 
-}
-
-int basis::get_nel(int alpha,int sigma,long i){
+int basis::get_nel(int a,long i){
     unsigned long mask_lu,mask_ld,mask_ru,mask_rd,c_lu,c_ld,c_ru,c_rd;
+    int rt_nel;
     mask_lu =(1<<nphi)-1;
-    mask_ld =mask_lu<<(2*nphi);
-    mask_ru =mask_lu<<nphi;
-    mask_rd =mask_lu<<(3*nphi);
-    c_lu=id[i] & mask_lu;
-    c_ld=(id[i] & mask_ld)>>(2*nphi);
-    c_ru=(id[i] & mask_ru)>>nphi;
-    c_rd=(id[i] & mask_rd)>>(3*nphi);
-    if(alpha==0 && sigma==0)
-	return popcount_table[c_lu &mask_lu];
-    else if(alpha==1 && sigma==0)
-	return popcount_table[c_ru &mask_lu];
-    else if(alpha==0 && sigma==1)
-	return popcount_table[c_ld &mask_lu];
-    else if(alpha==1 && sigma==1)
-	return popcount_table[c_rd &mask_lu];
+    switch(a){
+    case 0:{
+        c_lu=id[i] & mask_lu;
+	rt_nel= popcount_table[c_lu &mask_lu];
+	break;
+    }
+    case 1:{
+        mask_ld =mask_lu<<nphi;
+        c_ld=(id[i] & mask_ld)>>nphi;
+	rt_nel= popcount_table[c_ld &mask_lu];
+	break;
+    }
+    case 2:{
+        mask_ru =mask_lu<<(2*nphi);
+        c_ru=(id[i] & mask_ru)>>(2*nphi);
+	rt_nel= popcount_table[c_ru &mask_lu];
+        break;
+    }
+    case 3: {
+        mask_rd =mask_lu<<(3*nphi);
+        c_rd=(id[i] & mask_rd)>>(3*nphi);
+	rt_nel= popcount_table[c_rd &mask_lu];
+	break;
+    }
+    default:
+        rt_nel=0; 
+
+    }
+    return rt_nel;
+
+}
+
+int basis::get_nel(int a,unsigned long basis_i){
+    unsigned long mask_lu,mask_ld,mask_ru,mask_rd,c_lu,c_ld,c_ru,c_rd;
+    int rt_nel;
+    mask_lu =(1<<nphi)-1;
+    switch(a){
+    case 0:{
+        c_lu=basis_i & mask_lu;
+	rt_nel= popcount_table[c_lu &mask_lu];
+	break;
+    }
+    case 1:{
+        mask_ld =mask_lu<<nphi;
+        c_ld=(basis_i & mask_ld)>>nphi;
+	rt_nel= popcount_table[c_ld &mask_lu];
+	break;
+    }
+    case 2:{
+        mask_ru =mask_lu<<(2*nphi);
+        c_ru=(basis_i & mask_ru)>>(2*nphi);
+	rt_nel= popcount_table[c_ru &mask_lu];
+        break;
+    }
+    case 3: {
+        mask_rd =mask_lu<<(3*nphi);
+        c_rd=(basis_i & mask_rd)>>(3*nphi);
+	rt_nel= popcount_table[c_rd &mask_lu];
+	break;
+    }
+    default:
+        rt_nel=0; 
+
+    }
+    return rt_nel;
+
 }
 
 unsigned long basis::translate(unsigned long c, int bits, int &sign) {
@@ -320,14 +353,14 @@ unsigned long basis::translate(unsigned long c, int bits, int &sign) {
         int inv_bits=nphi-bits;
 
         mask_lu = (1<<nphi)-1;
-        mask_ld = mask_lu<<(2*nphi);
-        mask_ru = mask_lu<<nphi;
+        mask_ld = mask_lu<<nphi;
+        mask_ru = mask_lu<<(2*nphi);
         mask_rd = mask_lu<<(3*nphi);
         mask_sign=((1<<bits)-1)<<inv_bits;
 
         c_lu=  c & mask_lu;
-        c_ld= (c & mask_ld) >> (2*nphi);
-        c_ru= (c & mask_ru) >> nphi;
+        c_ld= (c & mask_ld) >> nphi;
+        c_ru= (c & mask_ru) >> (2*nphi);
         c_rd= (c & mask_rd) >> (3*nphi);
 
         int ncross_lu=popcount_table[mask_sign &c_lu];
@@ -347,7 +380,7 @@ unsigned long basis::translate(unsigned long c, int bits, int &sign) {
         c_ru = ((c_ru<<bits)| (c_ru>>inv_bits)) & mask_lu; 
         c_rd = ((c_rd<<bits)| (c_rd>>inv_bits)) & mask_lu; 
 
-        config=(c_lu | (c_ld<<(2*nphi)) | (c_ru<<nphi) | (c_rd<<(3*nphi)) );   
+        config=(c_lu | (c_ld<<nphi) | (c_ru<<(2*nphi)) | (c_rd<<(3*nphi)) );   
 
         sign=(nsign%2==0?1:-1);
         return config;
@@ -359,14 +392,14 @@ unsigned long basis::inv_translate(unsigned long c, int bits, int &sign) {
         int inv_bits=nphi-bits;
 
         mask_lu = (1<<nphi)-1;
-        mask_ld = mask_lu<<(2*nphi);
-        mask_ru = mask_lu<<nphi;
+        mask_ld = mask_lu<<nphi;
+        mask_ru = mask_lu<<(2*nphi);
         mask_rd = mask_lu<<(3*nphi);
         mask_sign=(1<<bits)-1;
 
         c_lu=  c & mask_lu;
-        c_ld= (c & mask_ld) >> (2*nphi);
-        c_ru= (c & mask_ru) >> nphi;
+        c_ld= (c & mask_ld) >>  nphi;
+        c_ru= (c & mask_ru) >> (2*nphi);
         c_rd= (c & mask_rd) >> (3*nphi);
 
         int ncross_lu=popcount_table[mask_sign &c_lu];
@@ -386,8 +419,8 @@ unsigned long basis::inv_translate(unsigned long c, int bits, int &sign) {
         c_ru = ((c_ru>>bits)|(c_ru<<inv_bits)) & mask_lu; 
         c_rd = ((c_rd>>bits)|(c_rd<<inv_bits)) & mask_lu; 
 
-        config=(c_lu | (c_ld<<(2*nphi)) | (c_ru<<nphi) | (c_rd<<(3*nphi)) );   
+        config=(c_lu | (c_ld<<nphi) | (c_ru<<(2*nphi)) | (c_rd<<(3*nphi)) );   
 
         sign=(nsign%2==0?1:-1);
         return config;
-    }
+}
