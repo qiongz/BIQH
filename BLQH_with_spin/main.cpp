@@ -246,11 +246,20 @@ int main(int argc,char *argv[]) {
          }while(count<8 && count<lconfig.norm.size());
          cout<<endl;
 
-    
-        for(int i=0;i<lconfig.nHilbert;i++)
-            if(abs(lconfig.psir_0[i])>0.05){
-              cout<<setw(4)<<i<<" :   |";
-              unsigned long long u=lconfig.sector.id[i];
+ 
+        vector< pair<long,double> > wf_gs;
+        for(long i=0;i<lconfig.nHilbert;i++)
+	    wf_gs.push_back(pair<long,double>(i,abs(lconfig.psir_0[i])));
+         
+        sort(wf_gs.begin(),wf_gs.end(),[](pair<long, double>& elem1 ,pair<long, double> &elem2){ return elem1.second>elem2.second;});
+
+        count=0;
+        // print wave function in descending order
+        for(auto const & p: wf_gs)
+              {
+	      count++;
+              cout<<setw(4)<<p.first<<" :   |";
+              unsigned long long u=lconfig.sector.id[p.first];
               for(int n=0;n<nphi;n++)
                  if((u>>n)%2==1)
                     cout<<setw(3)<<n;
@@ -275,8 +284,11 @@ int main(int argc,char *argv[]) {
 		 else 
 		    cout<<setw(3)<<"_";
               cout<<")   ";
-              cout<<bitset<24>((lconfig.sector.id[i])).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
+              cout<<bitset<24>((lconfig.sector.id[p.first])).to_string()<<"  "<<p.second<<endl;
+	      if(count>10)
+		break;
             }
+
 
 
 
