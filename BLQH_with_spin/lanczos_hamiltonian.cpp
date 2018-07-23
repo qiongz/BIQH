@@ -770,16 +770,16 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                     }
                 }
             }
-            // bias-voltage (pseudospin Zeemann energy)
-            matrix_elements[i]+=-0.5*Delta_V*(sector.get_nel(0,lbasis)+sector.get_nel(1,lbasis)-sector.get_nel(2,lbasis)-sector.get_nel(3,lbasis));
-	    // Zeemann energy
-            matrix_elements[i]+=-0.5*Delta_Z*(sector.get_nel(0,lbasis)+sector.get_nel(2,lbasis)-sector.get_nel(1,lbasis)-sector.get_nel(3,lbasis));
 
         }
         // background charge energy
         matrix_elements[i]+=Ec*sector.nel;
         // charging energy
         matrix_elements[i]+=-d*(sector.get_nel(0,i)+sector.get_nel(1,i))*(sector.get_nel(2,i)+sector.get_nel(3,i))/sector.nphi;
+        // bias-voltage (pseudospin Zeemann energy)
+        matrix_elements[i]+=-0.5*Delta_V*(sector.get_nel(0,i)+sector.get_nel(1,i)-sector.get_nel(2,i)-sector.get_nel(3,i));
+	// Zeemann energy
+        matrix_elements[i]+=-0.5*Delta_Z*(sector.get_nel(0,i)+sector.get_nel(2,i)-sector.get_nel(1,i)-sector.get_nel(3,i));
 
         long count=0;
         for(k=0; k<nHilbert; k++)

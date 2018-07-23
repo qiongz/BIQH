@@ -285,7 +285,7 @@ int main(int argc,char *argv[]) {
 		    cout<<setw(3)<<"_";
               cout<<")   ";
               cout<<bitset<24>((lconfig.sector.id[p.first])).to_string()<<"  "<<p.second<<endl;
-	      if(count>10)
+	      if(count>10 || p.second<1e-3)
 		break;
             }
 

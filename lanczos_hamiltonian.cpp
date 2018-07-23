@@ -234,7 +234,6 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                         // b is the rest electon positions for upper-layer electrons
                         b = lbasis ^ mask;
                         // perform translation along x-direction
-                        //for(t = -nphi/2; t <= nphi/2 ; t++) {
                         for(t = -nphi+1; t < nphi ; t++) {
                             if(n + t>=nphi){
                                 nt = n + t - nphi;
@@ -315,19 +314,18 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                 }
 	      }
             }
+        }
 	    // bias-voltage
-            if(Delta_V>0)
-            for(n=0; n<2*nphi; n++){
-                    mask = 1 << n;
-		    // if there's an electron on site n
-                    if((lbasis &mask) == mask){
-		     if(n<nphi)
-                       matrix_elements[i]+=0.5*Delta_V;
-		     else
-		       matrix_elements[i]-=0.5*Delta_V;
-		    }
+        if(Delta_V>0)
+         for(n=0; n<2*nphi; n++){
+             mask = 1 << n;
+	    // if there's an electron on site n
+            if((sector.id[i] &mask) == mask){
+	     if(n<nphi)
+              matrix_elements[i]+=0.5*Delta_V;
+	    else
+	      matrix_elements[i]-=0.5*Delta_V;
             }
-	    
         }
         // background charge energy
         matrix_elements[i]+=Ec*sector.nel;

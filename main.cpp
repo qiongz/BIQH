@@ -138,7 +138,7 @@ int main(int argc,char *argv[]) {
 
 
 
-  
+/*  
     hamil config;
     config.sector.init(nphi,nel,nel_up,J,kx);
     //cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
@@ -161,6 +161,7 @@ int main(int argc,char *argv[]) {
     cout<<"E1:="<<config.eigenvalues[1]<<endl;
     cout<<"Pz:="<<config.pseudospin_Sz()<<endl;
     cout<<"Px:="<<config.pseudospin_Sx()<<endl;
+*/
     /*
     cout<<"# ground state wave function"<<endl;
     for(int i=0;i<config.nHilbert;i++)
@@ -281,41 +282,35 @@ int main(int argc,char *argv[]) {
     cout<<"Pz:="<<lconfig.pseudospin_Sz()<<endl; 
     cout<<"Px:="<<lconfig.pseudospin_Sx()<<endl; 
    
+      vector< pair<long,double> > wf_gs;
+      for(long i=0;i<lconfig.nHilbert;i++)
+          wf_gs.push_back(pair<long,double>(i,abs(lconfig.psir_0[i])));
+         
+      sort(wf_gs.begin(),wf_gs.end(),[](pair<long, double>& elem1 ,pair<long, double> &elem2){ return elem1.second>elem2.second;});
 
-
-
-    cout<<"eigenvalues:="<<lconfig.eigenvalues[0]<<" ";
-    int i=0;
-    int count=0;
-     do{
-        i++;
-       //if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-5) {
-	{
-          cout<<lconfig.eigenvalues[i]<<" ";
-          count++;
-       }
-     }while(count<8 && count<lconfig.norm.size());
-     cout<<endl;
-
-
-      
-   
-/*
-    for(int i=0;i<lconfig.nHilbert;i++)
-        if(abs(lconfig.psir_0[i])>0.05){
-          cout<<i<<" :   |";
-          unsigned long long u=lconfig.sector.id[i];
+      int count=0;
+        // print wave function in descending order
+      for(auto const & p: wf_gs)
+        {
+	  count++;
+          cout<<setw(4)<<p.first<<" :   |";
+          unsigned long long u=lconfig.sector.id[p.first];
           for(int n=0;n<nphi;n++)
-             if((u>>n)%2==1)
-                cout<<n+1<<" ";
+                 if((u>>n)%2==1)
+                    cout<<setw(3)<<n;
+		 else 
+		    cout<<setw(3)<<"_";
           cout<<")|";
           for(int n=nphi;n<2*nphi;n++)
-             if((u>>n)%2==1)
-                cout<<n+1-nphi<<" ";
+                 if((u>>n)%2==1)
+                    cout<<setw(3)<<n-nphi;
+		 else 
+		    cout<<setw(3)<<"_";
           cout<<")   ";
-          cout<<bitset<12>((lconfig.sector.id[i])).to_string()<<": "<<bitset<12>((lconfig.sector.id[i])>>nphi).to_string()<<"  "<<abs(lconfig.psir_0[i])<<endl;
+          cout<<bitset<24>((lconfig.sector.id[p.first])).to_string()<<"  "<<p.second<<endl;
+	  if(count>10 || p.second<1e-3)
+		break;
         }
-*/
 
 
 

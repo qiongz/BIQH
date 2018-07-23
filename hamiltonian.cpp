@@ -262,20 +262,20 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long n
                 }
 	      }
             }
-	    // bias-voltage
-            if(Delta_V>0)
-            for(n=0; n<2*nphi; n++){
-                    mask = 1 << n;
-		    // if there's an electron on site n
-                    if((lbasis &mask) == mask){
-		     if(n<nphi)
-                       matrix_elements[i]+=0.5*Delta_V;
-		     else
-		       matrix_elements[i]-=0.5*Delta_V;
-		    }
-            }
-
         }
+	// bias-voltage
+        if(Delta_V>0)
+         for(n=0; n<2*nphi; n++){
+             mask = 1 << n;
+	   // if there's an electron on site n
+            if((sector.id[i] &mask) == mask){
+	   if(n<nphi)
+              matrix_elements[i]+=0.5*Delta_V;
+	    else
+	      matrix_elements[i]-=0.5*Delta_V;
+	   }
+        }
+
 
         matrix_elements[i]+=Ec*(sector.nel_up+sector.nel_down);
         // charging energy
