@@ -287,7 +287,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
 	    // interlayer tunneling 
             if(Delta_SAS>0)
             for(n=0; n<nphi; n++){
-	      nt=(n<nphi?n+nphi:n-nphi);
+              nt=n+nphi;
               mask = (1 << n)+(1<<nt);
 	      unsigned long Kn=mask & lbasis;
               if(Kn!=mask && Kn!=0){
@@ -308,7 +308,6 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long 
                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                     j = sector.basis_set[rbasis];
                     sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                    //cout<<"i:=  "<<bitset<6>(lbasis).to_string()<<"    j:="<<bitset<6>(rbasis).to_string()<<"    sign:="<<sign<<endl;
                     matrix_elements[j]-=0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                   }
                 }

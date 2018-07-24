@@ -4,6 +4,13 @@ using namespace std;
 basis::basis() {
 }
 
+basis::basis(int _nphi,int _nel):nphi(_nphi),nel(_nel){
+    nel_up=-1;
+    nel_down=-1;
+    K=-1;
+    J=-1;
+}
+
 basis::basis(int _nphi,int _nel, int _nel_up):nphi(_nphi),nel(_nel),nel_up(_nel_up) {
     K=-1;
     J=-1;
@@ -12,7 +19,7 @@ basis::basis(int _nphi,int _nel, int _nel_up):nphi(_nphi),nel(_nel),nel_up(_nel_
 
 
 basis::basis(int _nphi,int _nel, int _nel_up,int _J,int _K):nphi(_nphi),nel(_nel),nel_up(_nel_up),J(_J),K(_K) {
-    nel=nel-nel_up;
+    nel_down=nel-nel_up;
 }
 
 const basis & basis::operator =(const basis & _basis) {
@@ -112,10 +119,22 @@ void basis::init() {
 
 }
 
+void basis::init(int _nphi,int _nel){
+    nphi=_nphi;
+    nel=_nel; 
+    nel_up=-1;
+    nel_down=-1;
+    K=-1;
+    J=-1;
+    init();
+}
+
 void basis::init(int _nphi, int _nel, int _nel_up) {
     nphi=_nphi;
     nel_up=_nel_up;
     nel=_nel;
+    K=-1;
+    J=-1;
     init();
 }
 
@@ -147,15 +166,13 @@ int basis::get_sign(unsigned long c,int n, int m, int nt, int mt,int t) {
     kl=nt<n?nt:n;
     kr=nt<n?n:nt;
     for(k=kl+1; k<kr; k++) {
-      mask_k=(1<<k);
-      if((b&mask_k)==mask_k)
+      if((b>>k)%2==0)
         nsign++;
     }
     kl=mt<m?mt:m;
     kr=mt<m?m:mt;
     for(k=kl+1; k<kr; k++) {
-      mask_k=(1<<k);
-      if((b&mask_k)==mask_k)
+      if((b>>k)%2==0)
         nsign++;
     }
     // if there're crossings between two electrons
@@ -167,13 +184,12 @@ int basis::get_sign(unsigned long c,int n, int m, int nt, int mt,int t) {
 }
 
 // sign change function for electron hopping from one layer to another
-int basis::get_sign(unsigned long c, int n,int nt){
-    unsigned long c_sign,mask_sign;
+int basis::get_sign(unsigned long basis_i, int n,int nt){
     int nsign,sign;
-    int bits=(nt>n?n:nt)+1;
-    mask_sign=(1<<(nphi-1))-1;
-    c_sign= (c & (mask_sign<<bits) )>>bits;
-    nsign=popcount_table[mask_sign &c_sign];
+    nsign=0;
+    for(int i=n+1;i<nt;i++)
+	if((basis_i>>i)%2==0)
+	 nsign++;
 
     sign=(nsign%2==0?1:-1);
     return sign;

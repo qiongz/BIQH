@@ -313,19 +313,6 @@ int main(int argc,char *argv[]) {
         }
 
 
-
-
-
-
-
-
-
-
-   
-
-
-
-
 /*
         basis sector0(nphi,nel_up,nel_down,0,0);
         double t0,s0;

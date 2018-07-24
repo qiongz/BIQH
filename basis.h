@@ -33,6 +33,7 @@ public:
     vector<unsigned long> id;     // reversal table, J->I, Lin's Table is a 2D array
     vector<short> basis_C;
     explicit basis();
+    basis(int _nphi,int _nel);
     basis(int _nphi,int _nel, int _nel_up);
     basis(int _nphi,int _nel, int _nel_up, int _J,int _K);
     const basis & operator=(const basis &);
@@ -40,6 +41,7 @@ public:
     unsigned long factorial(int,int);
     long common_divisor(int,int);
     void init();
+    void init(int _nphi,int _nel);
     void init(int _nphi,int _nel,int _nel_up);
     void init(int _nphi,int _nel, int _nel_up,int _J,int _K);
     void generate(long,long,long,unsigned long);
