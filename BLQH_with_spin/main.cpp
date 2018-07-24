@@ -72,13 +72,15 @@ int main(int argc,char *argv[]) {
             double Pz=lconfig.pseudospin_Sz();
 	    double Sz=lconfig.Sz();
 	    double Sf=lconfig.spinflip_tunneling();
+            /*
             lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS+0.0001,Delta_V,Delta_Z,nthread);
             lconfig.coeff_explicit_update();
             lconfig.diag();
             lconfig.eigenstates_reconstruction();
             double Chi_sf=(lconfig.spinflip_tunneling()-Sf)/0.0001;
+	    */
             //cout<<Delta_SAS<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
-            cout<<Delta_SAS<<" "<<Delta_V<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<" "<<Chi_sf<<endl;
+            cout<<Delta_SAS<<" "<<Delta_V<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
        }
        cout<<endl;
     }
