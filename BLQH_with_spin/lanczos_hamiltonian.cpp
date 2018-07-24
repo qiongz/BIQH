@@ -1454,8 +1454,6 @@ double lhamil::spinflip_tunneling() {
     int ql,qr,Dl,Dr,D;
     complex<double> Sf_mean=0;
     for(i=0; i<nHilbert; i++) {
-	double ne_u=(sector.get_nel(0,i)+sector.get_nel(1,i))*std::norm(psir_0[i]);
-	double sz=(2.0*ne_u-sector.nel)/(2.0*sector.nel);
         Dl=(sector.K<0?1:sector.basis_C[i]);
         for(ql=0; ql<Dl; ql++) {
             signl=1;

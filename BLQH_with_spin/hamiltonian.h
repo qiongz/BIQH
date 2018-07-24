@@ -43,6 +43,7 @@ public:
     double ground_state_energy();
     double pseudospin_Sz();
     double pseudospin_Sx();
+    double spinflip_tunneling();
     double Sz();
 
     /** Diagonalize the full hamiltonian */

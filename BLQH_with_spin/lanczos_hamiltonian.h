@@ -64,7 +64,7 @@ public:
     double pseudospin_Sz();
     double Sz();
     double pseudospin_Sx();
-    double pseudospin_Chi();
+    double spinflip_tunneling();
 
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version
     void init_Coulomb_matrix();
