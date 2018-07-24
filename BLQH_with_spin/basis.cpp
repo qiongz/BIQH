@@ -4,22 +4,19 @@ using namespace std;
 basis::basis() {
 }
 
-basis::basis(int _nphi,int _nel, int _nel_up):nphi(_nphi),nel(_nel),nel_up(_nel_up) {
+basis::basis(int _nphi,int _nel):nphi(_nphi),nel(_nel) {
     K=-1;
     J=-1;
-    nel_down=nel-nel_up;
 }
 
 
-basis::basis(int _nphi,int _nel, int _nel_up,int _J,int _K):nphi(_nphi),nel(_nel),nel_up(_nel_up),J(_J),K(_K) {
-    nel=nel-nel_up;
+basis::basis(int _nphi,int _nel,int _J,int _K):nphi(_nphi),nel(_nel),J(_J),K(_K) {
 }
 
 const basis & basis::operator =(const basis & _basis) {
     if(this !=&_basis) {
         nphi=_basis.nphi;
         nel=_basis.nel;
-        nel_up=_basis.nel_up;
         nbasis=_basis.nbasis;
         basis_set=_basis.basis_set;
         id=_basis.id;
@@ -55,13 +52,9 @@ void basis::init() {
     int sign;
     long n,i,j,Ki,count;
     unsigned long config;
-    //C=common_divisor(nphi,nel_up);
     std::unordered_map<unsigned long,long>::iterator it;
     count=j=config=Ki=0;
-    //if(nel_up<0)
     generate_all_density(count,j,Ki,config);
-    //else 
-    //  generate(count,j,Ki,config);
     // initialize the bit sets count table
     for(i=0; i<pow(2,nphi); i++) {
         int count=0;
@@ -112,20 +105,17 @@ void basis::init() {
 
 }
 
-void basis::init(int _nphi, int _nel, int _nel_up) {
+void basis::init(int _nphi, int _nel) {
     nphi=_nphi;
-    nel_up=_nel_up;
     nel=_nel;
     init();
 }
 
-void basis::init(int _nphi,int _nel, int _nel_up,int _J,int _K) {
+void basis::init(int _nphi,int _nel,int _J,int _K) {
     nphi=_nphi;
-    nel_up=_nel_up;
     nel=_nel;
     J=_J;
     K=_K;
-    nel_down=nel-nel_up;
     init();
 }
 
@@ -147,15 +137,13 @@ int basis::get_sign(unsigned long c,int n, int m, int nt, int mt,int t) {
     kl=nt<n?nt:n;
     kr=nt<n?n:nt;
     for(k=kl+1; k<kr; k++) {
-      mask_k=(1<<k);
-      if((b&mask_k)==mask_k)
+      if((b>>k)%2==0)
         nsign++;
     }
     kl=mt<m?mt:m;
     kr=mt<m?m:mt;
     for(k=kl+1; k<kr; k++) {
-      mask_k=(1<<k);
-      if((b&mask_k)==mask_k)
+      if((b>>k)%2==0)
         nsign++;
     }
     // if there're crossings between two electrons
@@ -177,47 +165,6 @@ int basis::get_sign(unsigned long basis_i, int n,int nt){
     sign=(nsign%2==0?1:-1);
     return sign;
 }
-
-/*
-void basis::generate(long count,long j, long Ji, unsigned long config) {
-    long i,k,range;
-    unsigned long c;
-
-    count++;
-    config=(count==1?0:config);
-    // start of upper-layer electron momentum
-    if(count==1 && nel_up>0)
-        j=0;
-    // start of down-layer electron momentum
-    else if(count==nel_up+1)
-        j=nphi;
-    else
-        j=j+1;
-
-    // upper-layer electron momentum range
-    if(j<nphi && nel_up>0)
-        range=nphi-(nel_up-count);
-    // down-layer electron momentum range
-    else
-        range=2*nphi-(nel_down-(count-nel_up));
-
-    for(i=j; i<range; i++) {
-        // total sum of k
-        k=Ji+i%nphi;
-        c=config+(1<<i);
-        // if the No. of upper-layer electron != nel_up
-        if(count<nel) {
-            generate(count,i,k,c);
-        }
-        else {
-            if(J<0)
-                basis_set[c]=c;
-            else if(k%nphi==J)
-                basis_set[c]=c;
-        }
-    }
-}
-*/
 
 void basis::generate_all_density(long count,long j, long Ji, unsigned long config) {
   int i,id,k,c;

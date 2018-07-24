@@ -12,17 +12,14 @@
 using namespace std;
 
 int main(int argc,char *argv[]) {
-    int nLL,nphi,nel,nel_up,nel_down,J,kx,lambda,nthread;
+    int nLL,nphi,nel,J,kx,lambda,nthread;
     double lx,ly,gamma,Delta_SAS,Delta_V,Delta_Z;
-    int Sz;
     unsigned seed;
     double d,mu;
 
     nLL=0;
-    nphi=6;
-    nel=6;
-    nel_up=-1;
-    nel_down=-1;
+    nphi=4;
+    nel=8;
     gamma=1.0;
     nthread=32;
     J=-1;
@@ -33,12 +30,10 @@ int main(int argc,char *argv[]) {
 
     d=100.0;
     lambda=400;
-    init_argv(nLL,nphi,nel,nel_up,J,kx,d,Delta_SAS,Delta_V,Delta_Z,gamma,lambda,nthread,argc,argv);
+    init_argv(nLL,nphi,nel,J,kx,d,Delta_SAS,Delta_V,Delta_Z,gamma,lambda,nthread,argc,argv);
     //gamma=nel_up/4.0;
     ly=sqrt(nphi*2.0*M_PI/gamma);
     lx=ly*gamma;
-
-    nel_down=nel-nel_up;
 
     #if __cplusplus > 199711L
     seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -46,12 +41,10 @@ int main(int argc,char *argv[]) {
     Timer tmr;
     seed=tmr.nanoseconds();
     #endif
-    Sz=nel_up-nel_down;
 
     /*
         cout<<"nphi: = "<<nphi<<endl;
-        cout<<"nel_up: = "<<nel_up<<endl;
-        cout<<"nel_down: = "<<nel_up<<endl;
+        cout<<"nel: = "<<nel<<endl;
         cout<<"d:="<<d<<endl;
         cout<<"Delta_SAS:="<<Delta_SAS<<endl;
         cout<<"Delta_V:="<<Delta_V<<endl;
@@ -62,14 +55,14 @@ int main(int argc,char *argv[]) {
     */
 
 
-   /*
+   
 
     lhamil lconfig(lambda,seed);
-    lconfig.sector.init(nphi,nel,nel_up,J,kx);
-    //for(int i=0; i<20; i++) {
-     //   Delta_SAS=i*0.025;
-        for(int j=0; j<100; j++) {
-            Delta_SAS=j*0.007;
+    lconfig.sector.init(nphi,nel,J,kx);
+    for(int i=0; i<50; i++) {
+        Delta_V=i*0.03;
+        for(int j=0; j<50; j++) {
+            Delta_SAS=j*0.005;
             lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,nthread);
             lconfig.coeff_explicit_update();
             lconfig.diag();
@@ -78,19 +71,26 @@ int main(int argc,char *argv[]) {
             double Px=lconfig.pseudospin_Sx();
             double Pz=lconfig.pseudospin_Sz();
 	    double Sz=lconfig.Sz();
+	    double Sf=lconfig.spinflip_tunneling();
+            lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS+0.0001,Delta_V,Delta_Z,nthread);
+            lconfig.coeff_explicit_update();
+            lconfig.diag();
+            lconfig.eigenstates_reconstruction();
+            double Chi_sf=(lconfig.spinflip_tunneling()-Sf)/0.0001;
+            //cout<<Delta_SAS<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
+            cout<<Delta_SAS<<" "<<Delta_V<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<" "<<Chi_sf<<endl;
+       }
+       cout<<endl;
+    }
 
-            cout<<Delta_SAS<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<endl;
-        }
-      //  cout<<endl;
-    //}
-   */
+  
 
 
     /*
         Delta_SAS/=pow(nel,1.5);
 
         lhamil lconfig(lambda,seed);
-        lconfig.sector.init(nphi,nel,nel_up,J,kx);
+        lconfig.sector.init(nphi,nel,J,kx);
         for(int j=0;j<50;j++){
         //Delta_V=j*1e-4;
         d=j*0.004+0.7;
@@ -123,7 +123,7 @@ int main(int argc,char *argv[]) {
 
    /* 
         hamil config;
-        config.sector.init(nphi,nel,nel_up,J,kx);
+        config.sector.init(nphi,nel,J,kx);
         cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
         //config.sector.prlong();
         //cout<<"-----------Ground state---------"<<endl;
@@ -190,12 +190,12 @@ int main(int argc,char *argv[]) {
               cout<<bitset<8>((config.sector.id[i])).to_string()<<": "<<bitset<8>((config.sector.id[i])>>nphi).to_string()<<"  "<<abs(config.psi_1[i])<<endl;
     	}
         */
-
-   
+/*
+  
         //cout<<"-----------Lanczos results---------"<<endl;
         lhamil lconfig(lambda,seed);
         //auto t1=std::chrono::high_resolution_clock::now();
-        lconfig.sector.init(nphi,nel,nel_up,J,kx);
+        lconfig.sector.init(nphi,nel,J,kx);
         //lconfig.sector.prlong();
         //auto t2=std::chrono::high_resolution_clock::now();
         //cout<<"Stage-1: Basis initialized !"<<endl;
@@ -285,9 +285,11 @@ int main(int argc,char *argv[]) {
 		    cout<<setw(3)<<"_";
               cout<<")   ";
               cout<<bitset<24>((lconfig.sector.id[p.first])).to_string()<<"  "<<p.second<<endl;
-	      if(count>10 || p.second<1e-3)
+	      if(count>20 || p.second<1e-3)
 		break;
             }
+
+*/
 
 
 

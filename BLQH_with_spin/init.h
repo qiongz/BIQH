@@ -6,7 +6,7 @@
 #include<iostream>
 #include<stdexcept>
 void usage(char *);
-void init_argv(int & nLL, int &nphi, int& nel, int &nel_up,int &J, int &kx, double &d,double & Delta_SAS,double &Delta_V,double &Delta_Z, double &gamma, int &lambda,int &nthread,int argc,char *argv[]);
+void init_argv(int & nLL, int &nphi, int& nel, int &J, int &kx, double &d,double & Delta_SAS,double &Delta_V,double &Delta_Z, double &gamma, int &lambda,int &nthread,int argc,char *argv[]);
 class Timer
 {
 public:
