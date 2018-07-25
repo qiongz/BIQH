@@ -13,7 +13,7 @@ using namespace std;
 
 int main(int argc,char *argv[]) {
     int nLL,nphi,nel,J,kx,lambda,nthread;
-    double lx,ly,gamma,Delta_SAS,Delta_V,Delta_Z;
+    double lx,ly,gamma,Delta_SAS,Delta_V,Delta_Z,theta_B;
     unsigned seed;
     double d,mu;
 
@@ -21,6 +21,7 @@ int main(int argc,char *argv[]) {
     nphi=4;
     nel=8;
     gamma=1.0;
+    theta_B=0;
     nthread=32;
     J=-1;
     kx=-1;
@@ -30,7 +31,7 @@ int main(int argc,char *argv[]) {
 
     d=100.0;
     lambda=400;
-    init_argv(nLL,nphi,nel,J,kx,d,Delta_SAS,Delta_V,Delta_Z,gamma,lambda,nthread,argc,argv);
+    init_argv(nLL,nphi,nel,J,kx,d,Delta_SAS,Delta_V,Delta_Z,gamma,lambda,theta_B,nthread,argc,argv);
     //gamma=nel_up/4.0;
     ly=sqrt(nphi*2.0*M_PI/gamma);
     lx=ly*gamma;
@@ -59,11 +60,13 @@ int main(int argc,char *argv[]) {
 
     lhamil lconfig(lambda,seed);
     lconfig.sector.init(nphi,nel,J,kx);
-    for(int i=0; i<50; i++) {
-        Delta_V=i*0.03;
+    //for(int i=0; i<50; i++) {
+     //   Delta_V=i*0.03;
         for(int j=0; j<50; j++) {
-            Delta_SAS=j*0.005;
-            lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,nthread);
+           //Delta_SAS=j*0.005;
+	    d=j*0.05;
+            //theta_B=j/100.0*M_PI;
+            lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,theta_B,nthread);
             lconfig.coeff_explicit_update();
             lconfig.diag();
             lconfig.eigenstates_reconstruction();
@@ -79,11 +82,11 @@ int main(int argc,char *argv[]) {
             lconfig.eigenstates_reconstruction();
             double Chi_sf=(lconfig.spinflip_tunneling()-Sf)/0.0001;
 	    */
-            //cout<<Delta_SAS<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
-            cout<<Delta_SAS<<" "<<Delta_V<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
+            cout<<d<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
+            //cout<<Delta_SAS<<" "<<Delta_V<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
        }
-       cout<<endl;
-    }
+     //  cout<<endl;
+    //}
 
   
 

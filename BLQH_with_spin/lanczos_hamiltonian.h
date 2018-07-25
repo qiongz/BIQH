@@ -49,8 +49,8 @@ public:
     const lhamil & operator=(const lhamil &);
     /** \param _sector Basis sector
     */
-    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,double _Delta_SAS,double _Delta_V,double _Delta_Z,int nthread);  //!< Initialize hamiltonian matrix
-    void peer_set_hamil(double,double,double,int,long,long);
+    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,double _Delta_SAS,double _Delta_V,double _Delta_Z,double _theta_B,int nthread);  //!< Initialize hamiltonian matrix
+    void peer_set_hamil(double,double,double,double,int,long,long);
     void Gram_Schmidt_orthogonalization(Vec &, int);
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays

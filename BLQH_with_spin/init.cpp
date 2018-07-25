@@ -16,7 +16,7 @@ void usage(char *target) {
     std::cout<<"  -t                       nthread\n";
 }
 
-void init_argv(int &nLL,int &nphi, int& nel, int &J, int &kx, double &d,double &Delta_SAS, double &Delta_V, double &Delta_Z,double &gamma ,int &lambda,int &nthread,int argc,char *argv[])
+void init_argv(int &nLL,int &nphi, int& nel, int &J, int &kx, double &d,double &Delta_SAS, double &Delta_V, double &Delta_Z,double &gamma ,int &lambda,double & theta,int &nthread,int argc,char *argv[])
 {
     extern char *optarg;
     int ch,errFlag;
@@ -56,6 +56,9 @@ void init_argv(int &nLL,int &nphi, int& nel, int &J, int &kx, double &d,double &
         case 'm':
             lambda=atoi(optarg);
             break;
+	case 'T':
+	    theta=atof(optarg);
+	    break;
         case 't':
             nthread=atoi(optarg);
             break;
