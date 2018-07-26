@@ -399,8 +399,11 @@ and
 \end_inset
 
 .
- The new set of operators thus commute with the hamiltonian, in general
- we have:
+ The new set of operators thus commute with the hamiltonian, i.e., 
+\begin_inset Formula $[\kappa_{\alpha},H]=0$
+\end_inset
+
+, in general we have:
 \end_layout
 
 \begin_layout Standard
@@ -416,7 +419,718 @@ and
 
 \end_layout
 
-\begin_layout Section
+\begin_layout Standard
+\begin_inset Formula $\vec{\kappa}$
+\end_inset
+
+ is called guiding center momentum.
+ Hence the operator that implements the magnetic translation is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+T(\vec{a})=\exp(\frac{i}{\hbar}\vec{a}\cdot\vec{\kappa}).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using the operator relation 
+\begin_inset Formula $e^{A+B}=e^{A}e^{B}e^{-\frac{1}{2}[A,B]}$
+\end_inset
+
+, we find 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+T(\vec{a}+\vec{b})=T(\vec{b})T(\vec{a})e^{-\frac{1}{2\hbar^{2}}a_{\alpha}b_{\beta}[\kappa_{\alpha},\kappa_{\beta}]}=T(\vec{b})T(\vec{a})e^{-\frac{i}{2l^{2}}\hat{z}\cdot(\vec{a}\times\vec{b})},
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+which leads to 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+[T(\vec{a}),T(\vec{b})]=-2\sin\left(\frac{1}{2l^{2}}\hat{z}\cdot(\vec{a}\times\vec{b})\right)T(\vec{a}+\vec{b}).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and we have 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+T(\vec{a})T(\vec{b})T^{-1}(\vec{b})T^{-1}(\vec{a})=e^{-\frac{i}{l^{2}}\hat{z}\cdot(\vec{a}\times\vec{b})}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In order to have 
+\begin_inset Formula $T(\vec{a})$
+\end_inset
+
+ and 
+\begin_inset Formula $T(\vec{b})$
+\end_inset
+
+ commute, we have 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+-\frac{i}{l^{2}}\hat{z}\cdot(\vec{a}\times\vec{b}) & =2\pi N_{\phi}i\\
+N_{\phi} & =\frac{\hat{z}\cdot(\vec{a}\times\vec{b})}{2\pi l^{2}}\\
+ & =\frac{\Phi}{\phi_{0}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+with 
+\begin_inset Formula $\phi_{0}=\frac{\hbar c}{e}$
+\end_inset
+
+, and 
+\begin_inset Formula $\Phi=\frac{\hbar c\hat{z}}{e}\cdot\frac{\vec{a}\times\vec{b}}{l^{2}}=\frac{\hbar c}{e}\frac{eB_{z}}{\hbar c}\hat{z}\cdot(\vec{a}\times\vec{b})=\hat{B}_{z}\cdot(\vec{a}\times\vec{b})$
+\end_inset
+
+, if particularize to 
+\begin_inset Formula $\vec{L}_{1}=L_{x}\hat{x},$
+\end_inset
+
+
+\begin_inset Formula $\vec{L}_{2}=L_{y}\hat{y},$
+\end_inset
+
+ then 
+\begin_inset Formula $N_{\phi}=L_{x}L_{y}/2\pi l^{2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section*
+Many-body translation symmetry
+\end_layout
+
+\begin_layout Standard
+Translational operators of different particles commute:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+[T_{i}(\vec{a}),T_{j}(\vec{b})]=-2\delta_{ij}T_{i}(\vec{a}+\vec{b})\sin\left(\frac{1}{2l^{2}}\hat{z}\cdot(\vec{a}\times\vec{b})\right).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Physical quantities are invariant under magnetic translations of any particle
+ i by a linear combination of 
+\begin_inset Formula $L_{x},$
+\end_inset
+
+
+\begin_inset Formula $L_{y}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\vec{L}_{mn}=\{m\vec{L}_{1}+n\vec{L}_{2},m,n\in\mathbb{Z}\}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The wave functiosn of the hamiltonian are eigenstates of the translation
+ operator up to a phase
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+T_{i}(\vec{L}_{j})\psi_{\alpha}(\vec{r}_{i})=\psi_{\alpha}(\vec{r}_{i}+\vec{L}_{j})=e^{i\theta_{j}^{i}}\psi_{\alpha}(\vec{r}_{i}),
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $T_{i}(\vec{L}_{mn})$
+\end_inset
+
+ be the translation operator which translates the ith particle by 
+\begin_inset Formula $\vec{L}_{mn}=m\vec{L}_{1}+n\vec{L}_{2}$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+T_{i}(\vec{L}_{mn})|\psi_{\alpha}\rangle=e^{i\theta_{mn}^{i}}|\psi_{\alpha}\rangle.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+the eigenvalue 
+\begin_inset Formula $\theta_{mn}^{i}$
+\end_inset
+
+ can be expressed as
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+T_{i}(\vec{L}_{mn}) & =T_{i}(m\vec{L}_{1}+n\vec{L}_{2})=T_{i}(m\vec{L}_{1})T_{i}(n\vec{L}_{2})e^{i\hat{z}\cdot(\vec{L}_{1}\times\vec{L}_{2})\frac{mn}{2l^{2}}}\\
+ & =(T_{i}(\vec{L}_{1}))^{m}(T_{i}(\vec{L}_{2}))^{n}e^{i\pi mnN_{\phi}}.
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+then the eigenvalue of translation by 
+\begin_inset Formula $\vec{L}_{mn}$
+\end_inset
+
+ is 
+\begin_inset Formula $\theta_{mn}^{i}=\pi mnN_{\phi}+m\theta_{1}^{i}+n\theta_{2}^{i}$
+\end_inset
+
+, with 
+\begin_inset Formula $0\leq\theta_{j}^{i}\leq2\pi$
+\end_inset
+
+ Since the eigenstates are symmetric or antisymmetric under exchange of
+ identical particles 
+\begin_inset Formula $i,j$
+\end_inset
+
+, we have 
+\begin_inset Formula $\theta_{mn}^{i}=\theta_{mn}^{j}=\theta_{mn}$
+\end_inset
+
+.
+ Now 
+\begin_inset Formula $\{H,T_{i}(\vec{L_{1}}),T_{j}(\vec{L}_{2})\}$
+\end_inset
+
+ constitutes a complete set of cummuting observables, and can be labeled
+ by their energy 
+\begin_inset Formula $E$
+\end_inset
+
+, and the boundary angles 
+\begin_inset Formula $\theta_{1}^{i}$
+\end_inset
+
+ and 
+\begin_inset Formula $\theta_{2}^{i}$
+\end_inset
+
+.
+ Since operators of different particles commute, impose the constraint
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+[T_{i}(\vec{a}_{i}),T_{i}(\vec{L}_{j})]=-2T_{i}(\vec{a}+\vec{L}_{j})\sin\left(\frac{1}{2l^{2}}\hat{z}\cdot(\vec{a}\times\vec{L}_{j})\right)=0,
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+then the condition is 
+\begin_inset Formula $\hat{z}\cdot(\vec{a}\times\vec{L}_{j})=2l^{2}\pi r$
+\end_inset
+
+, we take the form 
+\begin_inset Formula $\vec{a}=\alpha\vec{L}_{1}+\beta\vec{L}_{2}$
+\end_inset
+
+, where 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ and 
+\begin_inset Formula $\beta$
+\end_inset
+
+ are real numbers.
+ Taking 
+\begin_inset Formula $j=2$
+\end_inset
+
+ we have 
+\begin_inset Formula $\alpha\hat{z}\cdot(\vec{L}_{1}\times\vec{L}_{2})=2l^{2}\pi r=\alpha2\pi l^{2}N_{\phi}$
+\end_inset
+
+, which requires 
+\begin_inset Formula $\alpha=r/N_{\phi}$
+\end_inset
+
+, then the primitive translation which leaves the system invariant is 
+\begin_inset Formula $T(\vec{L}_{mn}/N_{\phi})$
+\end_inset
+
+.
+ Then single-particle orbitals 
+\begin_inset Formula $|\phi_{j}\rangle$
+\end_inset
+
+ under translation is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\begin{cases}
+T(\vec{L}_{1}/N_{\phi})|\phi_{j}\rangle & =|\phi_{j+1}\rangle\\
+T(\vec{L}_{2}/N_{\phi})|\phi_{j}\rangle & =e^{i\frac{2\pi j}{N_{\phi}}}|\phi_{j}\rangle
+\end{cases}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where the basis is periodic in 
+\begin_inset Formula $j\rightarrow j+N_{\phi}$
+\end_inset
+
+.
+ The basis function 
+\begin_inset Formula ${|\phi_{j}\rangle}$
+\end_inset
+
+obey the periodic boundary condition with 
+\begin_inset Formula $\theta_{1}=0$
+\end_inset
+
+ and 
+\begin_inset Formula $\theta_{2}=0$
+\end_inset
+
+.
+ Landau stripe functions for arbitrary boundary angles can be obtained by
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+|\phi_{j}(\theta_{1},\theta_{2})\rangle=T(\gamma)|\phi_{j}\rangle,
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+with 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\gamma=\frac{\theta_{1}\vec{L}_{2}+\theta_{2}\vec{L}_{1}}{2\pi N_{\phi}}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+we can show that 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+T(m\vec{L}_{2}/N_{\phi})|\phi_{j}(\theta_{1},\theta_{2})\rangle & =T(m\vec{L}_{2}/N_{\phi})T(\gamma)|\phi_{j}\rangle\\
+ & =T(\gamma)T(m\vec{L}_{2}/N_{\phi})e^{i\frac{\vec{L}_{2}\times\gamma}{l^{2}}\cdot\hat{z}}|\phi_{j}\rangle\\
+ & =e^{i\frac{m\theta_{2}}{N_{\phi}}}T(\gamma)T(m\vec{L}_{2}/N_{\phi})|\phi_{j}\rangle\\
+ & =e^{i\frac{m\theta_{2}}{N_{\phi}}}e^{i\frac{2\pi mj}{N_{\phi}}}|\phi_{j}(\theta_{1},\theta_{2})\rangle
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The many boday basis 
+\begin_inset Formula $\{|j_{1},j_{2},...j_{N_{e}}\rangle\}$
+\end_inset
+
+ under the twisted boundary condition is by applying 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+|j_{1},(\theta_{1}^{1},\theta_{2}^{1});j_{2},(\theta_{1}^{2},\theta_{2}^{2});...,j_{N_{e}},(\theta_{1}^{N_{e}},\theta_{2}^{N_{e}})\rangle & =\prod_{i}T_{i}(\gamma)|j_{1},j_{2},...,j_{N_{e}}\rangle
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Disorder potential 
+\end_layout
+
+\begin_layout Standard
+To project the potential onto the lowest Landau level, we decompose the
+ disorder potential into its Fourier components
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+V(r)=\sum_{q}V(q)e^{iq\cdot r}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $\vec{q}=(q_{1},q_{2})=2\pi(m/L_{1},n/L_{2})$
+\end_inset
+
+, with 
+\begin_inset Formula $m,n$
+\end_inset
+
+ integers.
+ Expand 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\exp(i\vec{q}\cdot\vec{r}) & =\exp\left[iq_{1}x+iq_{2}y\right]\\
+ & =\exp\left[iq_{1}\left(\Pi_{y}-\kappa_{y}\right)\frac{c}{eB}+iq_{2}\left(\kappa_{x}-\Pi_{x}\right)\frac{c}{eB}\right]\\
+ & =\exp\left[iq_{1}\frac{c\Pi_{y}}{eB}-iq_{2}\frac{c\Pi_{x}}{eB}-iq_{1}\frac{c\kappa_{y}}{eB}+iq_{2}\frac{c\kappa_{x}}{eB}\right]\\
+ & =\exp\left[\frac{i}{m\omega_{c}}\left(q_{1}\Pi_{y}-q_{2}\Pi_{x}\right)\right]\exp\left[\frac{-i}{m\omega_{c}}\left(q_{1}\kappa_{y}-q_{2}\kappa_{x}\right)\right]
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+then 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+P_{0}V(r)P_{0} & =\sum_{m,n}V_{mn}P_{0}\exp\left[\frac{i}{m\omega_{c}}\left(q_{1}\Pi_{y}-q_{2}\Pi_{x}\right)\right]\exp\left[\frac{-i}{m\omega_{c}}\left(q_{1}\kappa_{y}-q_{2}\kappa_{x}\right)\right]P_{0}\\
+ & =\sum_{m,n}V_{mn}P_{0}\exp\left[\frac{i}{m\omega_{c}}\left(q_{1}\Pi_{y}-q_{2}\Pi_{x}\right)\right]P_{0}\exp\left[\frac{-i}{m\omega_{c}}\left(q_{1}\kappa_{y}-q_{2}\kappa_{x}\right)\right]P_{0}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+for the part contains 
+\begin_inset Formula $\Pi_{x},\Pi_{y}$
+\end_inset
+
+, since 
+\begin_inset Formula $P_{0}=\sum_{j}|0,j\rangle\langle j,0|$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+ & P_{0}\exp\left[\frac{i}{m\omega_{c}}\left(q_{1}\Pi_{y}-q_{2}\Pi_{x}\right)\right]P_{0}\\
+= & P_{0}\exp\frac{l}{\sqrt{2}}\left[\bar{q}a^{\dagger}-qa\right]P_{0}\\
+= & P_{0}e^{\frac{l}{\sqrt{2}}\bar{q}a}e^{-\frac{l}{\sqrt{2}}qa}e^{-\frac{l^{2}}{4}|q|^{2}}P_{0}\\
+= & P_{0}e^{\frac{l}{\sqrt{2}}\bar{q}a}\sum_{s=0}^{\infty}\frac{(-\frac{l}{\sqrt{2}})^{s}}{s!}a^{s}P_{0}e^{\frac{l^{2}|q|^{2}}{4}}\\
+= & e^{\frac{l^{2}|q|^{2}}{4}}P_{0}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $q=q_{1}+iq_{2},\bar{q}=q_{1}-iq_{2}$
+\end_inset
+
+ , and 
+\begin_inset Formula $e^{A+B}=e^{A}e^{B}e^{-\frac{1}{2}[A,B]}$
+\end_inset
+
+ is used.
+ Then the part contains 
+\begin_inset Formula $\kappa_{x},\kappa_{y}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+ & \langle j|e^{-\frac{ic}{eB}(q_{1}\kappa_{y}-q_{2}\kappa_{x})}|k\rangle\\
+= & \langle j|e^{-\frac{il^{2}}{\hbar}(q_{1}\kappa_{y}-q_{2}\kappa_{x})}|k\rangle\\
+= & \langle j|e^{-\frac{il^{2}}{\hbar}q_{1}\kappa_{y}}e^{\frac{il^{2}}{\hbar^{2}}q_{2}\kappa_{x}}e^{-\frac{l^{4}}{2\hbar^{2}}[q_{1}\kappa_{y},q_{2}\kappa_{x}]}|k\rangle\\
+= & \langle j|e^{-\frac{il^{2}}{\hbar}q_{1}\kappa_{y}}e^{i\frac{l^{2}}{\hbar}q_{2}\kappa_{x}}e^{\frac{il^{2}}{2}q_{1}q_{2}}|k\rangle\\
+= & e^{\frac{il^{2}}{2}q_{1}q_{2}}e^{-i\frac{l^{2}}{\hbar}q_{1}\kappa_{y}}\delta_{j,k+n}\\
+= & e^{\frac{il^{2}}{2}4\pi^{2}mn/(L_{1}L_{2})}e^{-i\frac{L_{2}m}{N_{\phi}}\kappa_{y}/\hbar}\delta_{j,k+n}\\
+= & e^{i\pi mn/N_{\phi}}\langle j|T^{-m}(\vec{L}_{2}/N_{\phi})T^{n}(\vec{L}_{1}/N_{\phi})|k\rangle
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then the disorder potential under the projection is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+P_{0}VP_{0}=\sum_{mn}e^{-\pi\left(m^{2}L_{2}/L_{1}+n^{2}L_{1}/L_{2}\right)/2N_{\phi}}e^{i\pi mn/N_{\phi}}V_{mn}T^{-m}(\vec{L}_{2}/N_{\phi})T^{n}(\vec{L}_{1}/N_{\phi})P_{0}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then, the hamiltonian matrix elements for disorder potential in the basis
+ 
+\begin_inset Formula ${|\phi_{j}\rangle}$
+\end_inset
+
+are 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+H_{jk} & =\langle\phi_{j}|P_{0}VP_{0}|\phi_{k}\rangle\\
+ & =\sum_{m,n}V_{mn}e^{-\pi\left(m^{2}L_{2}/L_{1}+n^{2}L_{1}/L_{2}\right)/2N_{\phi}}e^{i\pi mn/N_{\phi}}\langle\phi_{j}|T^{-m}(\vec{L}_{2}/N_{\phi})T^{n}(\vec{L}_{1}/N_{\phi})|\phi_{k}\rangle\\
+ & =\sum_{m,n}V_{mn}e^{-\pi\left(m^{2}L_{2}/L_{1}+n^{2}L_{1}/L_{2}\right)/2N_{\phi}}e^{i\pi mn/N_{\phi}}e^{-i2\pi jm/N_{\phi}}\delta_{j,k+n}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Now the matrix elements 
+\begin_inset Formula $H_{jk}(\theta_{1},\theta_{2})$
+\end_inset
+
+ in the basis 
+\begin_inset Formula ${|\psi_{j}(\theta_{1},\theta_{2})\rangle}$
+\end_inset
+
+ can be obtained by incorporating 
+\begin_inset Formula $|\psi_{j}(\theta_{1},\theta_{2})\rangle=T(\gamma)|\phi_{j}\rangle$
+\end_inset
+
+, then 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+H_{jk}(\theta_{1},\theta_{2}) & =\sum_{m,n}V_{mn}e^{-\pi\left(m^{2}L_{2}/L_{1}+n^{2}L_{1}/L_{2}\right)/2N_{\phi}}e^{i\pi mn/N_{\phi}}\langle\phi_{j}(\theta_{1},\theta_{2})|T^{-m}(\vec{L}_{2}/N_{\phi})T^{n}(\vec{L}_{1}/N_{\phi})T(\gamma)|\phi_{k}\rangle\\
+ & =\sum_{m,n}V_{mn}e^{-\pi\left(m^{2}L_{2}/L_{1}+n^{2}L_{1}/L_{2}\right)/2N_{\phi}}e^{i\pi mn/N_{\phi}}e^{i\left(-m\theta_{2}+n\theta_{1}\right)/N_{\phi}}e^{-i2\pi jm/N_{\phi}}\delta_{j,k+n}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Interaction hamiltonian matrix
+\end_layout
+
+\begin_layout Standard
+The interaction hamiltonian is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+H_{I} & =\frac{1}{2}\sum_{\alpha,\beta}^{L,R}\sum_{j_{1},j_{2},j_{3},j_{4}}\int d^{2}r_{\alpha,1}\int d^{2}r_{\beta,2}\langle j_{1},j_{2}|\hat{\Psi}_{j_{1}}^{\dagger}(r_{\alpha,1})\hat{\Psi}_{j_{2}}^{\dagger}(r_{\beta,2})V_{\alpha\beta}(r_{\alpha,1}-r_{\beta,2})\hat{\Psi}_{j_{3}}(r_{\beta,2})\hat{\Psi}_{j_{4}}(r_{\alpha,1})|j_{3},j_{4}\rangle\\
+ & \times b_{j_{1}}^{\dagger}b_{j_{2}}^{\dagger}b_{j_{3}}b_{j_{4}}\\
+ & =\frac{1}{2L_{1}L_{2}}\sum_{\alpha\beta}\sum_{q}\sum_{j_{1},j_{2},j_{3},j_{4}}\langle j_{1},j_{2}|V_{\alpha\beta}(q)e^{iq\cdot(r_{\alpha,1}-r_{\beta,2})}|j_{3},j_{4}\rangle b_{j_{1}}^{\dagger}b_{j_{2}}^{\dagger}b_{j_{3}}b_{j_{4}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where the intralayer and interlayer interactions are 
+\begin_inset Formula 
+\begin{align*}
+V_{L,L}(q) & =\frac{2\pi e^{2}}{\epsilon q},\\
+V_{L,R}(q) & =\frac{2\pi e^{2}}{\epsilon q}e^{-qd}.
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The matrix elements of 
+\begin_inset Formula $e^{iq\cdot(r_{\alpha,1}-r_{\beta,2})}$
+\end_inset
+
+ in the LLL are 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+ & \langle j_{1},j_{2}|e^{iq\cdot(r_{\alpha,1}-r_{\beta,2})}|j_{3},j_{4}\rangle\\
+= & \langle j_{1},j_{2}|e^{iq\cdot r_{\alpha,1}}e^{-iq\cdot r_{\beta,2}}|j_{3},j_{4}\rangle\\
+= & e^{-\pi\left(m^{2}L_{2}/L_{1}+n^{2}L_{1}/L_{2}\right)/N_{\phi}}\\
+ & \times\langle j_{1},j_{2}|T_{\alpha,1}^{-m}(\vec{L}_{2}/N_{\phi})T_{\beta,2}^{-n}(\vec{L}_{1}/N_{\phi})T_{\alpha,1}^{n}(\vec{L}_{1}/N_{\phi})T_{\beta,2}^{m}(\vec{L}_{2}/N_{\phi})|j_{3},j_{4}\rangle\\
+= & e^{-\pi(m^{2}L_{2}/L_{1}+n^{2}L_{1}/L_{2})/N_{\phi}-i2\pi m(j_{1}-j_{3})/N_{\phi}}\langle j_{1},j_{2}+n|j_{3},j_{4}+n\rangle
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+then the hamiltonian under LLL is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+P_{0}H_{I}P_{0} & =\frac{1}{2L_{1}L_{2}}\sum_{\alpha\beta}\sum_{j_{1}j_{2}j_{3}j_{4}}\sum_{q}\langle j_{1},j_{2}|V_{\alpha\beta}(q)e^{iq\cdot(r_{\alpha,1}-r_{\beta,2})}|j_{3},j_{4}\rangle b_{j_{1}}^{\dagger}b_{j_{2}}^{\dagger}b_{j_{3}}b_{j_{4}}\\
+ & =\frac{1}{2L_{1}L_{2}}\sum_{\alpha\beta}\sum_{j_{1},j_{2}j_{3},j_{4}}\sum_{mn}V_{\alpha\beta,mn}e^{-\pi(m^{2}L_{2}/L_{1}+n^{2}L_{1}/L_{2})/N_{\phi}-i2\pi m(j_{1}-j_{3})/N_{\phi}}\\
+ & \times\langle j_{1},j_{2}+n|j_{3},j_{4}+n\rangle b_{j_{1}}^{\dagger}b_{j_{2}}^{\dagger}b_{j_{3}}b_{j_{4}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Now the interaction hamiltonian matrix elements 
+\begin_inset Formula $H_{j_{1}j_{2}j_{3}j_{4}}(\theta_{1}^{L},\theta_{2}^{L},\theta_{1}^{R},\theta_{2}^{R})$
+\end_inset
+
+ in the basis 
+\begin_inset Formula ${|j_{1},\theta^{\alpha};j_{2},\theta^{\beta}\rangle}$
+\end_inset
+
+ can be obtained by incorporating 
+\begin_inset Formula $|j_{1},\theta^{\alpha};j_{2},\theta^{\beta}\rangle=T_{1}(\gamma_{\alpha,1})T(\gamma_{\beta,2})|j_{1},j_{2}\rangle$
+\end_inset
+
+, then the hamiltonian matrix aquires the additional phase factor 
+\begin_inset Formula $e^{i\left(-m\theta_{2}^{\alpha}+n\theta_{1}^{\alpha}\right)/N_{\phi}}e^{i\left(m\theta_{2}^{\beta}-n\theta_{1}^{\beta}\right)/N_{\phi}}$
+\end_inset
+
+, then the hamiltonian matrix is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+ & H_{j_{1}j_{2}j_{3}j_{4};mn}^{\alpha\beta}(\theta_{1}^{\alpha},\theta_{2}^{\alpha},\theta_{1}^{\beta},\theta_{2}^{\beta})\\
+= & \frac{1}{2L_{1}L_{2}}V_{\alpha\beta,mn}e^{-\pi(m^{2}L_{2}/L_{1}+n^{2}L_{1}/L_{2})/N_{\phi}-i2\pi m(j_{1}-j_{3})/N_{\phi}+i\left(-m\theta_{2}^{\alpha}+n\theta_{1}^{\alpha}+m\theta_{2}^{\beta}-n\theta_{1}^{\beta}\right)/N_{\phi}}\delta_{j_{1}+j_{2},j_{3}+j_{4}}\delta_{n,j_{1}-j_{4}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
 Background charge
 \end_layout
 
@@ -541,7 +1255,7 @@ The integral of the total charge density
 
 \end_inset
 
-
+ 
 \end_layout
 
 \begin_layout Standard
