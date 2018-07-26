@@ -82,7 +82,7 @@ void lhamil::init_Coulomb_matrix() {
             FT[kl*nphi+kr]=complex<double>(cos(2.0*M_PI*(kl-kr)*kx/nphi),sin(2.0*M_PI*(kl-kr)*kx/nphi));
 }
 
-inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z,int id, long nbatch,long nrange) {
+inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z,double _theta_B,int id, long nbatch,long nrange) {
     int kx=sector.K;
     unsigned long lbasis,rbasis,rbasis_0,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signl,signr;
@@ -711,11 +711,10 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                 }
 
             if(Delta_SAS>0) {
-		/*
-                //spin-up interlayer tunneling
+                //spin-up up-down layer tunneling
                 for(n=0; n<nphi; n++) {
-                    //nt=(n<nphi?n+nphi:n-nphi);
                     nt=n+2*nphi;
+		    complex<double> Q_phase(cos(_theta_B*n*d),sin(_theta_B*n*d));
                     mask = (1 << n)+(1<<nt);
                     unsigned long Kn=mask & lbasis;
                     if(Kn!=mask && Kn!=0) {
@@ -736,15 +735,47 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                 j = sector.basis_set[rbasis];
                                 sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                                matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]*Q_phase/sqrt(Dl*Dr);
                             }
                         }
                     }
                 }
-                //spin-down interlayer tunneling
+                //spin-up down-up layer tunneling
+                for(n=2*nphi; n<3*nphi; n++) {
+                    nt=n-2*nphi;
+		    // phase induced by parallel magnetic field
+		    complex<double> Q_phase(cos(_theta_B*nt*d),-sin(_theta_B*nt*d));
+                    mask = (1 << n)+(1<<nt);
+                    unsigned long Kn=mask & lbasis;
+                    if(Kn!=mask && Kn!=0) {
+                        unsigned long Ln=Kn ^ mask;
+                        rbasis_0=lbasis-Kn+Ln;
+                        // determine the right side size of the translation
+                        Dr=nphi;
+                        for(D=1; D<nphi; D++)
+                            if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                                Dr=D;
+                                break;
+                            }
+                        // if parameter kx<0, do not perform basis translation
+                        Dr=(kx<0?1:Dr);
+                        for(qr=0; qr<Dr; qr++) {
+                            signr=1;
+                            rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                            if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                                j = sector.basis_set[rbasis];
+                                sign=sector.get_sign(lbasis,nt,n)*signl*signr;
+                                matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]*Q_phase/sqrt(Dl*Dr);
+                            }
+                        }
+                    }
+                }
+		
+                //spin-down up-down layer tunneling
                 for(n=nphi; n<2*nphi; n++) {
-                    //nt=(n<nphi?n+nphi:n-nphi);
                     nt=n+2*nphi;
+		    // phase induced by parallel magnetic field
+		    complex<double> Q_phase(cos(_theta_B*(n%nphi)*d),sin(_theta_B*(n%nphi)*d));
                     mask = (1 << n)+(1<<nt);
                     unsigned long Kn=mask & lbasis;
                     if(Kn!=mask && Kn!=0) {
@@ -765,12 +796,42 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                 j = sector.basis_set[rbasis];
                                 sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                                matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]*Q_phase/sqrt(Dl*Dr);
                             }
                         }
                     }
                 }
-		*/
+                //spin-down down-up layer tunneling
+                for(n=3*nphi; n<4*nphi; n++) {
+                    nt=n-2*nphi;
+		    complex<double> Q_phase(cos(_theta_B*(n%nphi)*d),-sin(_theta_B*(n%nphi)*d));
+                    mask = (1 << n)+(1<<nt);
+                    unsigned long Kn=mask & lbasis;
+                    if(Kn!=mask && Kn!=0) {
+                        unsigned long Ln=Kn ^ mask;
+                        rbasis_0=lbasis-Kn+Ln;
+                        // determine the right side size of the translation
+                        Dr=nphi;
+                        for(D=1; D<nphi; D++)
+                            if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                                Dr=D;
+                                break;
+                            }
+                        // if parameter kx<0, do not perform basis translation
+                        Dr=(kx<0?1:Dr);
+                        for(qr=0; qr<Dr; qr++) {
+                            signr=1;
+                            rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                            if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                                j = sector.basis_set[rbasis];
+                                sign=sector.get_sign(lbasis,nt,n)*signl*signr;
+                                matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]*Q_phase/sqrt(Dl*Dr);
+                            }
+                        }
+                    }
+                }
+		
+		/*	
                 // spin-up spin-down interlayer tunneling
                 for(n=0; n<nphi; n++) {
 		nt=n+3*nphi;
@@ -829,6 +890,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                     }
                 }
             }
+            */
             }
 
         }
@@ -861,7 +923,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
 }
 
 
-void lhamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, double Delta_SAS,double Delta_V,double Delta_Z,int nthread) {
+void lhamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, double Delta_SAS,double Delta_V,double Delta_Z,double theta_B,int nthread) {
     d = _d;
     lx = _lx;
     ly = _ly;
@@ -879,12 +941,12 @@ void lhamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, 
     long  nbatch=nHilbert/nthread;
     long nresidual=nHilbert%nthread;
     for(int id = 0; id < nthread; id++)
-        threads.push_back(std::thread(&lhamil::peer_set_hamil,this,Delta_SAS,Delta_V,Delta_Z,id,nbatch,nbatch));
+        threads.push_back(std::thread(&lhamil::peer_set_hamil,this,Delta_SAS,Delta_V,Delta_Z,theta_B,id,nbatch,nbatch));
     for(auto &th:threads)
         if(th.joinable())
             th.join();
     if(nresidual!=0)
-        peer_set_hamil(Delta_SAS,Delta_V,Delta_Z,nthread,nbatch,nresidual);
+        peer_set_hamil(Delta_SAS,Delta_V,Delta_Z,theta_B,nthread,nbatch,nresidual);
 }
 /*
 void lhamil::Gram_Schmidt_orthogonalization(Vec &phi, int n) {
@@ -1323,7 +1385,6 @@ double lhamil::pseudospin_Sx() {
             //lbasis=sector.id[i];
             // spin-up interlayer tunneling 
             for(n=0; n<nphi; n++) {
-                //nt=(n<nphi?n+nphi:n-nphi);
 		nt=n+2*nphi;
                 mask = (1 << n)+(1<<nt);
                 unsigned long Kn=mask & lbasis;
@@ -1346,7 +1407,35 @@ double lhamil::pseudospin_Sx() {
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                             j = sector.basis_set[rbasis];
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.5/sqrt(Dl*Dr));
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
+                        }
+                    }
+                }
+            }
+            for(n=2*nphi; n<3*nphi; n++) {
+		nt=n-2*nphi;
+                mask = (1 << n)+(1<<nt);
+                unsigned long Kn=mask & lbasis;
+                if(Kn!=mask && Kn!=0) {
+                    unsigned long Ln=Kn ^ mask;
+                    rbasis_0=lbasis-Kn+Ln;
+                    // determine the right side size of the translation
+
+                    Dr=nphi;
+                    for(D=1; D<nphi; D++)
+                        if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                            Dr=D;
+                            break;
+                        }
+                    // if parameter kx<0, do not perform basis translation
+                    Dr=(sector.K<0?1:Dr);
+                    for(qr=0; qr<Dr; qr++) {
+                        signr=1;
+                        rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                        if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                            j = sector.basis_set[rbasis];
+                            sign=sector.get_sign(lbasis,nt,n)*signl*signr;
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
                         }
                     }
                 }
@@ -1375,12 +1464,39 @@ double lhamil::pseudospin_Sx() {
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                             j = sector.basis_set[rbasis];
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.5/sqrt(Dl*Dr));
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
                         }
                     }
                 }
             }
+            for(n=3*nphi; n<4*nphi; n++) {
+		nt=n-2*nphi;
+                mask = (1 << n)+(1<<nt);
+                unsigned long Kn=mask & lbasis;
+                if(Kn!=mask && Kn!=0) {
+                    unsigned long Ln=Kn ^ mask;
+                    rbasis_0=lbasis-Kn+Ln;
+                    // determine the right side size of the translation
 
+                    Dr=nphi;
+                    for(D=1; D<nphi; D++)
+                        if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                            Dr=D;
+                            break;
+                        }
+                    // if parameter kx<0, do not perform basis translation
+                    Dr=(sector.K<0?1:Dr);
+                    for(qr=0; qr<Dr; qr++) {
+                        signr=1;
+                        rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                        if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                            j = sector.basis_set[rbasis];
+                            sign=sector.get_sign(lbasis,nt,n)*signl*signr;
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
+                        }
+                    }
+                }
+            }
             // spin-up spin-down interlayer tunneling 
             for(n=0; n<nphi; n++) {
 		nt=n+3*nphi;
@@ -1405,7 +1521,35 @@ double lhamil::pseudospin_Sx() {
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                             j = sector.basis_set[rbasis];
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.5/sqrt(Dl*Dr));
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
+                        }
+                    }
+                }
+            }
+            for(n=3*nphi; n<4*nphi; n++) {
+		nt=n-3*nphi;
+                mask = (1 << n)+(1<<nt);
+                unsigned long Kn=mask & lbasis;
+                if(Kn!=mask && Kn!=0) {
+                    unsigned long Ln=Kn ^ mask;
+                    rbasis_0=lbasis-Kn+Ln;
+                    // determine the right side size of the translation
+
+                    Dr=nphi;
+                    for(D=1; D<nphi; D++)
+                        if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                            Dr=D;
+                            break;
+                        }
+                    // if parameter kx<0, do not perform basis translation
+                    Dr=(sector.K<0?1:Dr);
+                    for(qr=0; qr<Dr; qr++) {
+                        signr=1;
+                        rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                        if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                            j = sector.basis_set[rbasis];
+                            sign=sector.get_sign(lbasis,nt,n)*signl*signr;
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
                         }
                     }
                 }
@@ -1435,7 +1579,35 @@ double lhamil::pseudospin_Sx() {
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                             j = sector.basis_set[rbasis];
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.5/sqrt(Dl*Dr));
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
+                        }
+                    }
+                }
+            }
+            for(n=2*nphi; n<3*nphi; n++) {
+		nt=n-nphi;
+                mask = (1 << n)+(1<<nt);
+                unsigned long Kn=mask & lbasis;
+                if(Kn!=mask && Kn!=0) {
+                    unsigned long Ln=Kn ^ mask;
+                    rbasis_0=lbasis-Kn+Ln;
+                    // determine the right side size of the translation
+
+                    Dr=nphi;
+                    for(D=1; D<nphi; D++)
+                        if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                            Dr=D;
+                            break;
+                        }
+                    // if parameter kx<0, do not perform basis translation
+                    Dr=(sector.K<0?1:Dr);
+                    for(qr=0; qr<Dr; qr++) {
+                        signr=1;
+                        rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                        if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                            j = sector.basis_set[rbasis];
+                            sign=sector.get_sign(lbasis,nt,n)*signl*signr;
+                            Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
                         }
                     }
                 }
