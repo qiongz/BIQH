@@ -8,7 +8,6 @@
 #include <gsl/gsl_sf_bessel.h>
 void swap(Vec *a,Vec *b,Vec *c);
 
-
 class lhamil {
 public:
     unsigned seed;  //!< Seed for RNGs

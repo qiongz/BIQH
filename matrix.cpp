@@ -284,38 +284,47 @@ void Mat::print() {
     std::cout<<" ]"<<std::endl;
 }
 
-/*
-void diag_dsyev(double *h, double *e, int l) {
-    char jobz, uplo;
-    int info;
+
+void diag_dsyevd(double *hamiltonian, double *energy, int l){
+    char jobz,uplo;
+    int info,lda,lwork,liwork;
     jobz = 'V';
     uplo = 'U';
-    int lda = l;
-    int lwork = 3 * l - 1;
+    lda=l;
+    #if defined mkl
+    info=LAPACKE_dsyevd(LAPACK_COL_MAJOR,jobz, uplo, l,hamiltonian,lda, energy);
+    #else
+    lwork = 2*l*l+6*l+1;
+    liwork = 5*l+3;
     double *work = new double[lwork];
-    dsyev_(&jobz, &uplo, &l, h, &lda, e, work, &lwork, &info);
+    int *iwork=new int[liwork];
+    dsyevd_(&jobz, &uplo, &l, hamiltonian, &lda, energy, work, &lwork,iwork, &liwork, &info);
     delete [] work;
+    delete [] iwork;
+    #endif
 }
-*/
 
-void diag_dsyev(double *hamiltonian, double *energy, int l){
+void diag_zheevd(complex<double> *hamiltonian, double *energy, int l){
     char jobz,uplo;
-    int info,lda;
+    int info,lda,lwork,lrwork,liwork;
     jobz = 'V';
     uplo = 'U';
     lda=l;
-    info=LAPACKE_dsyev(LAPACK_COL_MAJOR,jobz, uplo, l,hamiltonian,lda, energy);
-}
-
-void diag_zheev(complex<double> *hamiltonian, double *energy, int l){
-    char jobz,uplo;
-    int info,lda;
-    jobz = 'V';
-    uplo = 'U';
-    lda=l;
+    #ifdef mkl
     info=LAPACKE_zheevd(LAPACK_COL_MAJOR,jobz, uplo, l,hamiltonian,lda, energy);
+    #else
+    lwork=l*l+2*l;
+    lrwork=5*l+2*l*l+1;
+    liwork=5*l+3+1;
+    complex<double> *work=new complex<double>[lwork];
+    double *rwork=new double[lrwork];
+    int *iwork=new int[liwork];
+    zheevd_(&jobz,&uplo, &l, hamiltonian,&lda, energy,work,&lwork,rwork,&lrwork,iwork,&liwork,&info);
+    delete [] iwork;
+    delete [] rwork;
+    delete [] work;
+    #endif
 }
-
 
 double func_ExpInt(double t, void *params) {
     double z = *(double *)params;

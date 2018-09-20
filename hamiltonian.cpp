@@ -404,7 +404,7 @@ void hamil::diag() {
     memset(h, 0, sizeof( complex<double>)*nHilbert * nHilbert);
     for(i = 0; i <nHilbert*nHilbert; i++)
         h[i]=hamiltonian[i];
-    diag_zheev(h, en, nHilbert);
+    diag_zheevd(h, en, nHilbert);
     psi_0.assign(nHilbert, 0);
     psi_1.assign(nHilbert, 0);
     psi_n0.assign(nHilbert, 0);
