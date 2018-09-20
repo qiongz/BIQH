@@ -1,12 +1,3 @@
-/************************************************
-Basis generation library for Bilayer integer
-quantum Hall systems
-   @author qiongzhu
-   19/03/2018
-   last updated
-   03/07/2018
-   Email:qiongzhunow@gmail.com
-*************************************************/
 #ifndef BASIS_H
 #define BASIS_H
 #include<iostream>

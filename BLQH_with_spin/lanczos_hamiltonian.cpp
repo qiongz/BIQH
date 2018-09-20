@@ -948,6 +948,7 @@ void lhamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, 
     if(nresidual!=0)
         peer_set_hamil(Delta_SAS,Delta_V,Delta_Z,theta_B,nthread,nbatch,nresidual);
 }
+
 /*
 void lhamil::Gram_Schmidt_orthogonalization(Vec &phi, int n) {
     Vec phi_0,phi_1,phi_2;
@@ -1039,19 +1040,15 @@ void lhamil::coeff_explicit_update()
         phi_0[i]=complex<double>(genrand64_real3()-0.5,genrand64_real3()-0.5);
     #endif
     norm_factor=0;
-    #pragma omp parallel for reduction(+:norm_factor)
     for(i=0; i<nHilbert; i++)
         norm_factor+=std::norm(phi_0[i]);
     norm_factor=sqrt(norm_factor);
-    #pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
         phi_0[i]/=norm_factor;
 
     // phi_1=H*phi_0;
     memset(phi_1,0,sizeof(complex<double>)*nHilbert);
-    #pragma omp parallel for schedule(static)
     for(i=0; i<H.outer_starts.size(); i++) {
-#pragma ivdep
         //for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
         for(idx=H.outer_starts[i]; idx< H.outer_starts[i]+H.outer_size[i]; idx++)
             phi_1[i]+=H.value[idx]*phi_0[H.inner_indices[idx]];
@@ -1059,7 +1056,6 @@ void lhamil::coeff_explicit_update()
 
     //overlap[0] = phi_0 * phi_1;
     overlap_factor=0;
-    //#pragma omp parallel for reduction(+:overlap_factor)
     for(i=0; i<nHilbert; i++)
         overlap_factor+=conj(phi_1[i])*phi_0[i];
 
@@ -1067,18 +1063,15 @@ void lhamil::coeff_explicit_update()
     overlap[0]=overlap_factor.real();
 
     //phi_1 -= phi_0 * overlap[0];
-    #pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
         phi_1[i]-=phi_0[i]*overlap_factor;
 
     //norm[1] = phi_1.normalize();
     norm_factor=0;
-    #pragma omp parallel for reduction(+:norm_factor)
     for(i=0; i<nHilbert; i++)
         norm_factor+=std::norm(phi_1[i]);
     norm_factor=sqrt(norm_factor);
 
-    //#pragma omp parallel for schedule(static)
     for(i=0; i<nHilbert; i++)
         phi_1[i]/=norm_factor;
 
@@ -1090,16 +1083,13 @@ void lhamil::coeff_explicit_update()
 
     for(j= 1; j < lambda; j++) {
         memset(phi_2,0,sizeof(complex<double>)*nHilbert);
-        #pragma omp parallel for schedule(guided,4)
         for(i=0; i<H.outer_starts.size(); i++) {
-#pragma ivdep
             //for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
             for(idx=H.outer_starts[i]; idx< H.outer_starts[i]+H.outer_size[i]; idx++)
                 phi_2[i]+=H.value[idx]*phi_1[H.inner_indices[idx]];
         }
         //overlap[j] = phi_1 * phi_2;
         overlap_factor=0;
-        //#pragma omp parallel for reduction(+:overlap_factor)
         for(i=0; i<nHilbert; i++)
             overlap_factor+=conj(phi_1[i])*phi_2[i];
 
@@ -1107,24 +1097,19 @@ void lhamil::coeff_explicit_update()
         overlap[j]=overlap_factor.real();
 
         //phi_2 -= phi_1 * overlap[j] + phi_0 * norm[j];
-        #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_t[i]=phi_0[i]*norm[j];
-        #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_t[i]+=phi_1[i]*overlap_factor;
-        #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_2[i]-=phi_t[i];
 
         //norm[j+1] = phi_2.normed();
         norm_factor=0;
-        #pragma omp parallel for reduction(+:norm_factor)
         for(i=0; i<nHilbert; i++)
             norm_factor+=std::norm(phi_2[i]);
         norm_factor=sqrt(norm_factor);
 
-        #pragma omp parallel for schedule(static)
         for(i=0; i<nHilbert; i++)
             phi_2[i]/=norm_factor;
 
@@ -1143,121 +1128,6 @@ void lhamil::coeff_explicit_update()
     delete phi_0,phi_1,phi_2,phi_t;
 }
 
-//Lanczos update version for spectral function calculation
-/*
-void lhamil::coeff_update_wopt(vector<complex<double> > O_phi_0)
-{
-    int i,j,idx;
-    double eigenvalues_0=1;
-    double epsilon=1e-8;
-
-    double norm_factor,overlap_factor;
-    double *phi_0,*phi_1,*phi_2,*phi_t,*phi_s;
-    phi_0=new double[nHilbert];
-    phi_1=new double[nHilbert];
-    phi_2=new double[nHilbert];
-    phi_t=new double[nHilbert];
-
-    norm.assign(lambda+1,0);
-    overlap.assign(lambda,0);
-
-    for(i=0; i<nHilbert; i++)
-        phi_0[i]=O_phi_0[i];
-
-    norm_factor=0;
-    #pragma omp parallel for reduction(+:norm_factor)
-    for(i=0; i<nHilbert; i++)
-        norm_factor+=phi_0[i]*phi_0[i];
-    norm_factor=sqrt(norm_factor)+1e-24;
-    #pragma omp parallel for schedule(static)
-    for(i=0; i<nHilbert; i++)
-        phi_0[i]/=norm_factor;
-
-    norm[0]=1;
-
-    // phi_1=H*phi_0;
-    memset(phi_1,0,sizeof(double)*nHilbert);
-    #pragma omp parallel for schedule(static)
-    for(i=0; i<H.outer_starts.size()-1; i++) {
-        #pragma ivdep
-        for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
-            phi_1[i]+=H.value[idx]*phi_0[H.inner_indices[idx]];
-    }
-
-    //overlap[0] = phi_0 * phi_1;
-    overlap_factor=0;
-    #pragma omp parallel for reduction(+:overlap_factor)
-    for(i=0; i<nHilbert; i++)
-        overlap_factor+=phi_1[i]*phi_0[i];
-    overlap[0]=overlap_factor;
-
-    //phi_1 -= phi_0 * overlap[0];
-    #pragma omp parallel for schedule(static)
-    for(i=0; i<nHilbert; i++)
-        phi_1[i]-=phi_0[i]*overlap_factor;
-
-    //norm[1] = phi_1.normalize();
-    norm_factor=0;
-    #pragma omp parallel for reduction(+:norm_factor)
-    for(i=0; i<nHilbert; i++)
-        norm_factor+=phi_1[i]*phi_1[i];
-    norm_factor=sqrt(norm_factor);
-
-    #pragma omp parallel for schedule(static)
-    for(i=0; i<nHilbert; i++)
-        phi_1[i]/=norm_factor;
-    norm[1]=norm_factor;
-
-    for(j= 1; j < lambda; j++) {
-        memset(phi_2,0,sizeof(double)*nHilbert);
-        #pragma omp parallel for schedule(static)
-        for(i=0; i<H.outer_starts.size()-1; i++) {
-            #pragma ivdep
-            for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
-                phi_2[i]+=H.value[idx]*phi_1[H.inner_indices[idx]];
-        }
-
-        //overlap[j] = phi_1 * phi_2;
-        overlap_factor=0;
-        #pragma omp parallel for reduction(+:overlap_factor)
-        for(i=0; i<nHilbert; i++)
-            overlap_factor+=phi_1[i]*phi_2[i];
-        overlap[j]=overlap_factor;
-
-        //phi_2 -= phi_1 * overlap[j] + phi_0 * norm[j];
-        #pragma omp parallel for schedule(static)
-        for(i=0; i<nHilbert; i++)
-            phi_t[i]=phi_0[i]*norm[j];
-
-        #pragma omp parallel for schedule(static)
-        for(i=0; i<nHilbert; i++)
-            phi_t[i]+=phi_1[i]*overlap_factor;
-
-        #pragma omp parallel for schedule(static)
-        for(i=0; i<nHilbert; i++)
-            phi_2[i]-=phi_t[i];
-
-        //norm[j+1] = phi_2.normalize();
-        norm_factor=0;
-        #pragma omp parallel for reduction(+:norm_factor)
-        for(i=0; i<nHilbert; i++)
-            norm_factor+=phi_2[i]*phi_2[i];
-        norm_factor=sqrt(norm_factor);
-
-        #pragma omp parallel for schedule(static)
-        for(i=0; i<nHilbert; i++)
-            phi_2[i]/=norm_factor;
-        norm[j+1]=norm_factor;
-
-        phi_s=phi_0;
-        phi_0=phi_1;
-        phi_1=phi_2;
-        phi_2=phi_s;
-    }
-    delete phi_0,phi_1,phi_2,phi_t;
-}
-*/
-
 void lhamil::diag()
 {
     int l=overlap.size();
@@ -1271,7 +1141,7 @@ void lhamil::diag()
         h[i * l + i] = overlap[i];
     }
     h[(l - 1)*l + l - 1] = overlap[l - 1];
-    diag_dsyev(h,e,l);
+    diag_dsyevd(h,e,l);
 
     psi_0.assign(l,0);
     psi_n0.assign(l,0);
@@ -1693,48 +1563,6 @@ double lhamil::spinflip_tunneling() {
     }
     return abs(Sf_mean)/sector.nel;
 }
-
-// spectral function continued fraction version
-/*
-double lhamil::spectral_function(double omega, double eta) {
-    // calculation continued fraction using modified Lentz method
-    complex<double> E(omega,eta);
-    vector< complex<double> >  f,c,d,delta;
-    complex<double> a,b,G;
-    double I;
-    b=E-overlap[0];
-    if(abs(b)<1e-25)
-        f.push_back(1e-25);
-    else
-        f.push_back(b);
-    c.push_back(f[0]);
-    d.push_back(0);
-    delta.push_back(0);
-    for(int n=1; n<overlap.size(); n++) {
-        b=E-overlap[n];
-        a=-norm[n]*norm[n];
-        d.push_back(b+a*d[n-1]);
-        if(abs(d[n])<1e-25)
-            d[n]=1e-25;
-        c.push_back(b+a/c[n-1]);
-        if(abs(c[n])<1e-25)
-            c[n]=1e-25;
-        d[n]=1.0/d[n];
-        delta.push_back(c[n]*d[n]);
-        f.push_back(f[n-1]*delta[n]);
-        if(abs(delta.back()-1)<1e-15)
-            break;
-    }
-    G=1.0/f.back();
-
-    I=-G.imag()/M_PI;
-    c.clear();
-    d.clear();
-    f.clear();
-    delta.clear();
-    return I;
-}
-*/
 
 
 void lhamil::save_to_file(const char* filename) {

@@ -5,57 +5,18 @@
 #include<ctime>
 #include<sstream>
 #include<cstdlib>
-#if __cplusplus > 199711L
-#include<chrono>
-#endif
 
 using namespace std;
 
 int main(int argc,char *argv[]) {
     int nLL,nphi,nel,J,kx,lambda,nthread;
     double lx,ly,gamma,Delta_SAS,Delta_V,Delta_Z,theta_B;
-    unsigned seed;
-    double d,mu;
+    unsigned long seed;
+    double d;
 
-    nLL=0;
-    nphi=4;
-    nel=8;
-    gamma=1.0;
-    theta_B=0;
-    nthread=32;
-    J=-1;
-    kx=-1;
-    Delta_SAS=0;
-    Delta_V=0;
-    Delta_Z=0;
-
-    d=100.0;
-    lambda=400;
-    init_argv(nLL,nphi,nel,J,kx,d,Delta_SAS,Delta_V,Delta_Z,gamma,lambda,theta_B,nthread,argc,argv);
-    //gamma=nel_up/4.0;
+    init_argv(nLL,nphi,nel,J,kx,d,Delta_SAS,Delta_V,Delta_Z,gamma,lambda,theta_B,nthread,seed,argc,argv);
     ly=sqrt(nphi*2.0*M_PI/gamma);
     lx=ly*gamma;
-
-    #if __cplusplus > 199711L
-    seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    #else
-    Timer tmr;
-    seed=tmr.nanoseconds();
-    #endif
-
-    /*
-        cout<<"nphi: = "<<nphi<<endl;
-        cout<<"nel: = "<<nel<<endl;
-        cout<<"d:="<<d<<endl;
-        cout<<"Delta_SAS:="<<Delta_SAS<<endl;
-        cout<<"Delta_V:="<<Delta_V<<endl;
-        cout<<"lx: = "<<lx<<endl;
-        cout<<"ly: = "<<ly<<endl;
-        cout<<"J: = "<<J<<endl;
-        cout<<"kx: = "<<kx<<endl;
-    */
-
-
    
 
     lhamil lconfig(lambda,seed);

@@ -757,7 +757,9 @@ void hamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, d
     nLL = _nLL;
     init_Coulomb_matrix();
     nHilbert = sector.nbasis;
-    hamiltonian.assign(nHilbert*nHilbert,0);
+    eigenvalues=new double[nHilbert]; 
+    hamiltonian=new complex<double>[nHilbert*nHilbert];
+    memset(hamiltonian,0,nHilbert*nHilbert*sizeof(complex<double>));
     std::vector<std::thread> threads;
     long  nbatch=nHilbert/nthread;
     long nresidual=nHilbert%nthread;
@@ -772,18 +774,6 @@ void hamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, d
 
 hamil::~hamil() {}
 
-const hamil & hamil::operator =(const hamil & _gs_hconfig) {
-    if(this != &_gs_hconfig) {
-        nHilbert = _gs_hconfig.nHilbert;
-        d = _gs_hconfig.d;
-        nphi = _gs_hconfig.nphi;
-        hamiltonian.assign(_gs_hconfig.hamiltonian.begin(),_gs_hconfig.hamiltonian.end());
-        eigenvalues.assign(_gs_hconfig.eigenvalues.begin(), _gs_hconfig.eigenvalues.end());
-        psi_0.assign(_gs_hconfig.psi_0.begin(), _gs_hconfig.psi_0.end());
-        psi_n0.assign(_gs_hconfig.psi_n0.begin(), _gs_hconfig.psi_n0.end());
-    }
-    return *this;
-}
 
 double hamil::ground_state_energy() {
     if(psi_0.size() == 0) return 0;
@@ -1023,25 +1013,17 @@ double hamil::spinflip_tunneling() {
     }
     return abs(Sf_mean)/sector.nel;
 }
+
 void hamil::diag() {
-    int i;
-    complex<double> *h = new complex<double>[nHilbert * nHilbert];
-    double *en = new double[nHilbert];
-    memset(h, 0, sizeof( complex<double>)*nHilbert * nHilbert);
-    for(i = 0; i <nHilbert*nHilbert; i++)
-        h[i]=hamiltonian[i];
-    diag_zheev(h, en, nHilbert);
+    diag_zheevd(hamiltonian,eigenvalues,nHilbert);
     psi_0.assign(nHilbert, 0);
     psi_1.assign(nHilbert, 0);
     psi_n0.assign(nHilbert, 0);
-    eigenvalues.assign(nHilbert, 0);
-    for(i = 0; i < nHilbert; i++) {
-        eigenvalues[i] = en[i];
-        psi_0[i] = h[i];
-        psi_1[i] = h[i+nHilbert];
-        psi_n0[i] = h[i * nHilbert];
+    for(int i = 0; i < nHilbert; i++) {
+        psi_0[i] = hamiltonian[i];
+        psi_1[i] = hamiltonian[i+nHilbert];
+        psi_n0[i] = hamiltonian[i * nHilbert];
     }
-    delete h, en;
 }
 
 void hamil::print_hamil(int range) {
@@ -1060,6 +1042,7 @@ void hamil::print_hamil(int range) {
         else cout << ",...]" << endl;
     }
 }
+
 void hamil::print_eigen(int range) {
     if(range>=nHilbert)
         range=nHilbert;

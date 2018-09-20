@@ -1,5 +1,5 @@
-#ifndef MAdoubleRIX_H
-#define MAdoubleRIX_H
+#ifndef MATRIX_H
+#define MATRIX_H
 #include<cmath>
 #include<complex>
 #include<iostream>
@@ -10,20 +10,26 @@
 #include<cstring>
 #include<vector>
 #include<omp.h>
-#define MKL_Complex16 std::complex<double>
-#include"mkl.h"
 #include<gsl/gsl_integration.h>
 #include<gsl/gsl_sf.h>
 
+#ifdef mkl
+#define MKL_Complex16 std::complex<double>
+#include"mkl.h"
+#endif
 #if __cplusplus > 199711L
 #include<random>
 #else
 #include"mt19937-64.h"
 #endif
+
 using namespace std;
-//extern "C" int dsyev_(char *, char *, int *, double *, int*, double *, double *, int *, int *);
-void diag_dsyev(double *h, double *e, int l);
-void diag_zheev(complex<double> *h, double *e, int l);
+#ifndef mkl
+extern "C" int dsyevd_(char *, char *, int *, double *, int*, double *, double *, int *,int*,int*, int *);
+extern "C" int zheevd_(char*, char*, int*,complex<double>*,int*,double*,complex<double>*,int*,double*,int*,int*,int*,int*);
+#endif
+void diag_dsyevd(double *h, double *e, int l);
+void diag_zheevd(complex<double> *h, double *e, int l);
 double func_ExpInt(double t, void *params);
 double Integrate_ExpInt(double z) ;
 double func_BesselInt(double k, void *params);

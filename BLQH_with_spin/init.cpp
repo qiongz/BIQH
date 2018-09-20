@@ -5,23 +5,43 @@ void usage(char *target) {
     std::cout<<"  -L                       nLL\n";
     std::cout<<"  -n                       nphi\n";
     std::cout<<"  -e                       No. of electrons\n";
-    std::cout<<"  -s                       Delta_SAS: tunnelling amplitude\n";
-    std::cout<<"  -v                       Delta_V: bias voltage\n";
-    std::cout<<"  -z                       Delta_Z: Zeemann energy\n";
-    std::cout<<"  -j                       total J (k_y)\n";
-    std::cout<<"  -k                       kx \n";
+    std::cout<<"  -S                       Delta_SAS: tunnelling amplitude\n";
+    std::cout<<"  -V                       Delta_V: bias voltage\n";
+    std::cout<<"  -Z                       Delta_Z: Zeemann energy\n";
+    std::cout<<"  -J                       total J (K_y)\n";
+    std::cout<<"  -K                       Kx \n";
     std::cout<<"  -g                       gamma=lx/ly  aspect ratio\n";
     std::cout<<"  -d                       interlayer distance\n";
     std::cout<<"  -m                       Lambda\n";
-    std::cout<<"  -t                       nthread\n";
+    std::cout<<"  -s                       seed\n";
+    std::cout<<"  -t                       No. threads\n";
 }
 
-void init_argv(int &nLL,int &nphi, int& nel, int &J, int &kx, double &d,double &Delta_SAS, double &Delta_V, double &Delta_Z,double &gamma ,int &lambda,double & theta,int &nthread,int argc,char *argv[])
+void init_argv(int &nLL,int &nphi, int& nel, int &J, int &kx, double &d,double &Delta_SAS, double &Delta_V, double &Delta_Z,double &gamma ,int &lambda,double & theta,int &nthread,unsigned long & seed,int argc,char *argv[])
 {
+    nLL=0;
+    nphi=4;
+    nel=8;
+    gamma=1.0;
+    theta=0;
+    nthread=4;
+    J=-1;
+    kx=-1;
+    Delta_SAS=0;
+    d=1.0;
+    lambda=200;
+
+    #if __cplusplus > 199711L
+    seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    #else
+    Timer tmr;
+    seed=tmr.nanoseconds();
+    #endif
+
     extern char *optarg;
     int ch,errFlag;
     errFlag=0;
-    while((ch=getopt(argc,argv,"L:e:n:u:d:j:k:g:z:m:t:s:v:h:"))!=-1) {
+    while((ch=getopt(argc,argv,"L:e:n:u:d:J:K:g:Z:m:t:S:s:V:h:"))!=-1) {
         switch(ch) {
         case 'L':
             nLL=atoi(optarg);
@@ -32,10 +52,10 @@ void init_argv(int &nLL,int &nphi, int& nel, int &J, int &kx, double &d,double &
         case 'e':
             nel=atoi(optarg);
             break;
-        case 'k':
+        case 'K':
             kx=atoi(optarg);
             break;
-        case 'j':
+        case 'J':
             J=atoi(optarg);
             break;
         case 'g':
@@ -44,13 +64,16 @@ void init_argv(int &nLL,int &nphi, int& nel, int &J, int &kx, double &d,double &
         case 'd':
             d=atof(optarg);
             break;
-        case 's':
+        case 'S':
 	    Delta_SAS=atof(optarg);
 	    break;
-        case 'v':
+        case 's':
+	    seed=atof(optarg);
+	    break;
+        case 'V':
 	    Delta_V=atof(optarg);
 	    break;
-        case 'z':
+        case 'Z':
 	    Delta_Z=atof(optarg);
 	    break;
         case 'm':

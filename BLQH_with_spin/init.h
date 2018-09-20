@@ -5,8 +5,11 @@
 #include<cmath>
 #include<iostream>
 #include<stdexcept>
+#if __cplusplus > 199711L
+#include<chrono>
+#endif
 void usage(char *);
-void init_argv(int & nLL, int &nphi, int& nel, int &J, int &kx, double &d,double & Delta_SAS,double &Delta_V,double &Delta_Z, double &gamma, int &lambda,double & theta,int &nthread,int argc,char *argv[]);
+void init_argv(int & nLL, int &nphi, int& nel, int &J, int &kx, double &d,double & Delta_SAS,double &Delta_V,double &Delta_Z, double &gamma, int &lambda,double & theta,int &nthread,unsigned long &,int argc,char *argv[]);
 class Timer
 {
 public:
