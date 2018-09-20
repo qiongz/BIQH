@@ -28,6 +28,8 @@ void init_argv(int &nLL,int &nphi, int& nel, int &J, int &kx, double &d,double &
     J=-1;
     kx=-1;
     Delta_SAS=0;
+    Delta_Z=0;
+    Delta_V=0;
     d=1.0;
     lambda=200;
 
