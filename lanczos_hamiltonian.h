@@ -48,8 +48,8 @@ public:
     const lhamil & operator=(const lhamil &);
     /** \param _sector Basis sector
     */
-    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,double _Delta_SAS,double _Delta_V,int nthread);  //!< Initialize hamiltonian matrix
-    void peer_set_hamil(double,double,int,long,long);
+    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,double _Delta_SAS,double _Delta_V,double theta_x,double theta_y,int nthread);  //!< Initialize hamiltonian matrix
+    void peer_set_hamil(double,double,double theta_x,double theta_y,int,long,long);
     void Gram_Schmidt_orthogonalization(Vec &, int);
     void coeff_update(); //!< Lanczos update implemenation utilizing the Mat class
     void coeff_explicit_update(); //!< Lanczos update implemenation written in explicit arrays
@@ -65,7 +65,7 @@ public:
     double pseudospin_Chi();
 
     double spectral_function(double omega,double eta); //!< Spectral function with spin, continued fraction version
-    void init_Coulomb_matrix();
+    void init_Coulomb_matrix(double theta_x);
     void print_hamil_CSR(); //!< print the hamiltonian matrix in the CSR format
     void print_hamil(int n); //!< print the full hamiltonian matrix
     void print_lhamil(int n);  //!< print the Lanczos hamiltonian matrix with first n x n elements

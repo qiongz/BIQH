@@ -55,43 +55,23 @@ int main(int argc,char *argv[]) {
         }
         }
     */
-    /*
-        Delta_SAS/=pow(nel,1.5);
-
+    
         lhamil lconfig(lambda,seed);
         lconfig.sector.init(nphi,nel,nel_up,J,kx);
-        for(int j=0;j<50;j++){
+        double theta_x,theta_y;
+        for(int i=0;i<40;i++){
         //Delta_V=j*1e-4;
-        d=j*0.004+0.7;
         //Delta_SAS=0.002*j+1e-6;
-        lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,nthread);
+        theta_y=i/20.0*M_PI; 
+        lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,theta_x,theta_y,nthread);
         lconfig.coeff_explicit_update();
         lconfig.diag();
-        lconfig.eigenstates_reconstruction();
-        double Sz=lconfig.pseudospin_Sz();
-        double Et=lconfig.ground_state_energy();
-        double Sx=lconfig.pseudospin_Sx();
+        //lconfig.eigenstates_reconstruction();
+        //double E0=lconfig.ground_state_energy()/nel;
 
-        lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS+0.0001,Delta_V,nthread);
-        lconfig.coeff_explicit_update();
-        lconfig.diag();
-        lconfig.eigenstates_reconstruction();
-        double E0=lconfig.ground_state_energy();
-        //double Sx=-(Et-E0)/Delta_SAS/nel;
-        double Chi=(lconfig.pseudospin_Sx()-Sx)/0.0001/nel;
-
-
-
-        //cout<<d<<setprecision(6)<<" "<<-(E0-Et)/0.0001/nel<<" "<<Sx<<" "<<Chi<<endl;
-        cout<<d<<setprecision(6)<<" "<<Sx<<" "<<Chi<<endl;
-        //cout<<Delta_V<<" "<<Sx<<" "<<Sz<<endl;
+        //cout<<theta_y<<setprecision(6)<<" "<<E0<<endl;
+        cout<<theta_y<<setprecision(6)<<" "<<lconfig.eigenvalues[0]<<endl;
         }
-
-    */
-
-
-
-
 
 
 
@@ -99,6 +79,7 @@ int main(int argc,char *argv[]) {
 
 
     
+/*
     hamil config;
     config.sector.init(nphi,nel,nel_up,J,kx);
     cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
@@ -121,6 +102,7 @@ int main(int argc,char *argv[]) {
     cout<<"E1:="<<config.eigenvalues[1]<<endl;
     // cout<<"Pz:="<<config.pseudospin_Sz()<<endl;
     //    cout<<"Px:="<<config.pseudospin_Sx()<<endl;
+*/
     
     /*
     cout<<"# ground state wave function"<<endl;
@@ -200,8 +182,7 @@ int main(int argc,char *argv[]) {
        cout<<"sign: "<<sign<<endl;
     */
 
-
-
+    /*
     cout<<"-----------Lanczos results---------"<<endl;
 
     lhamil lconfig(lambda,seed);
@@ -233,6 +214,7 @@ int main(int argc,char *argv[]) {
     cout<<"E_gs:= "<<setprecision(10)<<Egs/nel<<endl;
     //cout<<"E0:="<<setprecision(6)<<lconfig.eigenvalues[0]<<endl;
     cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
+*/
     /*
     cout<<"Pz:="<<lconfig.pseudospin_Sz()<<endl;
     cout<<"Px:="<<lconfig.pseudospin_Sx()<<endl;

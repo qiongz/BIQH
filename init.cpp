@@ -23,7 +23,7 @@ void init_argv(int &nLL,int &nphi, int& nel, int &nel_up, int &J, int &kx, doubl
     nLL=0;
     nphi=8;
     nel=8;
-    nel_up=-1;
+    nel_up=4;
     gamma=1.0;
     nthread=32;
     J=-1;
