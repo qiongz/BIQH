@@ -18,16 +18,16 @@ int main(int argc,char *argv[]) {
     ly=sqrt(nphi*2.0*M_PI/gamma);
     lx=ly*gamma;
    
-
+/*
     lhamil lconfig(lambda,seed);
     lconfig.sector.init(nphi,nel,J,kx);
-    //for(int i=0; i<50; i++) {
-     //   Delta_V=i*0.03;
-        for(int j=0; j<50; j++) {
-           //Delta_SAS=j*0.005;
+    for(int i=0; i<201; i++) {
+        Delta_V=i*0.008;
+        for(int j=0; j<201; j++) {
+            Delta_SAS=j*0.003;
 	    d=j*0.05;
             //theta_B=j/100.0*M_PI;
-            lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,theta_B,nthread);
+            lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,theta_B,0,0,nthread);
             lconfig.coeff_explicit_update();
             lconfig.diag();
             lconfig.eigenstates_reconstruction();
@@ -36,6 +36,7 @@ int main(int argc,char *argv[]) {
             double Pz=lconfig.pseudospin_Sz();
 	    double Sz=lconfig.Sz();
 	    double Sf=lconfig.spinflip_tunneling();
+*/
             /*
             lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS+0.0001,Delta_V,Delta_Z,nthread);
             lconfig.coeff_explicit_update();
@@ -43,48 +44,35 @@ int main(int argc,char *argv[]) {
             lconfig.eigenstates_reconstruction();
             double Chi_sf=(lconfig.spinflip_tunneling()-Sf)/0.0001;
 	    */
-            cout<<d<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
-            //cout<<Delta_SAS<<" "<<Delta_V<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
+            //cout<<d<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
+	    //cout<<Delta_SAS<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
+  /*          cout<<Delta_SAS<<" "<<Delta_V<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
        }
-     //  cout<<endl;
-    //}
+       cout<<endl;
+     }
 
-  
+ */ 
 
 
-    /*
-        Delta_SAS/=pow(nel,1.5);
+    
+        //Delta_SAS/=pow(nel,1.5);
 
         lhamil lconfig(lambda,seed);
         lconfig.sector.init(nphi,nel,J,kx);
-        for(int j=0;j<50;j++){
+	double theta_y;
+        for(int j=0;j<20;j++){
         //Delta_V=j*1e-4;
-        d=j*0.004+0.7;
+        //d=j*0.004+0.7;
         //Delta_SAS=0.002*j+1e-6;
-        lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,nthread);
+        theta_y=j*1.0/20*M_PI;
+        lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,theta_B,0,theta_y,nthread);
         lconfig.coeff_explicit_update();
         lconfig.diag();
-        lconfig.eigenstates_reconstruction();
-        double Sz=lconfig.pseudospin_Sz();
-        double Et=lconfig.ground_state_energy();
-        double Sx=lconfig.pseudospin_Sx();
-
-        lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS+0.0001,Delta_V,nthread);
-        lconfig.coeff_explicit_update();
-        lconfig.diag();
-        lconfig.eigenstates_reconstruction();
-        double E0=lconfig.ground_state_energy();
-        //double Sx=-(Et-E0)/Delta_SAS/nel;
-        double Chi=(lconfig.pseudospin_Sx()-Sx)/0.0001/nel;
-
-
-
-        //cout<<d<<setprecision(6)<<" "<<-(E0-Et)/0.0001/nel<<" "<<Sx<<" "<<Chi<<endl;
-        cout<<d<<setprecision(6)<<" "<<Sx<<" "<<Chi<<endl;
-        //cout<<Delta_V<<" "<<Sx<<" "<<Sz<<endl;
+        //double E0=lconfig.ground_state_energy();
+        cout<<theta_y<<setprecision(6)<<" "<<lconfig.eigenvalues[0]<<endl;
         }
 
-    */
+    
 
 
    /* 

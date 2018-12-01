@@ -42,7 +42,7 @@ double lhamil::Coulomb_interaction(int alpha,int q_x, int q_y) {
         return 2.0*M_PI/q*exp(-q*q/2.0)*pow(1.0-exp(-q*q/2.0),nLL*2);
 }
 
-void lhamil::init_Coulomb_matrix() {
+void lhamil::init_Coulomb_matrix(double theta_x) {
     double theta_1,theta_2;
     Ec=-2.0;
     for(int i=0; i<nphi; i++)
@@ -65,10 +65,11 @@ void lhamil::init_Coulomb_matrix() {
 
                 if(alpha==1) {
                     V=0;
-                    for(int q_x = -10*nphi/(d+0.1); q_x <10*nphi/(d+0.1); q_x++)
+                    for(int q_x = -10*nphi/(d+0.01); q_x <10*nphi/(d+0.01); q_x++)
                         //for(int q_x = -nphi; q_x <=nphi; q_x++)
                         if(!(q_x==0 &&q_y==0))
-                            V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
+			// theta_x=theta_x^L-theta_x^R, twisted phase to calculate spin stiffness
+                            V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos((2.0*M_PI*s-theta_x)*q_x/nphi)/(2.0*lx*ly);
                 }
                 // Coulomb matrix elements in Landau gauge
                 Coulomb_matrix[alpha*nphi*nphi+s*nphi+q_y]=V;
@@ -82,7 +83,7 @@ void lhamil::init_Coulomb_matrix() {
             FT[kl*nphi+kr]=complex<double>(cos(2.0*M_PI*(kl-kr)*kx/nphi),sin(2.0*M_PI*(kl-kr)*kx/nphi));
 }
 
-inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z,double _theta_B,int id, long nbatch,long nrange) {
+inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z,double _theta_B,double theta_x, double theta_y,int id, long nbatch,long nrange) {
     int kx=sector.K;
     unsigned long lbasis,rbasis,rbasis_0,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signl,signr;
@@ -642,7 +643,9 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
+                                        matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT_twisted/sqrt(Dl*Dr);
+                                        //matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -702,7 +705,9 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
+                                        matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT_twisted/sqrt(Dl*Dr);
+                                        //matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -923,13 +928,13 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
 }
 
 
-void lhamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, double Delta_SAS,double Delta_V,double Delta_Z,double theta_B,int nthread) {
+void lhamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, double Delta_SAS,double Delta_V,double Delta_Z,double theta_B,double theta_x, double theta_y,int nthread) {
     d = _d;
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
     nLL = _nLL;
-    init_Coulomb_matrix();
+    init_Coulomb_matrix(theta_x);
     nHilbert = sector.nbasis;
     H.clear();
     H.inner_indices.reserve(nHilbert * nphi);
@@ -941,43 +946,14 @@ void lhamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, 
     long  nbatch=nHilbert/nthread;
     long nresidual=nHilbert%nthread;
     for(int id = 0; id < nthread; id++)
-        threads.push_back(std::thread(&lhamil::peer_set_hamil,this,Delta_SAS,Delta_V,Delta_Z,theta_B,id,nbatch,nbatch));
+        threads.push_back(std::thread(&lhamil::peer_set_hamil,this,Delta_SAS,Delta_V,Delta_Z,theta_B,theta_x,theta_y,id,nbatch,nbatch));
     for(auto &th:threads)
         if(th.joinable())
             th.join();
     if(nresidual!=0)
-        peer_set_hamil(Delta_SAS,Delta_V,Delta_Z,theta_B,nthread,nbatch,nresidual);
+        peer_set_hamil(Delta_SAS,Delta_V,Delta_Z,theta_B,theta_x,theta_y,nthread,nbatch,nresidual);
 }
 
-/*
-void lhamil::Gram_Schmidt_orthogonalization(Vec &phi, int n) {
-    Vec phi_0,phi_1,phi_2;
-    phi_0.init_random(nHilbert,seed);
-    phi_1 = H* phi_0;
-    phi_1 -= phi_0 *overlap[0];
-    phi_1 /= norm[1];
-
-    double q= (phi_0*phi).real();
-    phi = (phi-phi_0*q)/(1-q*q);
-    q=(phi_1*phi).real();
-    phi = (phi-phi_1*q)/(1-q*q);
-
-    for(int i = 1; i < n; i++) {
-        phi_2= H * phi_1;
-        #pragma ivdep
-        phi_2 -= phi_1 * overlap[i] + phi_0 * norm[i];
-        phi_2 /= norm[i+1];
-
-        q=(phi_2*phi).real();
-        phi = (phi-phi_2*q)/(1-q*q);
-
-        swap(&phi_0,&phi_1,&phi_2);
-    }
-    phi_0.clear();
-    phi_1.clear();
-    phi_2.clear();
-}
-*/
 
 void lhamil::coeff_update() {
     Vec phi_0,phi_1,phi_2;
@@ -1486,8 +1462,6 @@ double lhamil::pseudospin_Sx() {
     }
     return abs(Sx_mean)/sector.nel;
 }
-
-
 
 double lhamil::spinflip_tunneling() {
     unsigned long mask,mask_t,b,occ_t,lbasis,rbasis,rbasis_0;

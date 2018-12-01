@@ -24,7 +24,7 @@ void init_argv(int &nLL,int &nphi, int& nel, int &J, int &kx, double &d,double &
     nel=8;
     gamma=1.0;
     theta=0;
-    nthread=4;
+    nthread=8;
     J=-1;
     kx=-1;
     Delta_SAS=0;
