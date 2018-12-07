@@ -35,8 +35,8 @@ public:
      \param t hopping strength,
      \param U onsite replusive interaction strength
      */
-    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,double _Delta_SAS,double _Delta_V,int nthread);  //!< Initialize hamiltonian matrix
-    void peer_set_hamil(double,double,int,long,long);
+    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,double _Delta_SAS,double _Delta_V,double theta_x, double theta_y,int nthread);  //!< Initialize hamiltonian matrix
+    void peer_set_hamil(double,double,double,double,int,long,long);
 
     const hamil & operator=(const hamil &);
     /** Return the ground state energy of the system */
@@ -45,7 +45,7 @@ public:
     double pseudospin_Sx();
 
     /** Diagonalize the full hamiltonian */
-    void init_Coulomb_matrix();
+    void init_Coulomb_matrix(double theta_x);
     double Coulomb_interaction(int alpha,int q_x, int q_y);
     void diag();
 

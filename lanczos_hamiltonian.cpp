@@ -70,6 +70,7 @@ void lhamil::init_Coulomb_matrix(double theta_x) {
                         if(!(q_x==0 &&q_y==0))
 			// theta_x=theta_x^L-theta_x^R, twisted phase to calculate spin stiffness
                             V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos((2.0*M_PI*s-theta_x)*q_x/nphi)/(2.0*lx*ly);
+                            //V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos((2.0*M_PI*s)*q_x/nphi)/(2.0*lx*ly);
                 }
                 // Coulomb matrix elements in Landau gauge
                 Coulomb_matrix[alpha*nphi*nphi+s*nphi+q_y]=V;
@@ -158,7 +159,13 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=FT[ql*nphi+qr]*Coulomb_matrix[s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
+					// upper-layer x-direction twisted phase
+					double V=0;
+                			for(int q_x = -nphi; q_x <=nphi; q_x++)
+                    			   if(!(q_x==0 && abs(t)==0))
+                        			V+=2.0*Coulomb_interaction(0,q_x,abs(t))*cos((2.0*M_PI*s-theta_x)*q_x/nphi)/(2.0*lx*ly);
+                                        matrix_elements[j]+=FT[ql*nphi+qr]*V/(sqrt(Dl*Dr)*sign);
+                                        //matrix_elements[j]+=FT[ql*nphi+qr]*Coulomb_matrix[s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
                                     }
                                 }
                             }
@@ -217,7 +224,9 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=FT[ql*nphi+qr]*Coulomb_matrix[s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
+					// down-layer y-direction twisted phase
+					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
+                                        matrix_elements[j]+=FT_twisted*Coulomb_matrix[s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
                                     }
                                 }
                             }
@@ -278,6 +287,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
 					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
 					matrix_elements[j]+=FT_twisted*Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
+					//matrix_elements[j]+=FT[ql*nphi+qr]*Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
 
                                     }
                                 }

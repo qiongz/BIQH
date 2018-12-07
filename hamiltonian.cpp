@@ -10,7 +10,7 @@ double hamil::Coulomb_interaction(int alpha,int q_x, int q_y) {
         return 2.0*M_PI/q*exp(-q*q/2.0-q*d)*pow(1.0-exp(-q*q/2.0),nLL*2);
 }
 
-void hamil::init_Coulomb_matrix() {
+void hamil::init_Coulomb_matrix(double theta_x) {
     Ec=-2.0;
     for(int i=0; i<nphi; i++)
         for(int j=0; j<nphi; j++)
@@ -33,7 +33,8 @@ void hamil::init_Coulomb_matrix() {
                     V=0;
                     for(int q_x = -10*nphi/(d+0.1); q_x <10*nphi/(d+0.1); q_x++)
                         if(!(q_x==0 &&q_y==0))
-                            V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
+                            V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos((2.0*M_PI*s-theta_x)*q_x/nphi)/(2.0*lx*ly);
+                            //V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
                 }
                 // Coulomb matrix elements in Landau gauge
                 Coulomb_matrix[alpha*nphi*nphi+s*nphi+q_y]=V;
@@ -46,7 +47,7 @@ void hamil::init_Coulomb_matrix() {
             FT[kl*nphi+kr]=complex<double>(cos(2.0*M_PI*(kl-kr)*kx/nphi),sin(2.0*M_PI*(kl-kr)*kx/nphi));
 }
 
-inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long nbatch,long nrange) {
+inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_x, double theta_y,int id, long nbatch,long nrange) {
     int kx=sector.K;
     unsigned long lbasis,rbasis,rbasis_0,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signl,signr;
@@ -114,7 +115,10 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long n
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+					// down-layer y-direction twisted phase
+					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
+                                        matrix_elements[j]+=FT_twisted*Coulomb_matrix[s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
+                                        //matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -170,7 +174,13 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long n
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+					// upper-layer x-direction twisted phase
+					double V=0;
+                			for(int q_x = -nphi; q_x <=nphi; q_x++)
+                    			   if(!(q_x==0 && abs(t)==0))
+                        			V+=2.0*Coulomb_interaction(0,q_x,abs(t))*cos((2.0*M_PI*s-theta_x)*q_x/nphi)/(2.0*lx*ly);
+                                        matrix_elements[j]+=FT[ql*nphi+qr]*V/(sqrt(Dl*Dr)*sign);
+                                        //matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -225,7 +235,9 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long n
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-                                        matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
+					matrix_elements[j]+=FT_twisted*Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
+                                        //matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -289,25 +301,25 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,int id, long n
     matrix_elements.clear();
 }
 
-void hamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, double Delta_SAS,double Delta_V,int nthread) {
+void hamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, double Delta_SAS,double Delta_V,double theta_x, double theta_y,int nthread) {
     d = _d;
     lx = _lx;
     ly = _ly;
     nphi = _nphi;
     nLL = _nLL;
-    init_Coulomb_matrix();
+    init_Coulomb_matrix(theta_x);
     nHilbert = sector.nbasis;
     hamiltonian.assign(nHilbert*nHilbert,0);
     std::vector<std::thread> threads;
     long  nbatch=nHilbert/nthread;
     long nresidual=nHilbert%nthread;
     for(int id = 0; id < nthread; id++)
-        threads.push_back(std::thread(&hamil::peer_set_hamil,this,Delta_SAS,Delta_V,id,nbatch,nbatch));
+        threads.push_back(std::thread(&hamil::peer_set_hamil,this,Delta_SAS,Delta_V,theta_x,theta_y,id,nbatch,nbatch));
     for(auto &th:threads)
         if(th.joinable())
             th.join();
     if(nresidual!=0)
-        peer_set_hamil(Delta_SAS,Delta_V,nthread,nbatch,nresidual);
+        peer_set_hamil(Delta_SAS,Delta_V,theta_x,theta_y,nthread,nbatch,nresidual);
 }
 
 hamil::~hamil() {}

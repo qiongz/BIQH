@@ -51,10 +51,13 @@ mt19937-64.o:mt19937-64.c mt19937-64.h
 
 #----------------- ICC MKL version ----------#
 
-blqh_mkl:main_icc.o  basis_icc.o matrix_icc.o init_icc.o lanczos_hamiltonian_icc.o hamiltonian_icc.o
+blqh_mkl:main_icc.o  basis_icc.o matrix_icc.o init_icc.o lanczos_hamiltonian_icc.o hamiltonian_icc.o chern_icc.o
 	$(ICC) $(ICC_LDFLAGS) $^ -o $@  $(PARAL_MKL_LIBS)  -lgsl
 
 main_icc.o:main.cpp
+	$(ICC) $(ICC_FLAGS) $(MKL_INC) -c -o $@ $<
+
+chern_icc.o:chern.cpp
 	$(ICC) $(ICC_FLAGS) $(MKL_INC) -c -o $@ $<
 
 basis_icc.o:basis.cpp  basis.h
