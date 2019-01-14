@@ -7,16 +7,26 @@ basis::basis() {
 basis::basis(int _nphi,int _nel):nphi(_nphi),nel(_nel) {
     K=-1;
     J=-1;
+    nel_up=-1;
+    nel_down=-1;
 }
 
 
 basis::basis(int _nphi,int _nel,int _J,int _K):nphi(_nphi),nel(_nel),J(_J),K(_K) {
+	nel_up=-1;
+	nel_down=-1;
+}
+
+basis::basis(int _nphi,int _nel,int _nel_up,int _J,int _K):nphi(_nphi),nel(_nel),nel_up(_nel_up),J(_J),K(_K) {
+	nel_down=nel-nel_up;
 }
 
 const basis & basis::operator =(const basis & _basis) {
     if(this !=&_basis) {
         nphi=_basis.nphi;
         nel=_basis.nel;
+        nel_up=_basis.nel_up;
+        nel_down=_basis.nel_down;
         nbasis=_basis.nbasis;
         basis_set=_basis.basis_set;
         id=_basis.id;
@@ -84,6 +94,23 @@ void basis::init() {
         }
     }
 
+    // delete unsatisfied configurations 
+    if(nel_up>=0){
+       unsigned long c,c_lu,c_ld,mask_lu,mask_ld;
+       mask_lu =(1<<nphi)-1;
+       mask_ld =mask_lu<<nphi;
+       for(it = basis_set.begin();it!=basis_set.end();){
+         c=it->first;
+         c_lu=c & mask_lu;
+         c_ld=c & mask_ld;
+	if(popcount_table[c_lu &mask_lu]+popcount_table[(c_ld & mask_ld)>>nphi]!=nel_up)
+           basis_set.erase(it++);
+        else
+         ++it;
+       }
+    }
+
+
     for(it=basis_set.begin(); it!=basis_set.end(); it++){
         id.push_back(it->second);
     }
@@ -108,6 +135,8 @@ void basis::init() {
 void basis::init(int _nphi, int _nel) {
     nphi=_nphi;
     nel=_nel;
+    nel_up=-1;
+    nel_down=-1;
     init();
 }
 
@@ -116,9 +145,20 @@ void basis::init(int _nphi,int _nel,int _J,int _K) {
     nel=_nel;
     J=_J;
     K=_K;
+    nel_up=-1;
+    nel_down=-1;
     init();
 }
 
+void basis::init(int _nphi,int _nel,int _nel_up,int _J,int _K) {
+    nphi=_nphi;
+    nel=_nel;
+    nel_up=_nel_up;
+    nel_down=nel-nel_up;
+    J=_J;
+    K=_K;
+    init();
+}
 void basis::clear(){
     basis_set.clear();
     id.clear();

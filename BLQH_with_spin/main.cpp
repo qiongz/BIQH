@@ -9,12 +9,12 @@
 using namespace std;
 
 int main(int argc,char *argv[]) {
-    int nLL,nphi,nel,J,kx,lambda,nthread;
+    int nLL,nphi,nel,nel_up,J,kx,lambda,nthread;
     double lx,ly,gamma,Delta_SAS,Delta_V,Delta_Z,theta_B;
     unsigned long seed;
     double d;
 
-    init_argv(nLL,nphi,nel,J,kx,d,Delta_SAS,Delta_V,Delta_Z,gamma,lambda,theta_B,nthread,seed,argc,argv);
+    init_argv(nLL,nphi,nel,nel_up,J,kx,d,Delta_SAS,Delta_V,Delta_Z,gamma,lambda,theta_B,nthread,seed,argc,argv);
     ly=sqrt(nphi*2.0*M_PI/gamma);
     lx=ly*gamma;
    
@@ -57,20 +57,22 @@ int main(int argc,char *argv[]) {
     
         //Delta_SAS/=pow(nel,1.5);
 
+    	/*
         lhamil lconfig(lambda,seed);
-        lconfig.sector.init(nphi,nel,J,kx);
+        lconfig.sector.init(nphi,nel,nel_up,J,kx);
 	double theta_y;
-        for(int j=0;j<20;j++){
+        for(int j=0;j<10;j++){
         //Delta_V=j*1e-4;
         //d=j*0.004+0.7;
         //Delta_SAS=0.002*j+1e-6;
-        theta_y=j*1.0/20*M_PI;
+        theta_y=j*0.25/10*M_PI;
         lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,theta_B,0,theta_y,nthread);
         lconfig.coeff_explicit_update();
         lconfig.diag();
         //double E0=lconfig.ground_state_energy();
         cout<<theta_y<<setprecision(6)<<" "<<lconfig.eigenvalues[0]<<endl;
         }
+	*/
 
     
 
@@ -144,12 +146,12 @@ int main(int argc,char *argv[]) {
               cout<<bitset<8>((config.sector.id[i])).to_string()<<": "<<bitset<8>((config.sector.id[i])>>nphi).to_string()<<"  "<<abs(config.psi_1[i])<<endl;
     	}
         */
-/*
+
   
         //cout<<"-----------Lanczos results---------"<<endl;
         lhamil lconfig(lambda,seed);
         //auto t1=std::chrono::high_resolution_clock::now();
-        lconfig.sector.init(nphi,nel,J,kx);
+        lconfig.sector.init(nphi,nel,nel_up,J,kx);
         //lconfig.sector.prlong();
         //auto t2=std::chrono::high_resolution_clock::now();
         //cout<<"Stage-1: Basis initialized !"<<endl;
@@ -158,7 +160,7 @@ int main(int argc,char *argv[]) {
 
         //auto t3=std::chrono::high_resolution_clock::now();
 
-        lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,nthread);
+        lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,0,0,0,nthread);
 
         //auto t4=std::chrono::high_resolution_clock::now();
         //cout<<"Stage-2: Hamiltonian matrix initialized !"<<endl;
@@ -243,7 +245,7 @@ int main(int argc,char *argv[]) {
 		break;
             }
 
-*/
+
 
 
 

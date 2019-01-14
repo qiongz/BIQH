@@ -5,6 +5,7 @@ void usage(char *target) {
     std::cout<<"  -L                       nLL\n";
     std::cout<<"  -n                       nphi\n";
     std::cout<<"  -e                       No. of electrons\n";
+    std::cout<<"  -u                       No. of upper-layer electrons\n";
     std::cout<<"  -S                       Delta_SAS: tunnelling amplitude\n";
     std::cout<<"  -V                       Delta_V: bias voltage\n";
     std::cout<<"  -Z                       Delta_Z: Zeemann energy\n";
@@ -17,11 +18,12 @@ void usage(char *target) {
     std::cout<<"  -t                       No. threads\n";
 }
 
-void init_argv(int &nLL,int &nphi, int& nel, int &J, int &kx, double &d,double &Delta_SAS, double &Delta_V, double &Delta_Z,double &gamma ,int &lambda,double & theta,int &nthread,unsigned long & seed,int argc,char *argv[])
+void init_argv(int &nLL,int &nphi, int& nel, int &nel_up,int &J, int &kx, double &d,double &Delta_SAS, double &Delta_V, double &Delta_Z,double &gamma ,int &lambda,double & theta,int &nthread,unsigned long & seed,int argc,char *argv[])
 {
     nLL=0;
     nphi=4;
     nel=8;
+    nel_up=-1;
     gamma=1.0;
     theta=0;
     nthread=8;
@@ -53,6 +55,9 @@ void init_argv(int &nLL,int &nphi, int& nel, int &J, int &kx, double &d,double &
             break;
         case 'e':
             nel=atoi(optarg);
+            break;
+        case 'u':
+            nel_up=atoi(optarg);
             break;
         case 'K':
             kx=atoi(optarg);

@@ -9,7 +9,7 @@
 #include<chrono>
 #endif
 void usage(char *);
-void init_argv(int & nLL, int &nphi, int& nel, int &J, int &kx, double &d,double & Delta_SAS,double &Delta_V,double &Delta_Z, double &gamma, int &lambda,double & theta,int &nthread,unsigned long &,int argc,char *argv[]);
+void init_argv(int & nLL, int &nphi, int& nel,int &nel_up, int &J, int &kx, double &d,double & Delta_SAS,double &Delta_V,double &Delta_Z, double &gamma, int &lambda,double & theta,int &nthread,unsigned long &,int argc,char *argv[]);
 class Timer
 {
 public:
