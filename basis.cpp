@@ -158,7 +158,7 @@ void basis::clear(){
 int basis::get_sign(unsigned long c,int n, int m, int nt, int mt,int t) {
     int k,kl,kr,nsign,sign;
     unsigned long b,mask, mask_k;
-    mask=(1<<n)+(1<<m);
+    mask=(1UL<<n)+(1UL<<m);
     // get the rest electrons
     b=c^mask;
     // if there're no crossing between two electrons
@@ -212,16 +212,18 @@ void basis::generate(long count,long j, long Ji, unsigned long config) {
         j=j+1;
 
     // upper-layer electron momentum range
-    if(j<nphi && nel_up>0)
+    if(j<nphi && nel_up>=count)
         range=nphi-(nel_up-count);
     // down-layer electron momentum range
     else
-        range=2*nphi-(nel_down-(count-nel_up));
+        range=2*nphi-(nel-count);
+    else if(count>nel)
+	 return;
 
     for(i=j; i<range; i++) {
         // total sum of k
         k=Ji+i%nphi;
-        c=config+(1<<i);
+        c=config+(1UL<<i);
         // if the No. of upper-layer electron != nel_up
         if(count<nel) {
             generate(count,i,k,c);
@@ -243,7 +245,7 @@ void basis::generate_all_density(long count,long j, long Ji, unsigned long confi
   for(i=j;i<2*nphi-(nel-count);i++){
     // total sum of k
     k=Ji+i%nphi;
-    c=config+(1<<i);
+    c=config+(1ULL<<i);
     if(count<nel){
        generate_all_density(count,i,k,c);
      }
@@ -293,12 +295,12 @@ unsigned long basis::translate(unsigned long c, int k, int &sign) {
         int bits=k;
         int inv_bits=nphi-bits;
 
-        mask_u=(1<<nphi)-1;
+        mask_u=(1UL<<nphi)-1;
         mask_d=mask_u<<nphi;
         c_u= c & mask_u;
         c_d= (c & mask_d)>>nphi;
 
-        mask_sign=(1<<bits)-1;
+        mask_sign=(1UL<<bits)-1;
         int ncross_up=popcount_table[(mask_sign<<inv_bits) & c_u];
         int ncross_down=popcount_table[(mask_sign<<inv_bits) & c_d];
         int _nel_up=popcount_table[c_u];
@@ -319,12 +321,12 @@ unsigned long basis::inv_translate(unsigned long c, int k, int &sign) {
         int bits=k;
         int inv_bits=nphi-bits;
 
-        mask_u=(1<<nphi)-1;
+        mask_u=(1UL<<nphi)-1;
         mask_d=mask_u<<nphi;
         c_u= c & mask_u;
         c_d=(c & mask_d)>>nphi;
 
-        mask_sign=(1<<bits)-1;
+        mask_sign=(1UL<<bits)-1;
         int ncross_up=popcount_table[mask_sign & c_u];
         int ncross_down=popcount_table[mask_sign & c_d];
         int _nel_up=popcount_table[c_u];

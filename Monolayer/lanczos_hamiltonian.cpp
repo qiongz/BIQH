@@ -87,7 +87,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly,long _nphi, long _
     H.inner_indices.reserve(nHilbert * nphi);
     H.value.reserve(nHilbert * nphi);
     H.outer_starts.reserve(nHilbert + 1);
-    int signl,signr,sign;
+    int signl,signr,sign,ncross;
     long mask, b, n, m, i, k, s,t;
     long k1,k2,lbasis,rbasis;
     long kx=sector.K;
@@ -104,10 +104,10 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly,long _nphi, long _
         Cl=(kx<0?1:sector.basis_C[i]);
         for(k1=0; k1<Cl; k1++) {
             signl=1;
-            lbasis=(k1==0?sector.id[i]:sector.translate(sector.id[i],k1,signl));
+            lbasis=(k1==0?sector.id[i]:sector.translate(sector.id[i],k1,signl,ncross));
             for(n = 0; n < nphi-1; n++)
                 for(m = n+1; m < nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // looking up the corresponding basis in id
                     // if there're two electrons on n and m;
                     if((lbasis&mask) == mask && n!=m) {
@@ -131,7 +131,7 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly,long _nphi, long _
                                 mt = m - t;
                             s=abs(n-mt);
                             // the translated two electrons indices
-                            mask_t = (1 << nt) + (1 << mt);
+                            mask_t = (1UL << nt) + (1UL << mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -140,19 +140,19 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly,long _nphi, long _
                             if(occ_t == 0){
                                 // determine the subbasis size of right side basis
                                 for(k2=1; k2<=sector.C; k2++)
-                                  if(sector.translate(mask_t+b,k2,signr)==(mask_t+b)) {
+                                  if(sector.translate(mask_t+b,k2,signr,ncross)==(mask_t+b)) {
                                     Cr=k2;
                                     break;
                                   }
                                 Cr=(kx<0?1:Cr);
                                 for(k2=0; k2<Cr; k2++) {
 				    signr=1;
-                                    rbasis=(k2==0?mask_t+b:sector.inv_translate(mask_t+b,k2,signr));
+                                    rbasis=(k2==0?mask_t+b:sector.inv_translate(mask_t+b,k2,signr,ncross));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()){
                                         k = sector.basis_set[rbasis];
-                                        sign=sector.get_sign(lbasis,n,m,nt,mt);
+                                        sign=sector.get_sign(lbasis,n,m,nt,mt)*signl*signr;
                                         complex<double> FT_factor=complex<double>(cos(2.0*M_PI*kx*(k1-k2)/sector.C),sin(2.0*M_PI*kx*(k1-k2)/sector.C))/sqrt(Cl*Cr);
-                                        matrix_elements[k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor*signl*signr;
+                                        matrix_elements[k]+=2.0*Coulomb_matrix[s*nphi+abs(t)]*sign*FT_factor;
                                         
                                     }
                                 }
@@ -173,34 +173,6 @@ void lhamil::set_hamil(basis & sector ,double _lx, double _ly,long _nphi, long _
         H.outer_starts.push_back(row);
     }
     matrix_elements.clear();
-}
-
-void lhamil::Gram_Schmidt_orthogonalization(Vec &phi, int n){
-    Vec phi_0,phi_1,phi_2;
-    phi_0.init_random(nHilbert,seed);
-    phi_1 = H* phi_0;
-    phi_1 -= phi_0 *overlap[0];
-    phi_1 /= norm[1]; 
-
-    double q= (phi_0*phi).real();
-    phi = (phi-phi_0*q)/(1-q*q);
-    q=(phi_1*phi).real();
-    phi = (phi-phi_1*q)/(1-q*q);
-
-    for(int i = 1; i < n; i++) {
-        phi_2= H * phi_1;
-        #pragma ivdep
-        phi_2 -= phi_1 * overlap[i] + phi_0 * norm[i];
-        phi_2 /= norm[i+1];
-
-        q=(phi_2*phi).real();
-        phi = (phi-phi_2*q)/(1-q*q);
-        
-        swap(&phi_0,&phi_1,&phi_2);
-        }
-    phi_0.clear();
-    phi_1.clear();
-    phi_2.clear();
 }
 
 void lhamil::coeff_update() {
@@ -366,121 +338,6 @@ void lhamil::coeff_explicit_update()
     delete phi_0,phi_1,phi_2,phi_t;
 }
 
-//Lanczos update version for spectral function calculation
-/*
-void lhamil::coeff_update_wopt(vector<complex<double> > O_phi_0)
-{
-    int i,j,idx;
-    double eigenvalues_0=1;
-    double epsilon=1e-8;
-
-    double norm_factor,overlap_factor;
-    double *phi_0,*phi_1,*phi_2,*phi_t,*phi_s;
-    phi_0=new double[nHilbert];
-    phi_1=new double[nHilbert];
-    phi_2=new double[nHilbert];
-    phi_t=new double[nHilbert];
-
-    norm.assign(lambda+1,0);
-    overlap.assign(lambda,0);
-
-    for(i=0; i<nHilbert; i++)
-        phi_0[i]=O_phi_0[i];
-
-    norm_factor=0;
-    #pragma omp parallel for reduction(+:norm_factor)
-    for(i=0; i<nHilbert; i++)
-        norm_factor+=phi_0[i]*phi_0[i];
-    norm_factor=sqrt(norm_factor)+1e-24;
-    #pragma omp parallel for schedule(static)
-    for(i=0; i<nHilbert; i++)
-        phi_0[i]/=norm_factor;
-
-    norm[0]=1;
-
-    // phi_1=H*phi_0;
-    memset(phi_1,0,sizeof(double)*nHilbert);
-    #pragma omp parallel for schedule(static)
-    for(i=0; i<H.outer_starts.size()-1; i++) {
-        #pragma ivdep
-        for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
-            phi_1[i]+=H.value[idx]*phi_0[H.inner_indices[idx]];
-    }
-
-    //overlap[0] = phi_0 * phi_1;
-    overlap_factor=0;
-    #pragma omp parallel for reduction(+:overlap_factor)
-    for(i=0; i<nHilbert; i++)
-        overlap_factor+=phi_1[i]*phi_0[i];
-    overlap[0]=overlap_factor;
-
-    //phi_1 -= phi_0 * overlap[0];
-    #pragma omp parallel for schedule(static)
-    for(i=0; i<nHilbert; i++)
-        phi_1[i]-=phi_0[i]*overlap_factor;
-
-    //norm[1] = phi_1.normalize();
-    norm_factor=0;
-    #pragma omp parallel for reduction(+:norm_factor)
-    for(i=0; i<nHilbert; i++)
-        norm_factor+=phi_1[i]*phi_1[i];
-    norm_factor=sqrt(norm_factor);
-
-    #pragma omp parallel for schedule(static)
-    for(i=0; i<nHilbert; i++)
-        phi_1[i]/=norm_factor;
-    norm[1]=norm_factor;
-
-    for(j= 1; j < lambda; j++) {
-        memset(phi_2,0,sizeof(double)*nHilbert);
-        #pragma omp parallel for schedule(static)
-        for(i=0; i<H.outer_starts.size()-1; i++) {
-            #pragma ivdep
-            for(idx=H.outer_starts[i]; idx<H.outer_starts[i+1]; idx++)
-                phi_2[i]+=H.value[idx]*phi_1[H.inner_indices[idx]];
-        }
-
-        //overlap[j] = phi_1 * phi_2;
-        overlap_factor=0;
-        #pragma omp parallel for reduction(+:overlap_factor)
-        for(i=0; i<nHilbert; i++)
-            overlap_factor+=phi_1[i]*phi_2[i];
-        overlap[j]=overlap_factor;
-
-        //phi_2 -= phi_1 * overlap[j] + phi_0 * norm[j];
-        #pragma omp parallel for schedule(static)
-        for(i=0; i<nHilbert; i++)
-            phi_t[i]=phi_0[i]*norm[j];
-
-        #pragma omp parallel for schedule(static)
-        for(i=0; i<nHilbert; i++)
-            phi_t[i]+=phi_1[i]*overlap_factor;
-
-        #pragma omp parallel for schedule(static)
-        for(i=0; i<nHilbert; i++)
-            phi_2[i]-=phi_t[i];
-
-        //norm[j+1] = phi_2.normalize();
-        norm_factor=0;
-        #pragma omp parallel for reduction(+:norm_factor)
-        for(i=0; i<nHilbert; i++)
-            norm_factor+=phi_2[i]*phi_2[i];
-        norm_factor=sqrt(norm_factor);
-
-        #pragma omp parallel for schedule(static)
-        for(i=0; i<nHilbert; i++)
-            phi_2[i]/=norm_factor;
-        norm[j+1]=norm_factor;
-
-        phi_s=phi_0;
-        phi_0=phi_1;
-        phi_1=phi_2;
-        phi_2=phi_s;
-    }
-    delete phi_0,phi_1,phi_2,phi_t;
-}
-*/
-
 void lhamil::diag()
 {
     int l=overlap.size();
@@ -557,48 +414,6 @@ double lhamil::ground_state_energy() {
     H_psir0.clear();
     return overlap.real();
 }
-
-
-// spectral function continued fraction version
-double lhamil::spectral_function(double omega, double eta) {
-    // calculation continued fraction using modified Lentz method
-    complex<double> E(omega,eta);
-    vector< complex<double> >  f,c,d,delta;
-    complex<double> a,b,G;
-    double I;
-    b=E-overlap[0];
-    if(abs(b)<1e-25)
-        f.push_back(1e-25);
-    else
-        f.push_back(b);
-    c.push_back(f[0]);
-    d.push_back(0);
-    delta.push_back(0);
-    for(int n=1; n<overlap.size(); n++) {
-        b=E-overlap[n];
-        a=-norm[n]*norm[n];
-        d.push_back(b+a*d[n-1]);
-        if(abs(d[n])<1e-25)
-            d[n]=1e-25;
-        c.push_back(b+a/c[n-1]);
-        if(abs(c[n])<1e-25)
-            c[n]=1e-25;
-        d[n]=1.0/d[n];
-        delta.push_back(c[n]*d[n]);
-        f.push_back(f[n-1]*delta[n]);
-        if(abs(delta.back()-1)<1e-15)
-            break;
-    }
-    G=1.0/f.back();
-
-    I=-G.imag()/M_PI;
-    c.clear();
-    d.clear();
-    f.clear();
-    delta.clear();
-    return I;
-}
-
 
 void lhamil::save_to_file(const char* filename) {
     if(eigenvalues.size()==0) return;

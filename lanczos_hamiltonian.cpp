@@ -69,7 +69,7 @@ void lhamil::init_Coulomb_matrix(double theta_x) {
                     //for(int q_x = -nphi; q_x <=nphi; q_x++)
                         if(!(q_x==0 &&q_y==0))
 			// theta_x=theta_x^L-theta_x^R, twisted phase to calculate spin stiffness
-                            V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos((2.0*M_PI*s-theta_x)*q_x/nphi)/(2.0*lx*ly);
+                            V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos((2.0*M_PI*s+2*theta_x)*q_x/nphi)/(2.0*lx*ly);
                             //V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos((2.0*M_PI*s)*q_x/nphi)/(2.0*lx*ly);
                 }
                 // Coulomb matrix elements in Landau gauge
@@ -108,7 +108,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
             //upper-layer
             for(n=0; n<nphi-1; n++)
                 for(m = n+1; m < nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // consider the upper-layer two electrons
                     // looking up the corresponding basis in id_up
                     // if there're two electrons on n and m;
@@ -137,7 +137,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
 
                             s=abs(mt-n);
                             // the translated two electrons indices
-                            mask_t = (1 << nt) + (1 << mt);
+                            mask_t = (1UL << nt) + (1UL << mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             rbasis_0=mask_t+b;
@@ -160,12 +160,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
 					// upper-layer x-direction twisted phase
-					double V=0;
-                			for(int q_x = -nphi; q_x <=nphi; q_x++)
-                    			   if(!(q_x==0 && abs(t)==0))
-                        			V+=2.0*Coulomb_interaction(0,q_x,abs(t))*cos((2.0*M_PI*s-theta_x)*q_x/nphi)/(2.0*lx*ly);
-                                        matrix_elements[j]+=FT[ql*nphi+qr]*V/(sqrt(Dl*Dr)*sign);
-                                        //matrix_elements[j]+=FT[ql*nphi+qr]*Coulomb_matrix[s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
+                                        matrix_elements[j]+=FT[ql*nphi+qr]*Coulomb_matrix[s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
                                     }
                                 }
                             }
@@ -175,7 +170,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
             // down-layer
             for( n=nphi; n<2*nphi-1; n++)
                 for( m = n+1; m < 2*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // consider the lower-layer two electrons
                     // if there're two electrons on n and m;
                     if((lbasis &mask) == mask) {
@@ -201,7 +196,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
                                 mt = m - t;
                             s=abs(mt-n);
                             // the translated two electrons indices
-                            mask_t = (1 << nt) + (1 << mt);
+                            mask_t = (1UL << nt) + (1UL << mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -225,8 +220,8 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
 					// down-layer y-direction twisted phase
-					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
-                                        matrix_elements[j]+=FT_twisted*Coulomb_matrix[s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
+					//complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
+                                        matrix_elements[j]+=FT[ql*nphi+qr]*Coulomb_matrix[s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
                                     }
                                 }
                             }
@@ -236,7 +231,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
 
             for(n=0; n<nphi; n++)
                 for(m = nphi; m < 2*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // if there is one electron at site n in upper-layer
                     // and one electron at site m in lower-layer
                     if((lbasis &mask) == mask ) {
@@ -262,7 +257,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
                                 mt = m - t;
                             s=abs(mt-nphi-n);
                             // the translated electron index
-                            mask_t = (1 << nt)+(1<<mt);
+                            mask_t = (1UL << nt)+(1UL<<mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -285,7 +280,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
+					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(2*theta_y*t/nphi),sin(2*theta_y*t/nphi));
 					matrix_elements[j]+=FT_twisted*Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
 					//matrix_elements[j]+=FT[ql*nphi+qr]*Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
 
@@ -300,7 +295,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
             if(Delta_SAS>0)
             for(n=0; n<nphi; n++){
               nt=n+nphi;
-              mask = (1 << n)+(1<<nt);
+              mask = (1UL << n)+(1UL<<nt);
 	      unsigned long Kn=mask & lbasis;
               if(Kn!=mask && Kn!=0){
 	      unsigned long Ln=Kn ^ mask; 
@@ -329,7 +324,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_
 	    // bias-voltage
         if(Delta_V>0)
          for(n=0; n<2*nphi; n++){
-             mask = 1 << n;
+             mask = 1UL << n;
 	    // if there's an electron on site n
             if((sector.id[i] &mask) == mask){
 	     if(n<nphi)
@@ -666,9 +661,9 @@ double lhamil::occupatation_number(int alpha,int j){
       int sign,q,D;
       // '0' for upper-layer, '1' for down-layer
       if(alpha==0)
-         mask = (1 << j);
+         mask = (1UL << j);
       else 
-         mask = (1 << (j+nphi));
+         mask = (1UL << (j+nphi));
        
       for(int i=0;i<nHilbert;i++){
         D=(sector.K<0?1:sector.basis_C[i]);
@@ -686,7 +681,7 @@ double lhamil::pseudospin_Sz(){
      double Nel_upper=0;
      unsigned long mask;
      int sign,q,D;
-     mask=(1<<nphi)-1;
+     mask=(1UL<<nphi)-1;
      for(int i=0;i<nHilbert;i++)
        Nel_upper+=sector.popcount_table[mask&sector.id[i]]*std::norm(psir_0[i]);
      
@@ -708,13 +703,12 @@ double lhamil::pseudospin_Sx(){
 	 // interlayer tunneling 
          for(n=0; n<nphi; n++){
 	      nt=(n<nphi?n+nphi:n-nphi);
-              mask = (1 << n)+(1<<nt);
+              mask = (1UL << n)+(1UL<<nt);
 	      unsigned long Kn=mask & lbasis;
               if(Kn!=mask && Kn!=0){
 	      unsigned long Ln=Kn ^ mask; 
 	      rbasis_0=lbasis-Kn+Ln;
               // determine the right side size of the translation
-	      
               Dr=nphi;
               for(D=1; D<nphi; D++)
                 if(sector.translate(rbasis_0,D,signr)==rbasis_0) {

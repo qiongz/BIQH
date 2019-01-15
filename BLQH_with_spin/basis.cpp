@@ -64,7 +64,10 @@ void basis::init() {
     unsigned long config;
     std::unordered_map<unsigned long,long>::iterator it;
     count=j=config=Ki=0;
-    generate_all_density(count,j,Ki,config);
+    if(nel_up>=0)
+      generate_fixed_density(count,j,Ki,config);
+    else
+      generate_all_density(count,j,Ki,config);
     // initialize the bit sets count table
     for(i=0; i<pow(2,nphi); i++) {
         int count=0;
@@ -93,24 +96,6 @@ void basis::init() {
                 ++it;
         }
     }
-
-    // delete unsatisfied configurations 
-    if(nel_up>=0){
-       unsigned long c,c_lu,c_ld,mask_lu,mask_ld;
-       mask_lu =(1<<nphi)-1;
-       mask_ld =mask_lu<<nphi;
-       for(it = basis_set.begin();it!=basis_set.end();){
-         c=it->first;
-         c_lu=c & mask_lu;
-         c_ld=c & mask_ld;
-	if(popcount_table[c_lu &mask_lu]+popcount_table[(c_ld & mask_ld)>>nphi]!=nel_up)
-           basis_set.erase(it++);
-        else
-         ++it;
-       }
-    }
-
-
     for(it=basis_set.begin(); it!=basis_set.end(); it++){
         id.push_back(it->second);
     }
@@ -119,7 +104,6 @@ void basis::init() {
     basis_set.clear();
     for(i=0; i<id.size(); i++){
         basis_set.insert(pair<unsigned long, long>(id[i],i));
-
 	}
     nbasis=id.size();
     basis_C.assign(nbasis,nphi);
@@ -207,14 +191,15 @@ int basis::get_sign(unsigned long basis_i, int n,int nt){
 }
 
 void basis::generate_all_density(long count,long j, long Ji, unsigned long config) {
-  int i,id,k,c;
+  int i,id,k;
+  unsigned long c;
   count++;
   config=(count==1?0:config);
   j=(count==1?0:j+1);
   for(i=j;i<4*nphi-(nel-count);i++){
     // total sum of k
     k=Ji+i%nphi;
-    c=config+(1<<i);
+    c=config+(1UL<<i);
     if(count<nel){
        generate_all_density(count,i,k,c);
      }
@@ -225,6 +210,45 @@ void basis::generate_all_density(long count,long j, long Ji, unsigned long confi
         basis_set[c]=c;
     }
   }
+}
+
+void basis::generate_fixed_density(long count,long j, long Ji, unsigned long config){
+   long i,k,range;
+   unsigned long c;
+   count++;
+   config=(count==1?0:config);
+   // start of upper-layer electron momentum
+   if(count==1 && nel_up>0)
+      j=0;
+   // start of down-layer electron momentum
+   else if(count==nel_up+1)
+      j=2*nphi;
+   else
+      j=j+1;
+   
+    // upper-layer electron momentum range
+    if(j<2*nphi && count<=nel_up)
+        range=2*nphi-(nel_up-count);
+    // down-layer electron momentum range
+    else if(count<=nel)
+        range=4*nphi-(nel-count);
+    else return;
+
+    for(i=j; i<range; i++) {
+        // total sum of k
+        k=Ji+i%nphi;
+        c=config+(1UL<<i);
+        // if the No. of upper-layer electron != nel_up
+        if(count<nel) {
+            generate_fixed_density(count,i,k,c);
+        }
+        else {
+            if(J<0)
+                basis_set[c]=c;
+            else if(k%nphi==J)
+                basis_set[c]=c;
+        }
+    }
 }
 
 
@@ -265,7 +289,7 @@ void basis::prlong() {
 int basis::get_nel(int a,long i){
     unsigned long mask_lu,mask_ld,mask_ru,mask_rd,c_lu,c_ld,c_ru,c_rd;
     int rt_nel;
-    mask_lu =(1<<nphi)-1;
+    mask_lu =(1UL<<nphi)-1;
     switch(a){
     case 0:{
         c_lu=id[i] & mask_lu;
@@ -300,7 +324,7 @@ int basis::get_nel(int a,long i){
 
 int basis::get_nel(int a,unsigned long basis_i){
     unsigned long mask_lu,mask_ld,mask_ru,mask_rd,c_lu,c_ld,c_ru,c_rd;
-    mask_lu =(1<<nphi)-1;
+    mask_lu =(1UL<<nphi)-1;
     switch(a){
     case 0:{
         c_lu=basis_i & mask_lu;
@@ -332,11 +356,11 @@ unsigned long basis::translate(unsigned long c, int bits, int &sign) {
         int nsign;
         int inv_bits=nphi-bits;
 
-        mask_lu = (1<<nphi)-1;
+        mask_lu = (1UL<<nphi)-1;
         mask_ld = mask_lu<<nphi;
         mask_ru = mask_lu<<(2*nphi);
         mask_rd = mask_lu<<(3*nphi);
-        mask_sign=((1<<bits)-1)<<inv_bits;
+        mask_sign=((1UL<<bits)-1)<<inv_bits;
 
         c_lu=  c & mask_lu;
         c_ld= ((c & mask_ld) >> nphi)& mask_lu;
@@ -371,11 +395,11 @@ unsigned long basis::inv_translate(unsigned long c, int bits, int &sign) {
         int nsign;
         int inv_bits=nphi-bits;
 
-        mask_lu = (1<<nphi)-1;
+        mask_lu = (1UL<<nphi)-1;
         mask_ld = mask_lu<<nphi;
         mask_ru = mask_lu<<(2*nphi);
         mask_rd = mask_lu<<(3*nphi);
-        mask_sign=(1<<bits)-1;
+        mask_sign=(1UL<<bits)-1;
 
         c_lu=  c & mask_lu;
         c_ld= ((c & mask_ld) >> nphi)& mask_lu;

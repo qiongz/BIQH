@@ -68,7 +68,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
             // upper-layer spin-up interaction
             for(n=0; n<nphi-1; n++)
                 for(m = n+1; m < nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // consider the upper-layer two electrons
                     // looking up the corresponding basis in id_up
                     // if there're two electrons on n and m;
@@ -97,7 +97,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
 
                             s=abs(mt-n);
                             // the translated two electrons indices
-                            mask_t = (1 << nt) + (1 << mt);
+                            mask_t = (1UL << nt) + (1UL << mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             rbasis_0=mask_t+b;
@@ -130,7 +130,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
             // upper-layer spin-down interaction
             for(n=nphi; n<2*nphi-1; n++)
                 for(m = n+1; m < 2*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // consider the upper-layer two electrons
                     // looking up the corresponding basis in id_up
                     // if there're two electrons on n and m;
@@ -159,7 +159,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
 
                             s=abs(mt-n);
                             // the translated two electrons indices
-                            mask_t = (1 << nt) + (1 << mt);
+                            mask_t = (1UL << nt) + (1UL << mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             rbasis_0=mask_t+b;
@@ -192,7 +192,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
             // upper-layer spin-up and spin-down interspin interaction
             for(n=0; n<nphi; n++)
                 for(m = nphi; m < 2*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // consider the upper-layer two electrons
                     // looking up the corresponding basis in id_up
                     // if there're two electrons on n and m;
@@ -221,7 +221,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
 
                             s=abs(mt-nphi-n);
                             // the translated two electrons indices
-                            mask_t = (1 << nt) + (1 << mt);
+                            mask_t = (1UL << nt) + (1UL << mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             rbasis_0=mask_t+b;
@@ -254,7 +254,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
             // down-layer spin-up interaction
             for( n=2*nphi; n<3*nphi-1; n++)
                 for( m = n+1; m < 3*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // consider the lower-layer two electrons
                     // if there're two electrons on n and m;
                     if((lbasis &mask) == mask) {
@@ -280,7 +280,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                 mt = m - t;
                             s=abs(mt-n);
                             // the translated two electrons indices
-                            mask_t = (1 << nt) + (1 << mt);
+                            mask_t = (1UL << nt) + (1UL << mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -313,7 +313,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
             //down-layer spin-down interaction
             for( n=3*nphi; n<4*nphi-1; n++)
                 for( m = n+1; m < 4*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // consider the lower-layer two electrons
                     // if there're two electrons on n and m;
                     if((lbasis &mask) == mask) {
@@ -339,7 +339,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                 mt = m - t;
                             s=abs(mt-n);
                             // the translated two electrons indices
-                            mask_t = (1 << nt) + (1 << mt);
+                            mask_t = (1UL << nt) + (1UL << mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -373,7 +373,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
             //down-layer spin-up and spin-down interspin interaction
             for( n=2*nphi; n<3*nphi; n++)
                 for( m = 3*nphi; m < 4*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // consider the lower-layer two electrons
                     // if there're two electrons on n and m;
                     if((lbasis &mask) == mask) {
@@ -399,7 +399,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                 mt = m - t;
                             s=abs(mt-nphi-n);
                             // the translated two electrons indices
-                            mask_t = (1 << nt) + (1 << mt);
+                            mask_t = (1UL << nt) + (1UL << mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -433,7 +433,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
             // upper-down layer spin-up electrons interaction
             for(n=0; n<nphi; n++)
                 for(m = 2*nphi; m < 3*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // if there is one electron at site n in upper-layer
                     // and one electron at site m in lower-layer
                     if((lbasis &mask) == mask ) {
@@ -459,7 +459,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                 mt = m - t;
                             s=abs(mt-2*nphi-n);
                             // the translated electron index
-                            mask_t = (1 << nt)+(1<<mt);
+                            mask_t = (1UL << nt)+(1UL<<mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -493,7 +493,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
             // upper-down layer spin-down electrons interaction
             for(n=nphi; n<2*nphi; n++)
                 for(m = 3*nphi; m < 4*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // if there is one electron at site n in upper-layer
                     // and one electron at site m in lower-layer
                     if((lbasis &mask) == mask ) {
@@ -519,7 +519,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                 mt = m - t;
                             s=abs(mt-2*nphi-n);
                             // the translated electron index
-                            mask_t = (1 << nt)+(1<<mt);
+                            mask_t = (1UL << nt)+(1UL<<mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -553,7 +553,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
             // upper-layer spin up to down-layer spin-down interaction
             for(n=0; n<nphi; n++)
                 for(m = 3*nphi; m < 4*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // if there is one electron at site n in upper-layer
                     // and one electron at site m in lower-layer
                     if((lbasis &mask) == mask ) {
@@ -579,7 +579,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                 mt = m - t;
                             s=abs(mt-3*nphi-n);
                             // the translated electron index
-                            mask_t = (1 << nt)+(1<<mt);
+                            mask_t = (1UL<< nt)+(1UL<<mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -613,7 +613,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
             // upper-layer spin down to down-layer spin-up interaction
             for(n=nphi; n<2*nphi; n++)
                 for(m = 2*nphi; m < 3*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // if there is one electron at site n in upper-layer
                     // and one electron at site m in lower-layer
                     if((lbasis &mask) == mask ) {
@@ -639,7 +639,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                 mt = m - t;
                             s=abs(mt-nphi-n);
                             // the translated electron index
-                            mask_t = (1 << nt)+(1<<mt);
+                            mask_t = (1UL << nt)+(1UL<<mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -675,7 +675,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                 for(n=0; n<nphi; n++) {
                     //nt=(n<nphi?n+nphi:n-nphi);
                     nt=n+2*nphi;
-                    mask = (1 << n)+(1<<nt);
+                    mask = (1UL << n)+(1UL<<nt);
                     unsigned long Kn=mask & lbasis;
                     if(Kn!=mask && Kn!=0) {
                         unsigned long Ln=Kn ^ mask;
@@ -704,7 +704,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                 for(n=nphi; n<2*nphi; n++) {
                     //nt=(n<nphi?n+nphi:n-nphi);
                     nt=n+2*nphi;
-                    mask = (1 << n)+(1<<nt);
+                    mask = (1UL << n)+(1UL <<nt);
                     unsigned long Kn=mask & lbasis;
                     if(Kn!=mask && Kn!=0) {
                         unsigned long Ln=Kn ^ mask;
@@ -819,7 +819,7 @@ double hamil::pseudospin_Sx(){
             for(n=0; n<nphi; n++) {
                 //nt=(n<nphi?n+nphi:n-nphi);
 		nt=n+2*nphi;
-                mask = (1 << n)+(1<<nt);
+                mask = (1UL << n)+(1UL <<nt);
                 unsigned long Kn=mask & lbasis;
                 if(Kn!=mask && Kn!=0) {
                     unsigned long Ln=Kn ^ mask;
@@ -848,7 +848,7 @@ double hamil::pseudospin_Sx(){
             // spin-down interlayer tunneling 
             for(n=nphi; n<2*nphi; n++) {
 		nt=n+2*nphi;
-                mask = (1 << n)+(1<<nt);
+                mask = (1UL << n)+(1UL <<nt);
                 unsigned long Kn=mask & lbasis;
                 if(Kn!=mask && Kn!=0) {
                     unsigned long Ln=Kn ^ mask;
@@ -878,7 +878,7 @@ double hamil::pseudospin_Sx(){
             // spin-up spin-down interlayer tunneling 
             for(n=0; n<nphi; n++) {
 		nt=n+3*nphi;
-                mask = (1 << n)+(1<<nt);
+                mask = (1UL << n)+(1UL <<nt);
                 unsigned long Kn=mask & lbasis;
                 if(Kn!=mask && Kn!=0) {
                     unsigned long Ln=Kn ^ mask;
@@ -908,7 +908,7 @@ double hamil::pseudospin_Sx(){
             // spin-down spin-up interlayer tunneling 
             for(n=nphi; n<2*nphi; n++) {
 		nt=n+nphi;
-                mask = (1 << n)+(1<<nt);
+                mask = (1UL << n)+(1UL <<nt);
                 unsigned long Kn=mask & lbasis;
                 if(Kn!=mask && Kn!=0) {
                     unsigned long Ln=Kn ^ mask;
@@ -953,7 +953,7 @@ double hamil::spinflip_tunneling() {
             // spin-up spin-down interlayer tunneling 
             for(n=0; n<nphi; n++) {
 		nt=n+3*nphi;
-                mask = (1 << n)+(1<<nt);
+                mask = (1UL << n)+(1UL <<nt);
                 unsigned long Kn=mask & lbasis;
                 if(Kn!=mask && Kn!=0) {
                     unsigned long Ln=Kn ^ mask;
@@ -983,7 +983,7 @@ double hamil::spinflip_tunneling() {
             // spin-down spin-up interlayer tunneling 
             for(n=nphi; n<2*nphi; n++) {
 		nt=n+nphi;
-                mask = (1 << n)+(1<<nt);
+                mask = (1UL << n)+(1UL <<nt);
                 unsigned long Kn=mask & lbasis;
                 if(Kn!=mask && Kn!=0) {
                     unsigned long Ln=Kn ^ mask;

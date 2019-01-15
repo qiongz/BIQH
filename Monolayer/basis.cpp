@@ -67,7 +67,7 @@ void basis::init() {
         for(it=basis_set.begin(); it!=basis_set.end();) {
             unsigned long c=it->first;
             // generate the read mask with field length nphi, and shift to the position
-            mask=(1<<nphi)-1;
+            mask=(1UL<<nphi)-1;
             c=c & mask;
             bool delete_flag=false;
             for(n=1; n<C; n++) {
@@ -104,11 +104,11 @@ void basis::init() {
         popcount_table.push_back(count);
     }
     // initialize the sector translation size for each basis
-   int sign;
+   int sign,ncross;
     basis_C.assign(nbasis,C);
     for(i=0;i<id.size();i++)
        for(n=1; n<C; n++)
-            if(translate(id[i],n,sign)==id[i]) {
+            if(translate(id[i],n,sign,ncross)==id[i]) {
                 basis_C[i]=n;
                 break;
     }
@@ -133,7 +133,7 @@ void basis::init(long _nphi, long _nel, long _J,long _K){
 
 long basis::onsite_potential(long i,long n) {
     long mask,b;
-    mask=(1<<n);
+    mask=(1UL<<n);
     b=id[i]&mask;
     if(b==mask)
         return 1;
@@ -145,7 +145,7 @@ long basis::onsite_potential(long i,long n) {
 long basis::creation(long s,long n)
 {
     long mask,b;
-    mask=(1<<n);
+    mask=(1UL<<n);
     b=s&mask;
     // which means s_n=0
     if(b!=mask)
@@ -158,7 +158,7 @@ long basis::creation(long s,long n)
 long basis::annihilation(long s,long n)
 {
     long mask,b;
-    mask=(1<<n);
+    mask=(1UL<<n);
     b=s&mask;
     if(b==mask)
         return s-mask;
@@ -176,20 +176,20 @@ int basis::get_sign(long c,long n, long m, long nt, long mt){
         kl=nt<n?nt:n;
         kr=nt<n?n:nt;
         for(k=kl+1;k<kr;k++){
-          mask_k=(1<<k);
+          mask_k=(1UL<<k);
           if((b&mask_k)==mask_k)
              nsign++;
         }
         kl=mt<m?mt:m;
         kr=mt<m?m:mt;
         for(k=kl+1;k<kr;k++){
-          mask_k=(1<<k);
+          mask_k=(1UL<<k);
           if((b&mask_k)==mask_k)
              nsign++;
         }
         // if there're crossings between two electrons
         if(nt>mt && m>n || mt>nt && m<n)
-          nsign++;
+        nsign++;
 
      return pow(-1,nsign);
 }
@@ -220,7 +220,7 @@ void  basis::generate(long count,long j,long Ji,unsigned long config){
   for(i=j;i<nphi-(nel-count);i++){
     // total sum of k
     k=Ji+i;
-    c=config+(1<<i);
+    c=config+(1UL<<i);
     if(count<nel){
        generate(count,i,k,c);
      }
@@ -258,30 +258,30 @@ void basis::prlong() {
     */
 }
 
-unsigned long basis::translate(unsigned long c, int k, int &sign) {
+unsigned long basis::translate(unsigned long c, int k, int &sign, int &ncross) {
         unsigned long config,mask,mask_sign;
         int nsign;
         int bits=k*nphi/C;
         int reverse_bits=nphi-bits;
-        mask_sign=(1<<bits)-1;
-        mask=(1<<nphi)-1;
+        mask_sign=(1UL<<bits)-1;
+        mask=(1UL<<nphi)-1;
         c= c & mask;
-        int ncross=popcount_table[(mask_sign<<reverse_bits) & c];
+        ncross=popcount_table[(mask_sign<<reverse_bits) & c];
         nsign=ncross*(nel-ncross);
         config=((c<<bits)|(c>>reverse_bits))&mask;
         sign=(nsign%2==0?1:-1);
         return config;
     }
 
-unsigned long basis::inv_translate(unsigned long c, int k,int &sign) {
+unsigned long basis::inv_translate(unsigned long c, int k,int &sign,int &ncross) {
         unsigned long config,mask,mask_sign;
         int nsign;
         int bits=k*nphi/C;
         int reverse_bits=nphi-bits;
-        mask_sign=(1<<bits)-1;
-        mask=(1<<nphi)-1;
+        mask_sign=(1UL<<bits)-1;
+        mask=(1UL<<nphi)-1;
         c=c&mask;
-        int ncross=popcount_table[mask_sign & c];
+        ncross=popcount_table[mask_sign & c];
         nsign=ncross*(nel-ncross);
         config=((c>>bits)|(c<<reverse_bits))&mask;
         sign=(nsign%2==0?1:-1);

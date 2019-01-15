@@ -31,9 +31,9 @@ void hamil::init_Coulomb_matrix(double theta_x) {
 
                 if(alpha==1) {
                     V=0;
-                    for(int q_x = -10*nphi/(d+0.1); q_x <10*nphi/(d+0.1); q_x++)
+                    for(int q_x = -10*nphi/(d+0.01); q_x <10*nphi/(d+0.01); q_x++)
                         if(!(q_x==0 &&q_y==0))
-                            V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos((2.0*M_PI*s-theta_x)*q_x/nphi)/(2.0*lx*ly);
+                            V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos((2.0*M_PI*s-2*theta_x)*q_x/nphi)/(2.0*lx*ly);
                             //V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
                 }
                 // Coulomb matrix elements in Landau gauge
@@ -68,7 +68,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_x
             //down-layer
             for(n=0; n<nphi-1; n++)
                 for(m = n+1; m < nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // consider the upper-layer two electrons
                     // looking up the corresponding basis in id_up
                     // if there're two electrons on n and m;
@@ -91,9 +91,10 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_x
                             else
                                 mt = m - t;
 
+			    // s=j3-j1
                             s=abs(mt-n);
                             // the translated two electrons indices
-                            mask_t = (1 << nt) + (1 << mt);
+                            mask_t = (1UL << nt) + (1UL << mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             rbasis_0=mask_t+b;
@@ -116,9 +117,9 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_x
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
 					// down-layer y-direction twisted phase
-					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
-                                        matrix_elements[j]+=FT_twisted*Coulomb_matrix[s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
-                                        //matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+					//complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
+                                        //matrix_elements[j]+=FT_twisted*Coulomb_matrix[s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
+                                        matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -128,7 +129,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_x
             // upper-layer
             for( n=nphi; n<2*nphi-1; n++)
                 for( m = n+1; m < 2*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // consider the lower-layer two electrons
                     // if there're two electrons on n and m;
                     if((lbasis &mask) == mask && n!=m) {
@@ -150,7 +151,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_x
                                 mt = m - t;
                             s=abs(mt-n);
                             // the translated two electrons indices
-                            mask_t = (1 << nt) + (1 << mt);
+                            mask_t = (1UL << nt) + (1UL << mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -175,12 +176,12 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_x
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
 					// upper-layer x-direction twisted phase
-					double V=0;
-                			for(int q_x = -nphi; q_x <=nphi; q_x++)
-                    			   if(!(q_x==0 && abs(t)==0))
-                        			V+=2.0*Coulomb_interaction(0,q_x,abs(t))*cos((2.0*M_PI*s-theta_x)*q_x/nphi)/(2.0*lx*ly);
-                                        matrix_elements[j]+=FT[ql*nphi+qr]*V/(sqrt(Dl*Dr)*sign);
-                                        //matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+					//double V=0;
+                			//for(int q_x = -nphi; q_x <=nphi; q_x++)
+                    			//   if(!(q_x==0 && abs(t)==0))
+                        		//	V+=2.0*Coulomb_interaction(0,q_x,abs(t))*cos((2.0*M_PI*s-theta_x)*q_x/nphi)/(2.0*lx*ly);
+                                        //matrix_elements[j]+=FT[ql*nphi+qr]*V/(sqrt(Dl*Dr)*sign);
+                                        matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
                                 }
                             }
@@ -190,7 +191,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_x
 
             for(n=0; n<nphi; n++)
                 for(m = nphi; m < 2*nphi; m++) {
-                    mask = (1 << n) + (1 << m);
+                    mask = (1UL << n) + (1UL << m);
                     // if there is one electron at site n in upper-layer
                     // and one electron at site m in lower-layer
                     if((lbasis &mask) == mask) {
@@ -212,7 +213,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_x
                                 mt = m - t;
                             s=abs(mt-nphi-n);
                             // the translated electron index
-                            mask_t = (1 << nt)+(1<<mt);
+                            mask_t = (1UL << nt)+(1UL <<mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -235,7 +236,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_x
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                         j = sector.basis_set[rbasis];
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
-					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
+					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(2*theta_y*t/nphi),sin(2*theta_y*t/nphi));
 					matrix_elements[j]+=FT_twisted*Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]/(sqrt(Dl*Dr)*sign);
                                         //matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -248,7 +249,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double theta_x
             if(Delta_SAS>0)
             for(n=0; n<nphi; n++){
 	      nt=(n<nphi?n+nphi:n-nphi);
-              mask = (1 << n)+(1<<nt);
+              mask = (1UL << n)+(1UL <<nt);
 	      unsigned long Kn=mask & lbasis;
               if(Kn!=mask && Kn!=0){
 	      unsigned long Ln=Kn ^ mask; 
@@ -355,7 +356,7 @@ double hamil::pseudospin_Sz(){
      double Nel_upper=0;
      unsigned long mask;
      int sign,q,D;
-     mask=(1<<nphi)-1;
+     mask=(1UL<<nphi)-1;
      for(int i=0;i<nHilbert;i++)
        Nel_upper+=sector.popcount_table[mask&sector.id[i]]*std::norm(psi_0[i]);
      
@@ -377,7 +378,7 @@ double hamil::pseudospin_Sx(){
 	 // interlayer tunneling 
          for(n=0; n<nphi; n++){
 	      nt=(n<nphi?n+nphi:n-nphi);
-              mask = (1 << n)+(1<<nt);
+              mask = (1UL << n)+(1UL <<nt);
 	      unsigned long Kn=mask & lbasis;
               if(Kn!=mask && Kn!=0){
 	      unsigned long Ln=Kn ^ mask; 
