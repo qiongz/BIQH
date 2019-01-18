@@ -9,16 +9,22 @@ basis::basis(int _nphi,int _nel):nphi(_nphi),nel(_nel) {
     J=-1;
     nel_up=-1;
     nel_down=-1;
+    nel_su=-1;
+    nel_sd=-1;
 }
 
 
 basis::basis(int _nphi,int _nel,int _J,int _K):nphi(_nphi),nel(_nel),J(_J),K(_K) {
 	nel_up=-1;
 	nel_down=-1;
+       nel_su=-1;
+       nel_sd=-1;
 }
 
 basis::basis(int _nphi,int _nel,int _nel_up,int _J,int _K):nphi(_nphi),nel(_nel),nel_up(_nel_up),J(_J),K(_K) {
 	nel_down=nel-nel_up;
+       nel_su=-1;
+       nel_sd=-1;
 }
 
 const basis & basis::operator =(const basis & _basis) {
@@ -96,6 +102,17 @@ void basis::init() {
                 ++it;
         }
     }
+    // if spin-up electrons are specified
+    if(nel_su>=0){
+        for(it=basis_set.begin(); it!=basis_set.end();) {
+            unsigned long c=it->first;
+            if(get_nel(0,c)+get_nel(2,c)!=nel_su)
+                basis_set.erase(it++);
+            else
+                ++it;
+        }
+    }
+
     for(it=basis_set.begin(); it!=basis_set.end(); it++){
         id.push_back(it->second);
     }
@@ -121,6 +138,8 @@ void basis::init(int _nphi, int _nel) {
     nel=_nel;
     nel_up=-1;
     nel_down=-1;
+    nel_su=-1;
+    nel_sd=-1;
     init();
 }
 
@@ -131,6 +150,8 @@ void basis::init(int _nphi,int _nel,int _J,int _K) {
     K=_K;
     nel_up=-1;
     nel_down=-1;
+    nel_su=-1;
+    nel_sd=-1;
     init();
 }
 
@@ -139,10 +160,26 @@ void basis::init(int _nphi,int _nel,int _nel_up,int _J,int _K) {
     nel=_nel;
     nel_up=_nel_up;
     nel_down=nel-nel_up;
+    nel_su=-1;
+    nel_sd=-1;
     J=_J;
     K=_K;
     init();
 }
+
+void basis::init(int _nphi,int _nel,int _nel_up,int _nel_su,int _J,int _K) {
+    nphi=_nphi;
+    nel=_nel;
+    nel_up=_nel_up;
+    nel_down=nel-nel_up;
+    nel_su=_nel_su;
+    nel_sd=nel-nel_su;
+    J=_J;
+    K=_K;
+    init();
+}
+
+
 void basis::clear(){
     basis_set.clear();
     id.clear();
@@ -153,7 +190,7 @@ void basis::clear(){
 int basis::get_sign(unsigned long c,int n, int m, int nt, int mt,int t) {
     int k,kl,kr,nsign,sign;
     unsigned long b,mask, mask_k;
-    mask=(1<<n)+(1<<m);
+    mask=(1UL<<n)+(1UL<<m);
     // get the rest electrons
     b=c^mask;
     // if there're no crossing between two electrons
