@@ -4,8 +4,12 @@ Exact diagonalization of bilayer quantum Hall (BLQH) systems in the torus geomet
 ## Description
 This program performs exact diagonalization and calculation the excitation spectrum of the bilayer/monolayer quantum Hall
 system (BLQH/MLQH) in the torus geometry and in the lowest-Landau-level (LLL). The bilayer quantum Hall system contains two layers of two-dimensional electron gas (2DEG), with intralayer and interlayer Coulomb interaction. Including the spin degrees of freedom, the noninteracting hamiltonian with bias voltage, Zeeman splitting energy and interlayer tunneling (symmetric-antisymmetric energy gap) can be included. Exact diagonalizing the full hamiltonian matrix, we could get all the eigenstates and analyze the results. To shrink the Hilbert space, and simplify the calculation, we utilize the magnetic translation operators in x and y directions, and then apply a three-pass Lanczos algorithm to calculate the lowest eigenstate at each K-point.
-
-
+### BLQH_with_spin
+Final version of the program, which performs calculation with electron spin degree of freedom included for the BLQH system, realize all the functions as described above. This program is universal and with upper layer electrons or spin-up electrons set to zero, it could be easily reduced to spinless or monolayer system.
+### BLQH_without_spin
+2nd version of the program, performs calculation for BLQH with electron spin degree of freedom quenched.
+### MLQH
+1st version of the program, performs monolayer fractional quantum Hall (FQHE) system with electron spin degree of freedom quenched.
 ## Prerequisites
 Environment:linux
 
@@ -48,6 +52,7 @@ Default: (l,n,u,d,lambda) = (4,4,2,1,200)
 </code></pre>
 
 ## Running the tests
+### BLQH_without_spin
 We calculate 8-electrons with 4-electrons in the upper-layer and 4-electrons in  
 the down layer at layer distance d/l=0.0. The ground state energy is at K-point (j,k)=(4,4), we use four threads to calculate the hamiltonian.
 > ./blqh -n 8 -e 8 -u 4 -j 4 -k 4 -t 4 -d 0.0
