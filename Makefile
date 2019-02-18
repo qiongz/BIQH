@@ -1,7 +1,7 @@
 CC               := g++
 ICC              := icpc
 CFLAGS           := -std=c++11
-ICC_FLAGS        := -std=c++11 -qopenmp -Dmkl
+ICC_FLAGS        := -std=c++11  -Dmkl -qopenmp
 LDFLAGS          := -O2 -fopenmp -lpthread
 ICC_LDFLAGS      := -O2 -qopenmp
 LAPACK_INC       :=
@@ -26,7 +26,7 @@ remove:
 #------------- lapack version ---------------#
 
 blqh:main.o  basis.o matrix.o init.o  mt19937-64.o lanczos_hamiltonian.o hamiltonian.o
-	$(CC) $(LDFLAGS) $^ -o $@  $(LAPACK_LIBS)  -lgsl
+	$(CC) $(LDFLAGS) $^ -o $@ $(LAPACK_LIBS) -lgsl
 
 main.o:main.cpp
 	$(CC) $(CFLAGS) $(LAPACK_INC) -c -o $@ $<
@@ -35,7 +35,7 @@ basis.o:basis.cpp  basis.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 matrix.o:matrix.cpp matrix.h mt19937-64.h
-	$(CC) $(CFLAGS) $(LAPACK_INC) -c -o $@ $<
+	$(CC) $(CFLAGS) $(LAPACK_INC) -c -o $@ $< 
 
 init.o:init.cpp init.h
 	$(CC) $(CFLAGS) -c -o $@ $<

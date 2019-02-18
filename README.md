@@ -2,7 +2,7 @@
 Exact diagonalization of bilayer quantum Hall (BLQH) systems in the torus geometry
 
 ## Description
-This program performs exact diagonalization and calculate the excitation spectrum of the bilayer/monolayer quantum Hall
+This program performs exact diagonalization and calculation the excitation spectrum of the bilayer/monolayer quantum Hall
 system (BLQH/MLQH) in the torus geometry and in the lowest-Landau-level (LLL). The bilayer quantum Hall system contains two layers of two-dimensional electron gas (2DEG), with intralayer and interlayer Coulomb interaction. Including the spin degrees of freedom, the noninteracting hamiltonian with bias voltage, Zeeman splitting energy and interlayer tunneling (symmetric-antisymmetric energy gap) can be included. Exact diagonalizing the full hamiltonian matrix, we could get all the eigenstates and analyze the results. To shrink the Hilbert space, and simplify the calculation, we utilize the magnetic translation operators in x and y directions, and then apply a three-pass Lanczos algorithm to calculate the lowest eigenstate at each K-point.
 
 
@@ -77,6 +77,7 @@ the electron occupaptions in binary representation ('1' for occupied and '0' for
 As we can see, at d/l=0.0, all the basis with nonzero coefficients are Haplerin "111 state".
 
 At distance d/l=3.0, we could see that the all the basis with nonzero coefficients are two decoupled composite Fermi liquids.
+> ./blqh -n 8 -e 8 -u 4 -j 4 -k 4 -t 4 -d 3.0
 <pre><code>----------- ED results --------------
 nHilbert: =79
 E_gs:= -1.23588

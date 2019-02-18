@@ -23,8 +23,116 @@ int main(int argc,char *argv[]) {
 
     nel_down=nel-nel_up;
 
-    /*
+    // test comparing full ED with Lanczos
+    hamil config;
+    cout<<"----------- ED results --------------"<<endl;
+    config.sector.init(nphi,nel,nel_up,J,kx);
+    cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
+    config.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,0,0,nthread);
+    config.diag();
+    cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
+    cout<<"----------- Lanczos results ---------"<<endl;
+    lhamil lconfig(lambda,seed);
+    lconfig.sector.init(nphi,nel,nel_up,J,kx);
+    lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,0,0,nthread);
+    lconfig.coeff_explicit_update();
+    lconfig.diag();
+    lconfig.eigenstates_reconstruction();
+    double Egs=lconfig.ground_state_energy();
+    cout<<"E_gs:= "<<setprecision(10)<<Egs/nel<<endl;
+    vector< pair<long,double> > wf_gs;
+    for(long i=0; i<lconfig.nHilbert; i++)
+        wf_gs.push_back(pair<long,double>(i,abs(lconfig.psir_0[i])));
+    sort(wf_gs.begin(),wf_gs.end(),[](pair<long, double>& elem1,pair<long, double> &elem2) {
+        return elem1.second>elem2.second;
+    });
+    cout<<"# ground state wave function"<<endl;
+    int count=0;
+    // print wave function in descending order
+    for(auto const & p: wf_gs)
+    {
+        count++;
+        cout<<setw(4)<<p.first<<" :   |";
+        unsigned long long u=lconfig.sector.id[p.first];
+        for(int n=0; n<nphi; n++)
+            if((u>>n)%2==1)
+                cout<<setw(3)<<n;
+            else
+                cout<<setw(3)<<"_";
+        cout<<")|";
+        for(int n=nphi; n<2*nphi; n++)
+            if((u>>n)%2==1)
+                cout<<setw(3)<<n-nphi;
+            else
+                cout<<setw(3)<<"_";
+        cout<<")   ";
+        cout<<bitset<24>((lconfig.sector.id[p.first])).to_string()<<"  "<<p.second<<endl;
+        if(count>10 || p.second<1e-3)
+            break;
+    }
 
+
+
+
+    // calculate the excitation spectrum 
+    /*
+            basis sector0(nphi,nel_up,nel_down,0,0);
+            double t0,s0;
+            t0=s0=nphi/2;
+
+            //int N=sector0.common_divisor(nphi,nel_up);
+            //lhamil config(lambda,seed);
+            for(int t=0; t<nphi; t++)
+                for(int s=0; s<nphi; s++){
+    	        //hamil config;
+    	        lhamil config(lambda,seed);
+    		config.sector.init(nphi,nel_up,nel_down,t,s);
+                    config.set_hamil(lx,ly,nphi,nLL,d,nthread);
+    		config.coeff_explicit_update();
+                    config.diag();
+    		config.eigenstates_reconstruction();
+
+                    double K=sqrt((s-s0)*(s-s0)+(t-t0)*(t-t0)*gamma*gamma)*sqrt(2.0*M_PI/nphi/gamma);
+                    cout<<t<<" "<<s<<" "<<K<<" ";
+    		cout<<config.ground_state_energy()/nel<<" ";
+                    //for(int n=0; n<5; n++)
+                     //   cout<<config.eigenvalues[n]<<" ";
+    		//cout<<config.ground_state_energy()/nel;
+                    //cout<<endl;
+    		//config.sector.clear();
+    	        cout<<config.eigenvalues[0]<<" ";
+
+                    int i=0;
+                    int count=0;
+                    do{
+                     i++;
+                     if(config.eigenvalues[i]-config.eigenvalues[i-1]>1e-5) {
+                       cout<<config.eigenvalues[i]<<" ";
+                       count++;
+                        }
+                      }while(count<6 && count<config.norm.size());
+                     cout<<endl;
+                 }
+    */
+
+
+    /*
+     cout<<K<<" "<<lconfig.eigenvalues[0]<<" ";
+     int i=0;
+     int count=0;
+     do{
+        i++;
+       if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-5) {
+          cout<<lconfig.eigenvalues[i]<<" ";
+          count++;
+       }
+     }while(count<3 && count<lconfig.norm.size());
+     cout<<endl;
+     */
+//     }
+
+    // calculate the distance dependence propertities
+    /*
         lhamil lconfig(lambda,seed);
         lconfig.sector.init(nphi,nel,nel_up,J,kx);
         for(int n=0;n<20;n++){
@@ -132,195 +240,6 @@ int main(int argc,char *argv[]) {
     
     cerr<<"chern_number:= "<<chern_number<<endl;
     */
-    // test comparing full ED with Lanczos
-    hamil config;
-    cout<<"-----------ED results---------"<<endl;
-    config.sector.init(nphi,nel,nel_up,J,kx);
-    cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
-    config.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,0,0,nthread);
-    config.diag();
-    cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
-    
-    /*
-    cout<<"# ground state wave function"<<endl;
-    for(int i=0;i<config.nHilbert;i++)
-        if(abs(config.psi_0[i])>0.05){
-          cout<<i<<" :   |";
-          unsigned long long u=config.sector.id[i];
-          for(int n=0;n<nphi;n++)
-             if((u>>n)%2==1)
-                cout<<n+1<<" ";
-          cout<<")|";
-          for(int n=nphi;n<2*nphi;n++)
-             if((u>>n)%2==1)
-                cout<<n+1-nphi<<" ";
-          cout<<")   ";
-          cout<<bitset<8>((config.sector.id[i])).to_string()<<": "<<bitset<8>((config.sector.id[i])>>nphi).to_string()<<"  "<<abs(config.psi_0[i])<<endl;
-    }
-    cout<<"# first excited state wave function"<<endl;
-    for(int i=0;i<config.nHilbert;i++)
-        if(abs(config.psi_1[i])>0.01){
-          cout<<i<<" :   |";
-          unsigned long long u=config.sector.id[i];
-          for(int n=0;n<nphi;n++)
-             if((u>>n)%2==1)
-                cout<<n+1<<" ";
-          cout<<")|";
-          for(int n=nphi;n<2*nphi;n++)
-             if((u>>n)%2==1)
-                cout<<n+1-nphi<<" ";
-          cout<<")   ";
-          cout<<bitset<8>((config.sector.id[i])).to_string()<<": "<<bitset<8>((config.sector.id[i])>>nphi).to_string()<<"  "<<abs(config.psi_1[i])<<endl;
-    }
-    */
-
-
-    /*
-       lhamil lconfig(lambda,seed);
-       lconfig.sector.init(nphi,nel_up,nel_down,J,kx);
-       //lconfig.sector.prlong();
-       unsigned long basis_i,basis_j;
-       int sign;
-       basis_i=lconfig.sector.id[120];
-       basis_j=lconfig.sector.translate(basis_i,kx,sign);
-
-       cout<<"basis i:  ";
-            unsigned long c=basis_i;
-            cout<<" | ";
-            for(int n=0; n<nphi; n++) {
-                if((c>>n)%2==1)
-                    cout<<n<<" ";
-            }
-            cout<<">| ";
-            for(int n=nphi; n<2*nphi; n++) {
-                if((c>>n)%2==1)
-                    cout<<n-nphi<<" ";
-            }
-            cout<<"> ";
-       cout<<"  "<<bitset<20>(basis_i).to_string()<<endl;
-       cout<<"basis j:   ";
-            c=basis_j;
-            cout<<" | ";
-            for(int n=0; n<nphi; n++) {
-                if((c>>n)%2==1)
-                    cout<<n<<" ";
-            }
-            cout<<">| ";
-            for(int n=nphi; n<2*nphi; n++) {
-                if((c>>n)%2==1)
-                    cout<<n-nphi<<" ";
-            }
-            cout<<"> ";
-       cout<<bitset<20>(basis_j).to_string()<<endl;
-       cout<<"sign: "<<sign<<endl;
-    */
-
-    
-    cout<<"-----------Lanczos results---------"<<endl;
-
-    lhamil lconfig(lambda,seed);
-    lconfig.sector.init(nphi,nel,nel_up,J,kx);
-
-    lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,0,0,nthread);
-    lconfig.coeff_explicit_update();
-    lconfig.diag();
-    lconfig.eigenstates_reconstruction();
-
-    double Egs=lconfig.ground_state_energy();
-    cout<<"E_gs:= "<<setprecision(10)<<Egs/nel<<endl;
-
-    vector< pair<long,double> > wf_gs;
-    for(long i=0; i<lconfig.nHilbert; i++)
-        wf_gs.push_back(pair<long,double>(i,abs(lconfig.psir_0[i])));
-
-    sort(wf_gs.begin(),wf_gs.end(),[](pair<long, double>& elem1,pair<long, double> &elem2) {
-        return elem1.second>elem2.second;
-    });
-
-    cout<<"# ground state wave function"<<endl;
-    int count=0;
-    // print wave function in descending order
-    for(auto const & p: wf_gs)
-    {
-        count++;
-        cout<<setw(4)<<p.first<<" :   |";
-        unsigned long long u=lconfig.sector.id[p.first];
-        for(int n=0; n<nphi; n++)
-            if((u>>n)%2==1)
-                cout<<setw(3)<<n;
-            else
-                cout<<setw(3)<<"_";
-        cout<<")|";
-        for(int n=nphi; n<2*nphi; n++)
-            if((u>>n)%2==1)
-                cout<<setw(3)<<n-nphi;
-            else
-                cout<<setw(3)<<"_";
-        cout<<")   ";
-        cout<<bitset<24>((lconfig.sector.id[p.first])).to_string()<<"  "<<p.second<<endl;
-        if(count>10 || p.second<1e-3)
-            break;
-    }
-
-
-    /*
-            basis sector0(nphi,nel_up,nel_down,0,0);
-            double t0,s0;
-            t0=s0=nphi/2;
-
-            //int N=sector0.common_divisor(nphi,nel_up);
-            //lhamil config(lambda,seed);
-            for(int t=0; t<nphi; t++)
-                for(int s=0; s<nphi; s++){
-    	        //hamil config;
-    	        lhamil config(lambda,seed);
-    		config.sector.init(nphi,nel_up,nel_down,t,s);
-                    config.set_hamil(lx,ly,nphi,nLL,d,nthread);
-    		config.coeff_explicit_update();
-                    config.diag();
-    		config.eigenstates_reconstruction();
-
-                    double K=sqrt((s-s0)*(s-s0)+(t-t0)*(t-t0)*gamma*gamma)*sqrt(2.0*M_PI/nphi/gamma);
-                    cout<<t<<" "<<s<<" "<<K<<" ";
-    		cout<<config.ground_state_energy()/nel<<" ";
-                    //for(int n=0; n<5; n++)
-                     //   cout<<config.eigenvalues[n]<<" ";
-    		//cout<<config.ground_state_energy()/nel;
-                    //cout<<endl;
-    		//config.sector.clear();
-    	        cout<<config.eigenvalues[0]<<" ";
-
-                    int i=0;
-                    int count=0;
-                    do{
-                     i++;
-                     if(config.eigenvalues[i]-config.eigenvalues[i-1]>1e-5) {
-                       cout<<config.eigenvalues[i]<<" ";
-                       count++;
-                        }
-                      }while(count<6 && count<config.norm.size());
-                     cout<<endl;
-                 }
-    */
-
-
-    /*
-     cout<<K<<" "<<lconfig.eigenvalues[0]<<" ";
-     int i=0;
-     int count=0;
-     do{
-        i++;
-       if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-5) {
-          cout<<lconfig.eigenvalues[i]<<" ";
-          count++;
-       }
-     }while(count<3 && count<lconfig.norm.size());
-     cout<<endl;
-     */
-//     }
-
-
-
 
     return 0;
 }

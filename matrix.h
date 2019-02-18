@@ -16,6 +16,9 @@
 #ifdef mkl
 #define MKL_Complex16 std::complex<double>
 #include"mkl.h"
+#else
+extern "C" int dsyevd_(char *, char *, int *, double *, int*, double *, double *, int *,int*,int*, int *);
+extern "C" int zheevd_(char*, char*, int*,std::complex<double>*,int*,double*,std::complex<double>*,int*,double*,int*,int*,int*,int*);
 #endif
 #if __cplusplus > 199711L
 #include<random>
@@ -24,10 +27,6 @@
 #endif
 
 using namespace std;
-#ifndef mkl
-extern "C" int dsyevd_(char *, char *, int *, double *, int*, double *, double *, int *,int*,int*, int *);
-extern "C" int zheevd_(char*, char*, int*,complex<double>*,int*,double*,complex<double>*,int*,double*,int*,int*,int*,int*);
-#endif
 void diag_dsyevd(double *h, double *e, int l);
 void diag_zheevd(complex<double> *h, double *e, int l);
 double func_ExpInt(double t, void *params);
@@ -71,7 +70,7 @@ public:
 
 class Mat {
 public:
-    // doublehe compressed Sparse Row (CSR) Data Structure
+    // double compressed Sparse Row (CSR) Data Structure
     // outer_size for multi-threads storing, for which inner_indices are stored randomly
     std::vector<long> outer_starts,outer_size,inner_indices;
     std::vector< complex<double> > value;
