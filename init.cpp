@@ -4,7 +4,7 @@ void usage(char *target) {
     std::cout<<"Options:\n";
     std::cout<<"  -l                       nLL\n";
     std::cout<<"  -n                       nphi\n";
-    std::cout<<"  -e                       Total No. of electrons in upper-layer\n";
+    std::cout<<"  -e                       Total No. of electrons in two layers\n";
     std::cout<<"  -u                       No. of electrons in upper-layer\n";
     std::cout<<"  -k                       kx in upper-layer\n";
     std::cout<<"  -S                       Delta_SAS: tunnelling amplitude\n";

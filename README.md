@@ -33,7 +33,7 @@ Usage: ./blqh [Options]
 Options:  
   -l                       nLL  
   -n                       nphi  
-  -e                       Total No. of electrons in upper-layer  
+  -e                       Total No. of electrons in two layers  
   -u                       No. of electrons in upper-layer  
   -k                       kx in upper-layer  
   -S                       Delta_SAS: tunnelling amplitude  
@@ -96,3 +96,9 @@ E_gs:= -1.235882219
   34 :   |  0  _  _  3  _  5  6  _)|  0  _  _  3  _  5  6  _)   000000000110100101101001  0.1173494879
    3 :   |  0  1  _  _  4  5  _  _)|  _  1  2  3  4  _  _  _)   000000000001111000110011  0.009704390136
 </code></pre>
+
+
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
