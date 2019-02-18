@@ -215,9 +215,9 @@ void basis::generate(long count,long j, long Ji, unsigned long config) {
     if(j<nphi && nel_up>=count)
         range=nphi-(nel_up-count);
     // down-layer electron momentum range
-    else
+    else if(count<=nel)
         range=2*nphi-(nel-count);
-    else if(count>nel)
+    else 
 	 return;
 
     for(i=j; i<range; i++) {
