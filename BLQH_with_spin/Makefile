@@ -1,7 +1,7 @@
 CC               := g++
 ICC              := icpc
 CFLAGS           := -std=c++11 
-ICC_FLAGS        := -std=c++11 -Dmkl
+ICC_FLAGS        := -std=c++11 -Dmkl  -DMKL_ILP64
 LDFLAGS          := -O2
 ICC_LDFLAGS      := -O2 
 LAPACK_INC       :=

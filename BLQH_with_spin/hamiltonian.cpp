@@ -31,7 +31,7 @@ void hamil::init_Coulomb_matrix() {
 
                 if(alpha==1) {
                     V=0;
-                    for(int q_x = -10*nphi/(d+0.1); q_x <10*nphi/(d+0.1); q_x++)
+                    for(int q_x = -10*nphi/(d+0.01); q_x <10*nphi/(d+0.01); q_x++)
                         if(!(q_x==0 &&q_y==0))
                             V+=2.0*Coulomb_interaction(alpha,q_x,q_y)*cos(2.0*M_PI*s*q_x/nphi)/(2.0*lx*ly);
                 }
@@ -54,7 +54,6 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
 
     long i,j,k,l;
     vector<complex<double> > matrix_elements;
-
     for(int _i = 0; _i < nrange; _i++) {
         // i for each thread
         i=_i+id*nbatch;
@@ -579,7 +578,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                 mt = m - t;
                             s=abs(mt-3*nphi-n);
                             // the translated electron index
-                            mask_t = (1UL<< nt)+(1UL<<mt);
+                            mask_t = (1UL << nt)+(1UL<<mt);
                             // occupation of electons on the translated position
                             occ_t = mask_t & b;
                             // if there're no electon on the translated position
@@ -671,9 +670,8 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                 }
 
             if(Delta_SAS>0) {
-                //spin-up interlayer tunneling
+                //spin-up up-down layer tunneling
                 for(n=0; n<nphi; n++) {
-                    //nt=(n<nphi?n+nphi:n-nphi);
                     nt=n+2*nphi;
                     mask = (1UL << n)+(1UL<<nt);
                     unsigned long Kn=mask & lbasis;
@@ -695,16 +693,44 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                 j = sector.basis_set[rbasis];
                                 sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                                matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                             }
                         }
                     }
                 }
-                //spin-down interlayer tunneling
+                //spin-up down-up layer tunneling
+                for(n=2*nphi; n<3*nphi; n++) {
+                    nt=n-2*nphi;
+                    mask = (1UL << n)+(1UL<<nt);
+                    unsigned long Kn=mask & lbasis;
+                    if(Kn!=mask && Kn!=0) {
+                        unsigned long Ln=Kn ^ mask;
+                        rbasis_0=lbasis-Kn+Ln;
+                        // determine the right side size of the translation
+                        Dr=nphi;
+                        for(D=1; D<nphi; D++)
+                            if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                                Dr=D;
+                                break;
+                            }
+                        // if parameter kx<0, do not perform basis translation
+                        Dr=(kx<0?1:Dr);
+                        for(qr=0; qr<Dr; qr++) {
+                            signr=1;
+                            rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                            if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                                j = sector.basis_set[rbasis];
+                                sign=sector.get_sign(lbasis,nt,n)*signl*signr;
+                                matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                            }
+                        }
+                    }
+                }
+		
+                //spin-down up-down layer tunneling
                 for(n=nphi; n<2*nphi; n++) {
-                    //nt=(n<nphi?n+nphi:n-nphi);
                     nt=n+2*nphi;
-                    mask = (1UL << n)+(1UL <<nt);
+                    mask = (1UL << n)+(1UL<<nt);
                     unsigned long Kn=mask & lbasis;
                     if(Kn!=mask && Kn!=0) {
                         unsigned long Ln=Kn ^ mask;
@@ -724,11 +750,99 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
                                 j = sector.basis_set[rbasis];
                                 sign=sector.get_sign(lbasis,n,nt)*signl*signr;
-                                matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                                matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                             }
                         }
                     }
                 }
+                //spin-down down-up layer tunneling
+                for(n=3*nphi; n<4*nphi; n++) {
+                    nt=n-2*nphi;
+                    mask = (1UL << n)+(1UL<<nt);
+                    unsigned long Kn=mask & lbasis;
+                    if(Kn!=mask && Kn!=0) {
+                        unsigned long Ln=Kn ^ mask;
+                        rbasis_0=lbasis-Kn+Ln;
+                        // determine the right side size of the translation
+                        Dr=nphi;
+                        for(D=1; D<nphi; D++)
+                            if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                                Dr=D;
+                                break;
+                            }
+                        // if parameter kx<0, do not perform basis translation
+                        Dr=(kx<0?1:Dr);
+                        for(qr=0; qr<Dr; qr++) {
+                            signr=1;
+                            rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                            if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                                j = sector.basis_set[rbasis];
+                                sign=sector.get_sign(lbasis,nt,n)*signl*signr;
+                                matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                            }
+                        }
+                    }
+                }
+		
+                // spin-up spin-down interlayer tunneling
+                for(n=0; n<nphi; n++) {
+		nt=n+3*nphi;
+                mask = (1UL << n)+(1UL<<nt);
+                unsigned long Kn=mask & lbasis;
+                if(Kn!=mask && Kn!=0) {
+                    unsigned long Ln=Kn ^ mask;
+                    rbasis_0=lbasis-Kn+Ln;
+                    // determine the right side size of the translation
+
+                    Dr=nphi;
+                    for(D=1; D<nphi; D++)
+                        if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                            Dr=D;
+                            break;
+                        }
+                    // if parameter kx<0, do not perform basis translation
+                    Dr=(sector.K<0?1:Dr);
+                    for(qr=0; qr<Dr; qr++) {
+                        signr=1;
+                        rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                        if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                            j = sector.basis_set[rbasis];
+                            sign=sector.get_sign(lbasis,n,nt)*signl*signr;
+                            matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                        }
+                    }
+                }
+            }
+            // spin-down spin-up interlayer tunneling
+            for(n=nphi; n<2*nphi; n++) {
+		nt=n+nphi;
+                mask = (1UL << n)+(1UL<<nt);
+                unsigned long Kn=mask & lbasis;
+                if(Kn!=mask && Kn!=0) {
+                    unsigned long Ln=Kn ^ mask;
+                    rbasis_0=lbasis-Kn+Ln;
+                    // determine the right side size of the translation
+
+                    Dr=nphi;
+                    for(D=1; D<nphi; D++)
+                        if(sector.translate(rbasis_0,D,signr)==rbasis_0) {
+                            Dr=D;
+                            break;
+                        }
+                    // if parameter kx<0, do not perform basis translation
+                    Dr=(sector.K<0?1:Dr);
+                    for(qr=0; qr<Dr; qr++) {
+                        signr=1;
+                        rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
+                        if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
+                            j = sector.basis_set[rbasis];
+                            sign=sector.get_sign(lbasis,n,nt)*signl*signr;
+                            matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
+                        }
+                    }
+                }
+            }
+            
             }
 
         }
@@ -1015,15 +1129,18 @@ double hamil::spinflip_tunneling() {
 }
 
 void hamil::diag() {
-    diag_zheevd(hamiltonian,eigenvalues,nHilbert);
+    complex<double>* H=new complex<double>[nHilbert*nHilbert];
+    memcpy(H,hamiltonian,nHilbert*nHilbert*sizeof(complex<double>));
+    diag_zheevd(H,eigenvalues,nHilbert);
     psi_0.assign(nHilbert, 0);
     psi_1.assign(nHilbert, 0);
     psi_n0.assign(nHilbert, 0);
     for(int i = 0; i < nHilbert; i++) {
-        psi_0[i] = hamiltonian[i];
-        psi_1[i] = hamiltonian[i+nHilbert];
-        psi_n0[i] = hamiltonian[i * nHilbert];
+        psi_0[i] = H[i];
+        psi_1[i] = H[i+nHilbert];
+        psi_n0[i] = H[i * nHilbert];
     }
+    delete H;
 }
 
 void hamil::print_hamil(int range) {

@@ -60,9 +60,12 @@ public:
     void eigenstates_reconstruction(); //!< Transform |psi_0> to |psir_0>
     double Coulomb_interaction(int alpha,int q_x, int q_y);
     double ground_state_energy();    //!< Ground state energy
+    double first_excited_state_energy();    //!< 1st excited state energy
     double occupatation_number(int alpha,int j);
     double pseudospin_Sz();
     double Sz();
+    double upper_Sz();
+    double down_Sz();
     double pseudospin_Sx();
     double spinflip_tunneling();
 

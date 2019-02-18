@@ -836,7 +836,6 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                     }
                 }
 		
-		/*	
                 // spin-up spin-down interlayer tunneling
                 for(n=0; n<nphi; n++) {
 		nt=n+3*nphi;
@@ -895,14 +894,14 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                     }
                 }
             }
-            */
+            
             }
 
         }
         // background charge energy
         matrix_elements[i]+=Ec*sector.nel;
         // charging energy
-        //matrix_elements[i]+=-d*(sector.get_nel(0,i)+sector.get_nel(1,i))*(sector.get_nel(2,i)+sector.get_nel(3,i))/sector.nphi;
+        matrix_elements[i]+=-d*(sector.get_nel(0,i)+sector.get_nel(1,i))*(sector.get_nel(2,i)+sector.get_nel(3,i))/sector.nphi;
         // bias-voltage (pseudospin Zeemann energy)
         matrix_elements[i]+=-0.5*Delta_V*(sector.get_nel(0,i)+sector.get_nel(1,i)-sector.get_nel(2,i)-sector.get_nel(3,i));
 	// Zeemann energy
@@ -1120,11 +1119,19 @@ void lhamil::diag()
     diag_dsyevd(h,e,l);
 
     psi_0.assign(l,0);
+    psi_1.assign(l,0);
     psi_n0.assign(l,0);
     eigenvalues.assign(l,0);
+    int E1_idx=1;
+    for(int i=1;i<l;i++)
+	  if(abs(eigenvalues[i]-eigenvalues[0])>1e-2){
+		E1_idx=i;
+	  	break;
+		}
 
     for(int i=0; i<l; i++) {
         psi_0[i]=h[i];
+        psi_1[i]=h[i+l*E1_idx];
         psi_n0[i]=h[i*l];
         eigenvalues[i]=e[i];
     }
@@ -1147,23 +1154,37 @@ void lhamil::eigenstates_reconstruction() {
     phi_1 -= phi_0*overlap[0];
     phi_1 /= norm[1];
     psir_0.assign(nHilbert,0);
-    for(n=0; n<nHilbert; n++)
+    psir_1.assign(nHilbert,0);
+    for(n=0; n<nHilbert; n++){
         psir_0[n] += psi_0[0]*conj(phi_0.value[n])+psi_0[1]*conj(phi_1.value[n]);
+        psir_1[n] += psi_1[0]*conj(phi_0.value[n])+psi_1[1]*conj(phi_1.value[n]);
+    }
 
     for(l=2; l<overlap.size(); l++) {
         phi_2 = H * phi_1;
         phi_2 -= phi_1 * overlap[l-1] + phi_0*norm[l-1];
         phi_2/= norm[l];
-        for(n=0; n<nHilbert; n++)
+        for(n=0; n<nHilbert; n++){
             psir_0[n]+= psi_0[l]*conj(phi_2.value[n]);
+            psir_1[n]+= psi_1[l]*conj(phi_2.value[n]);
+	}
         swap(&phi_0,&phi_1,&phi_2);
     }
+
     double Norm=0;
     for(n=0; n<nHilbert; n++)
         Norm+=std::norm(psir_0[n]);
     Norm=sqrt(Norm);
     for(n=0; n<nHilbert; n++)
         psir_0[n]/=Norm;
+    
+    Norm=0;
+    for(n=0; n<nHilbert; n++)
+        Norm+=std::norm(psir_1[n]);
+    Norm=sqrt(Norm);
+    for(n=0; n<nHilbert; n++)
+        psir_1[n]/=Norm;
+
     phi_0.clear();
     phi_1.clear();
     phi_2.clear();
@@ -1178,6 +1199,18 @@ double lhamil::ground_state_energy() {
             overlap+=conj(psir_0[i])*H_psir0[i];
     }
     H_psir0.clear();
+    return overlap.real();
+}
+
+double lhamil::first_excited_state_energy() {
+    vector<complex<double> > H_psir1;
+    complex<double> overlap=0;
+    if(psir_1.size()!=0) {
+        H_psir1=H*psir_1;
+        for(int i=0; i<nHilbert; i++)
+            overlap+=conj(psir_1[i])*H_psir1[i];
+    }
+    H_psir1.clear();
     return overlap.real();
 }
 
@@ -1215,6 +1248,26 @@ double lhamil::Sz() {
     for(long i=0; i<nHilbert; i++)
 	nel_up+=(sector.get_nel(0,i)+sector.get_nel(2,i))*std::norm(psir_0[i]);
     return (2.0*nel_up-sector.nel)/(2.0*sector.nel);
+}
+
+double lhamil::upper_Sz()
+{
+    double Sz=0,nel_up;
+    for(long i=0; i<nHilbert; i++){
+	nel_up=sector.get_nel(0,i)+sector.get_nel(1,i);
+	Sz+=(2.0*sector.get_nel(0,i)-nel_up)/(2.0*nel_up+1e-8)*std::norm(psir_0[i]);
+    }
+    return Sz;
+}
+
+double lhamil::down_Sz()
+{
+    double Sz=0,nel_up;
+    for(long i=0; i<nHilbert; i++){
+	nel_up=sector.get_nel(2,i)+sector.get_nel(3,i);
+	Sz+=(2.0*sector.get_nel(2,i)-nel_up)/(2.0*nel_up+1e-8)*std::norm(psir_0[i]);
+    }
+    return Sz;
 }
 
 double lhamil::pseudospin_Sx() {

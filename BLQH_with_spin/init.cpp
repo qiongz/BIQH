@@ -5,7 +5,8 @@ void usage(char *target) {
     std::cout<<"  -L                       nLL\n";
     std::cout<<"  -n                       nphi\n";
     std::cout<<"  -e                       No. of electrons\n";
-    std::cout<<"  -u                       No. of upper-layer electrons\n";
+    std::cout<<"  -U                       No. of upper-layer electrons\n";
+    std::cout<<"  -u                       No. of spin-up electrons\n";
     std::cout<<"  -S                       Delta_SAS: tunnelling amplitude\n";
     std::cout<<"  -V                       Delta_V: bias voltage\n";
     std::cout<<"  -Z                       Delta_Z: Zeemann energy\n";
@@ -18,12 +19,13 @@ void usage(char *target) {
     std::cout<<"  -t                       No. threads\n";
 }
 
-void init_argv(int &nLL,int &nphi, int& nel, int &nel_up,int &J, int &kx, double &d,double &Delta_SAS, double &Delta_V, double &Delta_Z,double &gamma ,int &lambda,double & theta,int &nthread,unsigned long & seed,int argc,char *argv[])
+void init_argv(int &nLL,int &nphi, int& nel, int &nel_up,int &nel_su,int &J, int &kx, double &d,double &Delta_SAS, double &Delta_V, double &Delta_Z,double &gamma ,int &lambda,double & theta,int &nthread,unsigned long & seed,int argc,char *argv[])
 {
     nLL=0;
     nphi=4;
     nel=8;
     nel_up=-1;
+    nel_su=-1;
     gamma=1.0;
     theta=0;
     nthread=8;
@@ -45,7 +47,7 @@ void init_argv(int &nLL,int &nphi, int& nel, int &nel_up,int &J, int &kx, double
     extern char *optarg;
     int ch,errFlag;
     errFlag=0;
-    while((ch=getopt(argc,argv,"L:e:n:u:d:J:K:g:Z:m:t:S:s:V:h:"))!=-1) {
+    while((ch=getopt(argc,argv,"L:e:n:U:u:d:J:K:g:Z:m:t:S:s:V:h:"))!=-1) {
         switch(ch) {
         case 'L':
             nLL=atoi(optarg);
@@ -56,8 +58,11 @@ void init_argv(int &nLL,int &nphi, int& nel, int &nel_up,int &J, int &kx, double
         case 'e':
             nel=atoi(optarg);
             break;
-        case 'u':
+        case 'U':
             nel_up=atoi(optarg);
+            break;
+        case 'u':
+            nel_su=atoi(optarg);
             break;
         case 'K':
             kx=atoi(optarg);

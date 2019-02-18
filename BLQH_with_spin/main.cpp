@@ -9,285 +9,191 @@
 using namespace std;
 
 int main(int argc,char *argv[]) {
-    int nLL,nphi,nel,nel_up,J,kx,lambda,nthread;
+    int nLL,nphi,nel,nel_up,nel_su,J,kx,lambda,nthread;
     double lx,ly,gamma,Delta_SAS,Delta_V,Delta_Z,theta_B;
     unsigned long seed;
     double d;
 
-    init_argv(nLL,nphi,nel,nel_up,J,kx,d,Delta_SAS,Delta_V,Delta_Z,gamma,lambda,theta_B,nthread,seed,argc,argv);
+    init_argv(nLL,nphi,nel,nel_up,nel_su,J,kx,d,Delta_SAS,Delta_V,Delta_Z,gamma,lambda,theta_B,nthread,seed,argc,argv);
     ly=sqrt(nphi*2.0*M_PI/gamma);
     lx=ly*gamma;
-   
-/*
+
+
+    hamil config;
+    config.sector.init(nphi,nel,nel_up,nel_su,J,kx);
+    cout<<"----------- ED results --------------"<<endl;
+    cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
+    config.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,nthread);
+    config.diag();
+    cout<<"E_gs:= "<<setprecision(10)<<config.ground_state_energy()/nel<<endl;
+
+    cout<<"----------- Lanczos results ---------"<<endl;
     lhamil lconfig(lambda,seed);
-    lconfig.sector.init(nphi,nel,J,kx);
-    for(int i=0; i<201; i++) {
-        Delta_V=i*0.008;
-        for(int j=0; j<201; j++) {
-            Delta_SAS=j*0.003;
-	    d=j*0.05;
-            //theta_B=j/100.0*M_PI;
-            lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,theta_B,0,0,nthread);
-            lconfig.coeff_explicit_update();
-            lconfig.diag();
-            lconfig.eigenstates_reconstruction();
-	    double Egs=lconfig.ground_state_energy()/nel;
-            double Px=lconfig.pseudospin_Sx();
-            double Pz=lconfig.pseudospin_Sz();
-	    double Sz=lconfig.Sz();
-	    double Sf=lconfig.spinflip_tunneling();
-*/
-            /*
-            lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS+0.0001,Delta_V,Delta_Z,nthread);
-            lconfig.coeff_explicit_update();
-            lconfig.diag();
-            lconfig.eigenstates_reconstruction();
-            double Chi_sf=(lconfig.spinflip_tunneling()-Sf)/0.0001;
-	    */
-            //cout<<d<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
-	    //cout<<Delta_SAS<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
-  /*          cout<<Delta_SAS<<" "<<Delta_V<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
-       }
-       cout<<endl;
-     }
+    lconfig.sector.init(nphi,nel,nel_up,nel_su,J,kx);
+    lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,0,0,0,nthread);
+    lconfig.coeff_explicit_update();
+    lconfig.diag();
+    lconfig.eigenstates_reconstruction();
+    double Egs=lconfig.ground_state_energy()/nel;
+    cout<<"E_gs:= "<<setprecision(10)<<Egs<<endl;
 
- */ 
-
-
-    
-        //Delta_SAS/=pow(nel,1.5);
-
-    	/*
-        lhamil lconfig(lambda,seed);
-        lconfig.sector.init(nphi,nel,nel_up,J,kx);
-	double theta_y;
-        for(int j=0;j<10;j++){
-        //Delta_V=j*1e-4;
-        //d=j*0.004+0.7;
-        //Delta_SAS=0.002*j+1e-6;
-        theta_y=j*0.25/10*M_PI;
-        lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,theta_B,0,theta_y,nthread);
-        lconfig.coeff_explicit_update();
-        lconfig.diag();
-        //double E0=lconfig.ground_state_energy();
-        cout<<theta_y<<setprecision(6)<<" "<<lconfig.eigenvalues[0]<<endl;
-        }
-	*/
-
-    
-
-
-   /* 
-        hamil config;
-        config.sector.init(nphi,nel,J,kx);
-        cout<<"nHilbert: ="<<config.sector.nbasis<<endl;
-        //config.sector.prlong();
-        //cout<<"-----------Ground state---------"<<endl;
-
-       // auto _t1=std::chrono::high_resolution_clock::now();
-        config.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,nthread);
-        //auto _t2=std::chrono::high_resolution_clock::now();
-        //cout<<"Full Hamiltonian matrix initialized !"<<endl;
-        //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(_t2-_t1).count()/1.0e6<<" seconds."<<endl;
-
-        //config.print_hamil(10);
-        //auto _t1=std::chrono::high_resolution_clock::now();
-        config.diag();
-
-        //auto _t2=std::chrono::high_resolution_clock::now();
-        //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(_t2-_t1).count()/1.0e6<<" seconds."<<endl;
-        cout<<"E_gs:= "<<setprecision(6)<<config.ground_state_energy()/nel<<endl;
-        cout<<"E0:="<<config.eigenvalues[0]<<endl;
-        cout<<"E1:="<<config.eigenvalues[1]<<endl;
-        cout<<"Pz:="<<config.pseudospin_Sz()<<endl;
-        cout<<"Px:="<<config.pseudospin_Sx()<<endl;
-        cout<<"Sz:="<<config.Sz()<<endl;
-
-
-        cout<<"# ground state wave function"<<endl;
-        for(int i=0;i<config.nHilbert;i++)
-            if(abs(config.psi_0[i])>0.01){
-              cout<<i<<" :   |";
-              unsigned long long u=config.sector.id[i];
-              for(int n=0;n<nphi;n++)
-                 if((u>>n)%2==1)
-                    cout<<n<<" ";
-              cout<<")|";
-              for(int n=nphi;n<2*nphi;n++)
-                 if((u>>n)%2==1)
-                    cout<<n-nphi<<" ";
-              cout<<")|";
-              for(int n=2*nphi;n<3*nphi;n++)
-                 if((u>>n)%2==1)
-                    cout<<n-nphi*2<<" ";
-              cout<<")|";
-              for(int n=3*nphi;n<4*nphi;n++)
-                 if((u>>n)%2==1)
-                    cout<<n-nphi*3<<" ";
-              cout<<")   ";
-              cout<<bitset<24>((config.sector.id[i])).to_string()<<" "<<abs(config.psi_0[i])<<endl;
-    	}
-*/
-    
     /*
-        cout<<"# first excited state wave function"<<endl;
-        for(int i=0;i<config.nHilbert;i++)
-            if(abs(config.psi_1[i])>0.01){
-              cout<<i<<" :   |";
-              unsigned long long u=config.sector.id[i];
-              for(int n=0;n<nphi;n++)
-                 if((u>>n)%2==1)
-                    cout<<n+1<<" ";
-              cout<<")|";
-              for(int n=nphi;n<2*nphi;n++)
-                 if((u>>n)%2==1)
-                    cout<<n+1-nphi<<" ";
-              cout<<")   ";
-              cout<<bitset<8>((config.sector.id[i])).to_string()<<": "<<bitset<8>((config.sector.id[i])>>nphi).to_string()<<"  "<<abs(config.psi_1[i])<<endl;
-    	}
-        */
-
-  
-        //cout<<"-----------Lanczos results---------"<<endl;
-        lhamil lconfig(lambda,seed);
-        //auto t1=std::chrono::high_resolution_clock::now();
-        lconfig.sector.init(nphi,nel,nel_up,J,kx);
-        //lconfig.sector.prlong();
-        //auto t2=std::chrono::high_resolution_clock::now();
-        //cout<<"Stage-1: Basis initialized !"<<endl;
-        cout<<"nHilbert: ="<<lconfig.sector.nbasis<<endl;
-        //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t2-t1).count()/1.0e6<<" seconds."<<endl;
-
-        //auto t3=std::chrono::high_resolution_clock::now();
-
-        lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,0,0,0,nthread);
-
-        //auto t4=std::chrono::high_resolution_clock::now();
-        //cout<<"Stage-2: Hamiltonian matrix initialized !"<<endl;
-
-        //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
-        //lconfig.print_hamil(lconfig.nHilbert);
-        //lconfig.print_hamil_CSR();
-        //t3=std::chrono::high_resolution_clock::now();
-        lconfig.coeff_explicit_update();
-        //cout<<"Stage-2: Lanczos update completed !"<<endl;
-        lconfig.diag();
-
-        lconfig.eigenstates_reconstruction();
-
-
-        double Egs=lconfig.ground_state_energy();
-        //t4=std::chrono::high_resolution_clock::now();
-       // cout<<"Stage-3: Groundstate wavefunction reconstructed !"<<endl;
-        cout<<"E_gs:= "<<setprecision(10)<<Egs/nel<<endl;
-        //cout<<"time cost: "<<chrono::duration_cast<chrono::microseconds>(t4-t3).count()/1.0e6<<" seconds."<<endl;
-        cout<<"Px:="<<lconfig.pseudospin_Sx()<<endl;
-        cout<<"Pz:="<<lconfig.pseudospin_Sz()<<endl;
-        cout<<"Sz:="<<lconfig.Sz()<<endl;
-
-
-
-        //cout<<"Ec:= "<<lconfig.Ec<<endl;
-        //cout<<"Ec_d:= "<<lconfig.Ec_d<<endl;
-         
-        cout<<"eigenvalues:="<<lconfig.eigenvalues[0]<<" ";
-        int i=0;
-        int count=0;
-         do{
-            i++;
-           if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-4) {
+    cout<<"eigenvalues:="<<lconfig.eigenvalues[0]<<" ";
+    int i=0;
+    int count=0;
+     do{
+        i++;
+         if(lconfig.eigenvalues[i]-lconfig.eigenvalues[i-1]>1e-4) {
               cout<<lconfig.eigenvalues[i]<<" ";
               count++;
            }
-         }while(count<8 && count<lconfig.norm.size());
-         cout<<endl;
+     }while(count<8 && count<lconfig.norm.size());
+    cout<<endl;
+     */
 
- 
-        vector< pair<long,double> > wf_gs;
-        for(long i=0;i<lconfig.nHilbert;i++)
-	    wf_gs.push_back(pair<long,double>(i,abs(lconfig.psir_0[i])));
-         
-        sort(wf_gs.begin(),wf_gs.end(),[](pair<long, double>& elem1 ,pair<long, double> &elem2){ return elem1.second>elem2.second;});
+    vector< pair<long,double> > wf_gs;
+    for(long i=0; i<lconfig.nHilbert; i++)
+        wf_gs.push_back(pair<long,double>(i,abs(lconfig.psir_0[i])));
 
-        count=0;
-        // print wave function in descending order
-        for(auto const & p: wf_gs)
-              {
-	      count++;
-              cout<<setw(4)<<p.first<<" :   |";
-              unsigned long long u=lconfig.sector.id[p.first];
-              for(int n=0;n<nphi;n++)
-                 if((u>>n)%2==1)
-                    cout<<setw(3)<<n;
-		 else 
-		    cout<<setw(3)<<"_";
-              cout<<")|";
-              for(int n=nphi;n<2*nphi;n++)
-                 if((u>>n)%2==1)
-                    cout<<setw(3)<<n-nphi;
-		 else 
-		    cout<<setw(3)<<"_";
-              cout<<")|";
-              for(int n=2*nphi;n<3*nphi;n++)
-                 if((u>>n)%2==1)
-                    cout<<setw(3)<<n;
-		 else 
-		    cout<<setw(3)<<"_";
-              cout<<")|";
-              for(int n=3*nphi;n<4*nphi;n++)
-                 if((u>>n)%2==1)
-                    cout<<setw(3)<<n;
-		 else 
-		    cout<<setw(3)<<"_";
-              cout<<")   ";
-              cout<<bitset<24>((lconfig.sector.id[p.first])).to_string()<<"  "<<p.second<<endl;
-	      if(count>20 || p.second<1e-3)
-		break;
-            }
+    sort(wf_gs.begin(),wf_gs.end(),[](pair<long, double>& elem1,pair<long, double> &elem2) {
+        return elem1.second>elem2.second;
+    });
 
+    int count=0;
+    // print wave function in descending order
 
-
-
-
+    for(auto const & p: wf_gs)
+    {
+        count++;
+        cout<<setw(10)<<"("<<p.first<<"): "<<bitset<32>((lconfig.sector.id[p.first])).to_string()<<"  "<<p.second<<endl;
+        cout<<setw(10)<<"upper layer:   |";
+        unsigned long long u=lconfig.sector.id[p.first];
+        for(int n=0; n<nphi; n++)
+            if((u>>n)%2==1)
+                cout<<setw(3)<<n;
+            else
+                cout<<setw(3)<<"_";
+        cout<<")|";
+        for(int n=nphi; n<2*nphi; n++)
+            if((u>>n)%2==1)
+                cout<<setw(3)<<n-nphi;
+            else
+                cout<<setw(3)<<"_";
+        cout<<")|"<<endl;
+        cout<<setw(10)<<" down layer:   |";
+        for(int n=2*nphi; n<3*nphi; n++)
+            if((u>>n)%2==1)
+                cout<<setw(3)<<n;
+            else
+                cout<<setw(3)<<"_";
+        cout<<")|";
+        for(int n=3*nphi; n<4*nphi; n++)
+            if((u>>n)%2==1)
+                cout<<setw(3)<<n;
+            else
+                cout<<setw(3)<<"_";
+        cout<<")   "<<endl;
+        //cout<<bitset<32>((lconfig.sector.id[p.first])).to_string()<<"  "<<p.second<<endl;
+        if(count>lconfig.nHilbert || p.second<1e-5 || count > 10)
+            break;
+    }
 
     /*
-            basis sector0(nphi,nel_up,nel_down,0,0);
-            double t0,s0;
-            t0=s0=nphi/2;
+    cout<<"##########################         First Excited Wave Function       ############################"<<endl;
 
-            //int N=sector0.common_divisor(nphi,nel_up);
-            //lhamil config(lambda,seed);
-            for(int t=0; t<nphi; t++)
-                for(int s=0; s<nphi; s++){
-    	        //hamil config;
-    	        lhamil config(lambda,seed);
-    		config.sector.init(nphi,nel_up,nel_down,t,s);
-                    config.set_hamil(lx,ly,nphi,nLL,d,nthread);
-    		config.coeff_explicit_update();
-                    config.diag();
-    		config.eigenstates_reconstruction();
+    vector< pair<long,double> > wf_e1;
+    for(long i=0; i<lconfig.nHilbert; i++)
+        wf_e1.push_back(pair<long,double>(i,abs(lconfig.psir_1[i])));
 
-                    double K=sqrt((s-s0)*(s-s0)+(t-t0)*(t-t0)*gamma*gamma)*sqrt(2.0*M_PI/nphi/gamma);
-                    cout<<t<<" "<<s<<" "<<K<<" ";
-    		cout<<config.ground_state_energy()/nel<<" ";
-                    //for(int n=0; n<5; n++)
-                     //   cout<<config.eigenvalues[n]<<" ";
-    		//cout<<config.ground_state_energy()/nel;
-                    //cout<<endl;
-    		//config.sector.clear();
-    	        cout<<config.eigenvalues[0]<<" ";
+    sort(wf_e1.begin(),wf_e1.end(),[](pair<long, double>& elem1,pair<long, double> &elem2) {
+        return elem1.second>elem2.second;
+    });
 
-                    int i=0;
-                    int count=0;
-                    do{
-                     i++;
-                     if(config.eigenvalues[i]-config.eigenvalues[i-1]>1e-5) {
-                       cout<<config.eigenvalues[i]<<" ";
-                       count++;
-                        }
-                      }while(count<6 && count<config.norm.size());
-                     cout<<endl;
-                 }
+    // print wave function in descending order
+    count=0;
+
+    for(auto const & p: wf_e1)
+    {
+        count++;
+        cout<<setw(10)<<"("<<p.first<<"): "<<bitset<32>((lconfig.sector.id[p.first])).to_string()<<"  "<<p.second<<endl;
+        cout<<setw(10)<<"upper layer:   |";
+        unsigned long long u=lconfig.sector.id[p.first];
+        for(int n=0; n<nphi; n++)
+            if((u>>n)%2==1)
+                cout<<setw(3)<<n;
+            else
+                cout<<setw(3)<<"_";
+        cout<<")|";
+        for(int n=nphi; n<2*nphi; n++)
+            if((u>>n)%2==1)
+                cout<<setw(3)<<n-nphi;
+            else
+                cout<<setw(3)<<"_";
+        cout<<")|"<<endl;
+        cout<<setw(10)<<" down layer:   |";
+        for(int n=2*nphi; n<3*nphi; n++)
+            if((u>>n)%2==1)
+                cout<<setw(3)<<n;
+            else
+                cout<<setw(3)<<"_";
+        cout<<")|";
+        for(int n=3*nphi; n<4*nphi; n++)
+            if((u>>n)%2==1)
+                cout<<setw(3)<<n;
+            else
+                cout<<setw(3)<<"_";
+        cout<<")   "<<endl;
+        //cout<<bitset<32>((lconfig.sector.id[p.first])).to_string()<<"  "<<p.second<<endl;
+        if(count>lconfig.nHilbert || p.second<1e-5)
+            break;
+    }
+    */
+
+
+
+
+
+
+
+    // calculate the excitation spectrum
+    /*
+             double t0,s0;
+             t0=s0=nphi/2;
+
+        int N=nphi/2;
+             //lhamil config(lambda,seed);
+             for(int t=0; t<=N; t++)
+                 for(int s=0; s<=N; s++){
+     	        //hamil config;
+     	        lhamil config(lambda,seed);
+                 config.sector.init(nphi,nel,nel_up,nel_su,t,s);
+                 config.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,0,0,0,nthread);
+     		config.coeff_explicit_update();
+                 config.diag();
+     		config.eigenstates_reconstruction();
+
+                 double K=sqrt((s-s0)*(s-s0)+(t-t0)*(t-t0)*gamma*gamma)*sqrt(2.0*M_PI/nphi/gamma);
+                 cout<<t<<" "<<s<<" "<<K<<" ";
+     		cout<<config.ground_state_energy()/nel<<" "<<config.Sz()<<" ";
+                     //for(int n=0; n<5; n++)
+                      //   cout<<config.eigenvalues[n]<<" ";
+     		//cout<<config.ground_state_energy()/nel;
+                     //cout<<endl;
+     		//config.sector.clear();
+     	        cout<<config.eigenvalues[0]<<" ";
+
+                     int i=0;
+                     int count=0;
+                     do{
+                      i++;
+                      if(config.eigenvalues[i]-config.eigenvalues[i-1]>1e-5) {
+                        cout<<config.eigenvalues[i]<<" ";
+                        count++;
+                         }
+                       }while(count<6 && count<config.norm.size());
+                      cout<<endl;
+    	    config.sector.clear();
+                  }
     */
 
 
@@ -341,6 +247,58 @@ int main(int argc,char *argv[]) {
           //cout<<n*0.1+0.01<<" "<<E_gap<<endl;
         }
 
+    */
+
+    /*
+        lhamil lconfig(lambda,seed);
+        lconfig.sector.init(nphi,nel,J,kx);
+        for(int i=0; i<201; i++) {
+            Delta_V=i*0.008;
+            for(int j=0; j<201; j++) {
+                Delta_SAS=j*0.003;
+    	    d=j*0.05;
+                //theta_B=j/100.0*M_PI;
+                lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,theta_B,0,0,nthread);
+                lconfig.coeff_explicit_update();
+                lconfig.diag();
+                lconfig.eigenstates_reconstruction();
+    	    double Egs=lconfig.ground_state_energy()/nel;
+                double Px=lconfig.pseudospin_Sx();
+                double Pz=lconfig.pseudospin_Sz();
+    	    double Sz=lconfig.Sz();
+    	    double Sf=lconfig.spinflip_tunneling();
+    */
+    /*
+    lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS+0.0001,Delta_V,Delta_Z,nthread);
+    lconfig.coeff_explicit_update();
+    lconfig.diag();
+    lconfig.eigenstates_reconstruction();
+    double Chi_sf=(lconfig.spinflip_tunneling()-Sf)/0.0001;
+    */
+    //cout<<d<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
+    //cout<<Delta_SAS<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
+    /*          cout<<Delta_SAS<<" "<<Delta_V<<" "<<Egs<<" "<<Sz<<" "<<Px<<" "<<Pz<<" "<<Sf<<endl;
+         }
+         cout<<endl;
+       }
+
+    */
+    //Delta_SAS/=pow(nel,1.5);
+
+    /*
+    lhamil lconfig(lambda,seed);
+    lconfig.sector.init(nphi,nel,nel_up,nel_su,J,kx);
+    for(int j=0;j<21;j++){
+    //Delta_V=j*1e-4;
+    d=j*0.1;
+    //Delta_SAS=0.002*j+1e-6;
+    //theta_y=j*0.25/10*M_PI;
+    lconfig.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,Delta_Z,0,0,0,nthread);
+    lconfig.coeff_explicit_update();
+    lconfig.diag();
+    lconfig.eigenstates_reconstruction();
+    cout<<d<<setprecision(6)<<" "<<lconfig.ground_state_energy()<<" "<<lconfig.Sz()<<endl;
+    }
     */
 
 
