@@ -1,6 +1,5 @@
 #include"init.h"
 #include"basis.h"
-#include"chern.h"
 #include"hamiltonian.h"
 #include"lanczos_hamiltonian.h"
 #include<ctime>
@@ -116,7 +115,7 @@ int main(int argc,char *argv[]) {
     */
 
 
-    /*
+     /*
      cout<<K<<" "<<lconfig.eigenvalues[0]<<" ";
      int i=0;
      int count=0;
@@ -180,66 +179,5 @@ int main(int argc,char *argv[]) {
         cout<<theta_y<<setprecision(6)<<" "<<E0<<endl;
         }
     */
-
-
-    // calculate the drag Hall conductance 
-    /*
-    int theta_1,theta_2,n_mesh=10;
-    lhamil config(lambda,seed);
-    //hamil config;
-    config.sector.init(nphi,nel,nel_up,J,kx);
-    long long nHilbert=config.sector.nbasis;
-    cerr<<"nHilbert:="<<nHilbert<<endl;
-    complex<double> *wfs_full = new complex<double>[(n_mesh+1)*2*nHilbert];
-    double *chern_numbers_theta = new double [ n_mesh];
-    double chern_number=0;
-    double theta_x,theta_y;
-    theta_1=0;
-    theta_x=theta_1*2.0*M_PI/n_mesh;
-    for(theta_2=0;theta_2<n_mesh;theta_2++){
-	theta_y=theta_2*2.0*M_PI/n_mesh;
-        config.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,theta_x,theta_y,nthread);
-        config.coeff_explicit_update();
-        config.diag();
-        config.eigenstates_reconstruction();
-	for(long i=0;i<nHilbert;i++)
-	   wfs_full[((n_mesh+1)*(theta_1%2)+theta_2)*nHilbert+i]=config.psir_0[i];
-	cout<<theta_1*n_mesh+theta_2<<" "<<config.eigenvalues[0];
-	for(long i=1;i<nHilbert;i++)
-	  if(abs(config.eigenvalues[i]-config.eigenvalues[0])>1e-4*abs(config.eigenvalues[0])){
-	    cout<<" "<<config.eigenvalues[i]<<endl;
-		break;
-	   }
-	}
-    for(long i=0;i<nHilbert;i++)
-	wfs_full[((n_mesh+1)*(theta_1%2)+n_mesh)*nHilbert+i]=wfs_full[((n_mesh+1)*(theta_1%2))*nHilbert+i];
-
-    for(theta_1=1;theta_1<=n_mesh;theta_1++){
-	theta_x=theta_1*2.0*M_PI/n_mesh;
-    for(theta_2=0;theta_2<n_mesh;theta_2++){
-	theta_y=theta_2*2.0*M_PI/n_mesh;
-        config.set_hamil(lx,ly,nphi,nLL,d,Delta_SAS,Delta_V,theta_x,theta_y,nthread);
-        config.coeff_explicit_update();
-        config.diag();
-        config.eigenstates_reconstruction();
-	cout<<theta_1*n_mesh+theta_2<<" "<<config.eigenvalues[0];
-	for(long i=1;i<nHilbert;i++)
-	  if(abs(config.eigenvalues[i]-config.eigenvalues[0])>1e-4*abs(config.eigenvalues[0])){
-	    cout<<" "<<config.eigenvalues[i]<<endl;
-	    break;
-	}
-	for(long i=0;i<nHilbert;i++)
-	    wfs_full[((n_mesh+1)*(theta_1%2)+theta_2)*nHilbert+i]=config.psir_0[i];
-	}
-        for(long i=0;i<nHilbert;i++)
-	   wfs_full[((n_mesh+1)*(theta_1%2)+n_mesh)*nHilbert+i]=wfs_full[((n_mesh+1)*(theta_1%2))*nHilbert+i];
-        cal_Chern(wfs_full,chern_numbers_theta,nHilbert , n_mesh, theta_1);
-        for(int i=0; i<n_mesh; i++)
-           chern_number+=chern_numbers_theta[i];
-    }
-    
-    cerr<<"chern_number:= "<<chern_number<<endl;
-    */
-
     return 0;
 }
