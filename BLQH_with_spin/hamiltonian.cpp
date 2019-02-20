@@ -2,7 +2,7 @@
 static std::mutex mutex_update;
 hamil::hamil() {}
 
-double hamil::Coulomb_interaction(int alpha,int q_x, int q_y) {
+double hamil::Coulomb_interaction(const int &alpha,const int &q_x,const  int &q_y) {
     double q = sqrt(q_x * q_x / (lx * lx) + q_y * q_y / (ly * ly)) * 2.0 * M_PI;
     if(alpha ==0)
         return 2.0*M_PI/q*exp(-q*q/2.0)*pow(1.0-exp(-q*q/2.0),nLL*2);
@@ -46,7 +46,7 @@ void hamil::init_Coulomb_matrix() {
             FT[kl*nphi+kr]=complex<double>(cos(2.0*M_PI*(kl-kr)*kx/nphi),sin(2.0*M_PI*(kl-kr)*kx/nphi));
 }
 
-inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z,int id, long nbatch,long nrange) {
+inline void hamil::peer_set_hamil(const double &Delta_SAS,const double &Delta_V,const double &Delta_Z,const int &id, const long &nbatch,const long &nrange) {
     int kx=sector.K;
     unsigned long lbasis,rbasis,rbasis_0,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signl,signr;
@@ -116,7 +116,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -178,7 +178,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -240,7 +240,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -300,7 +300,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -359,7 +359,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -419,7 +419,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -479,7 +479,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -539,7 +539,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -599,7 +599,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -659,7 +659,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -691,7 +691,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             signr=1;
                             rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                j = sector.basis_set[rbasis];
+                                j = sector.basis_set.at(rbasis);
                                 sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                                 matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                             }
@@ -719,7 +719,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             signr=1;
                             rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                j = sector.basis_set[rbasis];
+                                j = sector.basis_set.at(rbasis);
                                 sign=sector.get_sign(lbasis,nt,n)*signl*signr;
                                 matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                             }
@@ -748,7 +748,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             signr=1;
                             rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                j = sector.basis_set[rbasis];
+                                j = sector.basis_set.at(rbasis);
                                 sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                                 matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                             }
@@ -776,7 +776,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                             signr=1;
                             rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                j = sector.basis_set[rbasis];
+                                j = sector.basis_set.at(rbasis);
                                 sign=sector.get_sign(lbasis,nt,n)*signl*signr;
                                 matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                             }
@@ -806,7 +806,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                         }
@@ -835,7 +835,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                         }
@@ -863,7 +863,7 @@ inline void hamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z
     matrix_elements.clear();
 }
 
-void hamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, double Delta_SAS,double Delta_V,double Delta_Z,int nthread) {
+void hamil::set_hamil(const double &_lx,const double & _ly, const long &_nphi, const long &_nLL,const double& _d, const double &Delta_SAS,const double &Delta_V,const double &Delta_Z,const int &nthread) {
     d = _d;
     lx = _lx;
     ly = _ly;
@@ -889,7 +889,7 @@ void hamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, d
 hamil::~hamil() {}
 
 
-double hamil::ground_state_energy() {
+double hamil::ground_state_energy() const {
     if(psi_0.size() == 0) return 0;
     complex<double> E_gs = 0;
     vector< complex<double> > psi_t;
@@ -903,21 +903,21 @@ double hamil::ground_state_energy() {
     return E_gs.real();
 }
 
-double hamil::pseudospin_Sz(){
+double hamil::pseudospin_Sz() const{
     double nel_up=0;
     for(long i=0; i<nHilbert; i++)
 	nel_up+=(sector.get_nel(0,i)+sector.get_nel(1,i))*std::norm(psi_0[i]);
     return (2.0*nel_up-sector.nel)/(2.0*sector.nel);
 }
 
-double hamil::Sz(){
+double hamil::Sz()const{
     double nel_up=0;
     for(long i=0; i<nHilbert; i++)
 	nel_up+=(sector.get_nel(0,i)+sector.get_nel(2,i))*std::norm(psi_0[i]);
     return (2.0*nel_up-sector.nel)/(2.0*sector.nel);
 }
 
-double hamil::pseudospin_Sx(){
+double hamil::pseudospin_Sx()const{
     unsigned long mask,mask_t,b,occ_t,lbasis,rbasis,rbasis_0;
     long i,j;
     int n,nt,sign,signl,signr;
@@ -952,7 +952,7 @@ double hamil::pseudospin_Sx(){
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             Sx_mean+=FT[ql*nphi+qr]*conj(psi_0[i])*psi_0[j]*double(sign*0.5/sqrt(Dl*Dr));
                         }
@@ -981,7 +981,7 @@ double hamil::pseudospin_Sx(){
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             Sx_mean+=FT[ql*nphi+qr]*conj(psi_0[i])*psi_0[j]*double(sign*0.5/sqrt(Dl*Dr));
                         }
@@ -1011,7 +1011,7 @@ double hamil::pseudospin_Sx(){
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             Sx_mean+=FT[ql*nphi+qr]*conj(psi_0[i])*psi_0[j]*double(sign*0.5/sqrt(Dl*Dr));
                         }
@@ -1041,7 +1041,7 @@ double hamil::pseudospin_Sx(){
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             Sx_mean+=FT[ql*nphi+qr]*conj(psi_0[i])*psi_0[j]*double(sign*0.5/sqrt(Dl*Dr));
                         }
@@ -1053,7 +1053,7 @@ double hamil::pseudospin_Sx(){
     return abs(Sx_mean)/sector.nel;
 }
 
-double hamil::spinflip_tunneling() {
+double hamil::spinflip_tunneling() const{
     unsigned long mask,mask_t,b,occ_t,lbasis,rbasis,rbasis_0;
     long i,j;
     int n,nt,sign,signl,signr;
@@ -1086,7 +1086,7 @@ double hamil::spinflip_tunneling() {
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             Sf_mean+=FT[ql*nphi+qr]*conj(psi_0[i])*psi_0[j]*double(sign*0.5/sqrt(Dl*Dr));
                         }
@@ -1116,7 +1116,7 @@ double hamil::spinflip_tunneling() {
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             Sf_mean+=FT[ql*nphi+qr]*conj(psi_0[i])*psi_0[j]*double(sign*0.5/sqrt(Dl*Dr));
                         }
@@ -1143,7 +1143,7 @@ void hamil::diag() {
     delete H;
 }
 
-void hamil::print_hamil(int range) {
+void hamil::print_hamil(int &range) const{
     int i, j, count;
     if(range>nHilbert)
         range=nHilbert;
@@ -1160,7 +1160,7 @@ void hamil::print_hamil(int range) {
     }
 }
 
-void hamil::print_eigen(int range) {
+void hamil::print_eigen(int &range) const{
     if(range>=nHilbert)
         range=nHilbert;
     std::cout << "Eigenvalues:=[ ";

@@ -4,7 +4,7 @@ using namespace std;
 basis::basis() {
 }
 
-basis::basis(int _nphi,int _nel):nphi(_nphi),nel(_nel) {
+basis::basis(const int &_nphi,const int &_nel):nphi(_nphi),nel(_nel) {
     K=-1;
     J=-1;
     nel_up=-1;
@@ -14,14 +14,14 @@ basis::basis(int _nphi,int _nel):nphi(_nphi),nel(_nel) {
 }
 
 
-basis::basis(int _nphi,int _nel,int _J,int _K):nphi(_nphi),nel(_nel),J(_J),K(_K) {
+basis::basis(const int &_nphi,const int &_nel,const int &_J,const int & _K):nphi(_nphi),nel(_nel),J(_J),K(_K) {
 	nel_up=-1;
 	nel_down=-1;
        nel_su=-1;
        nel_sd=-1;
 }
 
-basis::basis(int _nphi,int _nel,int _nel_up,int _J,int _K):nphi(_nphi),nel(_nel),nel_up(_nel_up),J(_J),K(_K) {
+basis::basis(const int & _nphi,const int &_nel,const int & _nel_up,const int & _J,const int &_K):nphi(_nphi),nel(_nel),nel_up(_nel_up),J(_J),K(_K) {
 	nel_down=nel-nel_up;
        nel_su=-1;
        nel_sd=-1;
@@ -34,17 +34,24 @@ const basis & basis::operator =(const basis & _basis) {
         nel_up=_basis.nel_up;
         nel_down=_basis.nel_down;
         nbasis=_basis.nbasis;
-        basis_set=_basis.basis_set;
-        id=_basis.id;
         K=_basis.K;
         J=_basis.J;
+	if(_basis.nbasis>0){
+	   basis_set=_basis.basis_set;
+	   popcount_table=_basis.popcount_table;
+	   id=_basis.id;
+	   basis_C=_basis.basis_C;
+	}
     }
     return *this;
 }
 
-basis::~basis() {}
+basis::~basis() {
+	if(basis_set.size()>0)
+	clear();
+}
 
-unsigned long basis::factorial(int N, int m) {
+unsigned long basis::factorial(const int &N, const int &m) const {
     unsigned long num,denum;
     long i;
     num=1;
@@ -56,7 +63,7 @@ unsigned long basis::factorial(int N, int m) {
     return num/denum;
 }
 
-long basis::common_divisor(int n, int m) {
+long basis::common_divisor(const int &n,const int &m) const {
     long N=1;
     for(int i=1; i<=n; i++)
         if(n%i == 0 && m%i==0)
@@ -133,7 +140,7 @@ void basis::init() {
 
 }
 
-void basis::init(int _nphi, int _nel) {
+void basis::init(const int &_nphi, const int &_nel) {
     nphi=_nphi;
     nel=_nel;
     nel_up=-1;
@@ -143,7 +150,7 @@ void basis::init(int _nphi, int _nel) {
     init();
 }
 
-void basis::init(int _nphi,int _nel,int _J,int _K) {
+void basis::init(const int &_nphi,const int &_nel,const int &_J,const int &_K) {
     nphi=_nphi;
     nel=_nel;
     J=_J;
@@ -155,7 +162,7 @@ void basis::init(int _nphi,int _nel,int _J,int _K) {
     init();
 }
 
-void basis::init(int _nphi,int _nel,int _nel_up,int _J,int _K) {
+void basis::init(const int &_nphi, const int &_nel,const int &_nel_up,const int &_J,const int & _K) {
     nphi=_nphi;
     nel=_nel;
     nel_up=_nel_up;
@@ -167,7 +174,7 @@ void basis::init(int _nphi,int _nel,int _nel_up,int _J,int _K) {
     init();
 }
 
-void basis::init(int _nphi,int _nel,int _nel_up,int _nel_su,int _J,int _K) {
+void basis::init(const int &_nphi,const int &_nel,const int &_nel_up,const int &_nel_su,const int &_J,const int & _K) {
     nphi=_nphi;
     nel=_nel;
     nel_up=_nel_up;
@@ -181,13 +188,16 @@ void basis::init(int _nphi,int _nel,int _nel_up,int _nel_su,int _J,int _K) {
 
 
 void basis::clear(){
+	if(nbasis>0){
     basis_set.clear();
     id.clear();
     popcount_table.clear(); 
+    basis_C.clear();
+	}
 }
 
 
-int basis::get_sign(unsigned long c,int n, int m, int nt, int mt,int t) {
+int basis::get_sign(const unsigned long & c,const int & n, const int  &m, const int & nt, const int & mt,const int & t) const {
     int k,kl,kr,nsign,sign;
     unsigned long b,mask, mask_k;
     mask=(1UL<<n)+(1UL<<m);
@@ -216,7 +226,7 @@ int basis::get_sign(unsigned long c,int n, int m, int nt, int mt,int t) {
 }
 
 // sign change function for electron hopping from one layer to another
-int basis::get_sign(unsigned long basis_i, int n,int nt){
+int basis::get_sign(const unsigned long & basis_i, const int & n, const int  &nt) const{
     int nsign,sign;
     nsign=0;
     for(int i=n+1;i<nt;i++)
@@ -227,7 +237,7 @@ int basis::get_sign(unsigned long basis_i, int n,int nt){
     return sign;
 }
 
-void basis::generate_all_density(long count,long j, long Ji, unsigned long config) {
+void basis::generate_all_density(long count, long j,  long Ji,  unsigned long config) {
   int i,id,k;
   unsigned long c;
   count++;
@@ -249,7 +259,7 @@ void basis::generate_all_density(long count,long j, long Ji, unsigned long confi
   }
 }
 
-void basis::generate_fixed_density(long count,long j, long Ji, unsigned long config){
+void basis::generate_fixed_density( long count,long j,  long Ji, unsigned long config){
    long i,k,range;
    unsigned long c;
    count++;
@@ -289,8 +299,8 @@ void basis::generate_fixed_density(long count,long j, long Ji, unsigned long con
 }
 
 
-void basis::prlong() {
-    std::unordered_map<unsigned long,long>::iterator it;
+void basis::prlong() const{
+    std::unordered_map<unsigned long,long>::const_iterator it;
     cout<<"---------------------------------------"<<endl;
     int count=0;
     for(it=basis_set.begin(); it!=basis_set.end(); it++) {
@@ -323,7 +333,7 @@ void basis::prlong() {
     cout<<"No. basis: "<<setw(6)<<nbasis<<endl;
 }
 
-int basis::get_nel(int a,long i){
+int basis::get_nel(const int &a,const long &i) const{
     unsigned long mask_lu,mask_ld,mask_ru,mask_rd,c_lu,c_ld,c_ru,c_rd;
     int rt_nel;
     mask_lu =(1UL<<nphi)-1;
@@ -359,7 +369,7 @@ int basis::get_nel(int a,long i){
 
 }
 
-int basis::get_nel(int a,unsigned long basis_i){
+int basis::get_nel(const int &a,const unsigned long &basis_i) const{
     unsigned long mask_lu,mask_ld,mask_ru,mask_rd,c_lu,c_ld,c_ru,c_rd;
     mask_lu =(1UL<<nphi)-1;
     switch(a){
@@ -388,7 +398,7 @@ int basis::get_nel(int a,unsigned long basis_i){
     }
 }
 
-unsigned long basis::translate(unsigned long c, int bits, int &sign) {
+unsigned long basis::translate(const unsigned long &c, const int &bits, int &sign) const {
         unsigned long config,mask_lu,mask_ld,mask_ru,mask_rd,c_lu,c_ld,c_ru,c_rd,mask_sign;
         int nsign;
         int inv_bits=nphi-bits;
@@ -427,7 +437,7 @@ unsigned long basis::translate(unsigned long c, int bits, int &sign) {
         return config;
     }
 
-unsigned long basis::inv_translate(unsigned long c, int bits, int &sign) {
+unsigned long basis::inv_translate(const unsigned long &c, const int &bits, int &sign) const{
         unsigned long config,mask_lu,mask_ld,mask_ru,mask_rd,c_lu,c_ld,c_ru,c_rd,mask_sign;
         int nsign;
         int inv_bits=nphi-bits;

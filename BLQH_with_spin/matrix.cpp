@@ -251,7 +251,7 @@ void Mat::init(const vector<long> & _outer,const vector<long> & _inner, const ve
     value.assign(_value.begin(),_value.end());
 }
 
-void Mat::print() {
+void Mat::print() const {
     std::cout<<"value:=         [";
     for(int i=0; i<value.size(); i++) std::cout<<setw(4)<<setprecision(2)<<value[i]<<" ";
     std::cout<<" ]"<<std::endl;

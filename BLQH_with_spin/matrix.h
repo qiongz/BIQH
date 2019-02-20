@@ -84,7 +84,7 @@ public:
     vector< complex<double> > operator*(const vector< complex<double> > &)const;
     void init(const vector<long> &,const vector<long> &,const vector< complex<double> > &);
     void clear();
-    void print();
+    void print() const;
 };
 
 #endif

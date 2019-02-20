@@ -8,9 +8,9 @@ inline void swap(Vec *a,Vec *b,Vec *c) {
 
 lhamil::lhamil() {}
 
-lhamil::lhamil(const Mat &_H,long _nHilbert,long _lambda, unsigned _seed):H(_H),nHilbert(_nHilbert),lambda(_lambda),seed(_seed) {}
+lhamil::lhamil(const Mat &_H,const long &_nHilbert,const long &_lambda, const unsigned &_seed):H(_H),nHilbert(_nHilbert),lambda(_lambda),seed(_seed) {}
 
-lhamil::lhamil(long _lambda,unsigned _seed) {
+lhamil::lhamil(const long &_lambda,const unsigned &_seed) {
     lambda=_lambda;
     seed=_seed;
 }
@@ -34,7 +34,7 @@ const lhamil & lhamil::operator =(const lhamil & _config) {
     return *this;
 }
 
-double lhamil::Coulomb_interaction(int alpha,int q_x, int q_y) {
+double lhamil::Coulomb_interaction(const int &alpha,const int &q_x, const int &q_y) {
     double q=sqrt(q_x*q_x/(lx*lx)+q_y*q_y/(ly*ly))*2.0*M_PI;
     if(alpha==1)
         return 2.0*M_PI/q*exp(-q*q/2.0-q*d)*pow(1.0-exp(-q*q/2.0),nLL*2);
@@ -42,7 +42,7 @@ double lhamil::Coulomb_interaction(int alpha,int q_x, int q_y) {
         return 2.0*M_PI/q*exp(-q*q/2.0)*pow(1.0-exp(-q*q/2.0),nLL*2);
 }
 
-void lhamil::init_Coulomb_matrix(double theta_x) {
+void lhamil::init_Coulomb_matrix(const double &theta_x) {
     double theta_1,theta_2;
     Ec=-2.0;
     for(int i=0; i<nphi; i++)
@@ -83,7 +83,7 @@ void lhamil::init_Coulomb_matrix(double theta_x) {
             FT[kl*nphi+kr]=complex<double>(cos(2.0*M_PI*(kl-kr)*kx/nphi),sin(2.0*M_PI*(kl-kr)*kx/nphi));
 }
 
-inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_Z,double _theta_B,double theta_x, double theta_y,int id, long nbatch,long nrange) {
+inline void lhamil::peer_set_hamil(const double &Delta_SAS,const double &Delta_V,const double &Delta_Z,const double &_theta_B,const double &theta_x, const double &theta_y,const int &id, const long &nbatch,const long &nrange) {
     int kx=sector.K;
     unsigned long lbasis,rbasis,rbasis_0,mask,mask_t,occ_t,b;
     int n,m,s,t,nt,mt,sign,signl,signr;
@@ -158,7 +158,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -220,7 +220,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -282,7 +282,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -342,7 +342,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -401,7 +401,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -461,7 +461,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -521,7 +521,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -581,7 +581,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
                                         matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                                     }
@@ -641,7 +641,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
 					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
                                         matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT_twisted/sqrt(Dl*Dr);
@@ -703,7 +703,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                                     signr=1;
                                     rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                                     if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                        j = sector.basis_set[rbasis];
+                                        j = sector.basis_set.at(rbasis);
                                         sign=sector.get_sign(lbasis,n,m,nt,mt,t)*signl*signr;
 					complex<double> FT_twisted=FT[ql*nphi+qr]*complex<double>(cos(theta_y*t/nphi),sin(theta_y*t/nphi));
                                         matrix_elements[j]+=Coulomb_matrix[nphi*nphi+s*nphi+abs(t)]*sign*FT_twisted/sqrt(Dl*Dr);
@@ -738,7 +738,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                             signr=1;
                             rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                j = sector.basis_set[rbasis];
+                                j = sector.basis_set.at(rbasis);
                                 sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                                 matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]*Q_phase/sqrt(Dl*Dr);
                             }
@@ -768,7 +768,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                             signr=1;
                             rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                j = sector.basis_set[rbasis];
+                                j = sector.basis_set.at(rbasis);
                                 sign=sector.get_sign(lbasis,nt,n)*signl*signr;
                                 matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]*Q_phase/sqrt(Dl*Dr);
                             }
@@ -799,7 +799,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                             signr=1;
                             rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                j = sector.basis_set[rbasis];
+                                j = sector.basis_set.at(rbasis);
                                 sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                                 matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]*Q_phase/sqrt(Dl*Dr);
                             }
@@ -828,7 +828,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                             signr=1;
                             rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                             if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                                j = sector.basis_set[rbasis];
+                                j = sector.basis_set.at(rbasis);
                                 sign=sector.get_sign(lbasis,nt,n)*signl*signr;
                                 matrix_elements[j]+=-0.25*Delta_SAS*sign*FT[ql*nphi+qr]*Q_phase/sqrt(Dl*Dr);
                             }
@@ -887,7 +887,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             matrix_elements[j]+=-0.5*Delta_SAS*sign*FT[ql*nphi+qr]/sqrt(Dl*Dr);
                         }
@@ -927,7 +927,7 @@ inline void lhamil::peer_set_hamil(double Delta_SAS,double Delta_V,double Delta_
 }
 
 
-void lhamil::set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d, double Delta_SAS,double Delta_V,double Delta_Z,double theta_B,double theta_x, double theta_y,int nthread) {
+void lhamil::set_hamil(const double &_lx,const double &_ly,const long &_nphi,const long &_nLL,const double &_d,const double &Delta_SAS,const double &Delta_V,const double &Delta_Z,const double &theta_B,const double &theta_x, const double &theta_y,const int &nthread) {
     d = _d;
     lx = _lx;
     ly = _ly;
@@ -1190,7 +1190,7 @@ void lhamil::eigenstates_reconstruction() {
     phi_2.clear();
 }
 
-double lhamil::ground_state_energy() {
+double lhamil::ground_state_energy() const{
     vector<complex<double> > H_psir0;
     complex<double> overlap=0;
     if(psir_0.size()!=0) {
@@ -1202,7 +1202,7 @@ double lhamil::ground_state_energy() {
     return overlap.real();
 }
 
-double lhamil::first_excited_state_energy() {
+double lhamil::first_excited_state_energy()const {
     vector<complex<double> > H_psir1;
     complex<double> overlap=0;
     if(psir_1.size()!=0) {
@@ -1214,7 +1214,7 @@ double lhamil::first_excited_state_energy() {
     return overlap.real();
 }
 
-double lhamil::occupatation_number(int alpha,int j) {
+double lhamil::occupatation_number(const int &alpha,const int &j)const {
     complex<double> occ=0;
     unsigned long mask,lbasis;
     int sign,q,D;
@@ -1236,21 +1236,21 @@ double lhamil::occupatation_number(int alpha,int j) {
     return occ.real();
 }
 
-double lhamil::pseudospin_Sz() {
+double lhamil::pseudospin_Sz()const {
     double nel_up=0;
     for(long i=0; i<nHilbert; i++)
 	nel_up+=(sector.get_nel(0,i)+sector.get_nel(1,i))*std::norm(psir_0[i]);
     return (2.0*nel_up-sector.nel)/(2.0*sector.nel);
 }
 
-double lhamil::Sz() {
+double lhamil::Sz() const{
     double nel_up=0;
     for(long i=0; i<nHilbert; i++)
 	nel_up+=(sector.get_nel(0,i)+sector.get_nel(2,i))*std::norm(psir_0[i]);
     return (2.0*nel_up-sector.nel)/(2.0*sector.nel);
 }
 
-double lhamil::upper_Sz()
+double lhamil::upper_Sz()const
 {
     double Sz=0,nel_up;
     for(long i=0; i<nHilbert; i++){
@@ -1260,7 +1260,7 @@ double lhamil::upper_Sz()
     return Sz;
 }
 
-double lhamil::down_Sz()
+double lhamil::down_Sz()const
 {
     double Sz=0,nel_up;
     for(long i=0; i<nHilbert; i++){
@@ -1270,7 +1270,7 @@ double lhamil::down_Sz()
     return Sz;
 }
 
-double lhamil::pseudospin_Sx() {
+double lhamil::pseudospin_Sx() const{
     unsigned long mask,mask_t,b,occ_t,lbasis,rbasis,rbasis_0;
     long i,j;
     int n,nt,sign,signl,signr;
@@ -1304,7 +1304,7 @@ double lhamil::pseudospin_Sx() {
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
                         }
@@ -1332,7 +1332,7 @@ double lhamil::pseudospin_Sx() {
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,nt,n)*signl*signr;
                             Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
                         }
@@ -1361,7 +1361,7 @@ double lhamil::pseudospin_Sx() {
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
                         }
@@ -1389,7 +1389,7 @@ double lhamil::pseudospin_Sx() {
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,nt,n)*signl*signr;
                             Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
                         }
@@ -1418,7 +1418,7 @@ double lhamil::pseudospin_Sx() {
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
                         }
@@ -1446,7 +1446,7 @@ double lhamil::pseudospin_Sx() {
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,nt,n)*signl*signr;
                             Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
                         }
@@ -1476,7 +1476,7 @@ double lhamil::pseudospin_Sx() {
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
                         }
@@ -1504,7 +1504,7 @@ double lhamil::pseudospin_Sx() {
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,nt,n)*signl*signr;
                             Sx_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.25/sqrt(Dl*Dr));
                         }
@@ -1516,7 +1516,7 @@ double lhamil::pseudospin_Sx() {
     return abs(Sx_mean)/sector.nel;
 }
 
-double lhamil::spinflip_tunneling() {
+double lhamil::spinflip_tunneling() const{
     unsigned long mask,mask_t,b,occ_t,lbasis,rbasis,rbasis_0;
     long i,j;
     int n,nt,sign,signl,signr;
@@ -1549,7 +1549,7 @@ double lhamil::spinflip_tunneling() {
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             Sf_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.5/sqrt(Dl*Dr));
                         }
@@ -1579,7 +1579,7 @@ double lhamil::spinflip_tunneling() {
                         signr=1;
                         rbasis=(qr==0?rbasis_0:sector.inv_translate(rbasis_0,qr,signr));
                         if(sector.basis_set.find(rbasis) != sector.basis_set.end()) {
-                            j = sector.basis_set[rbasis];
+                            j = sector.basis_set.at(rbasis);
                             sign=sector.get_sign(lbasis,n,nt)*signl*signr;
                             Sf_mean+=FT[ql*nphi+qr]*conj(psir_0[i])*psir_0[j]*double(sign*0.5/sqrt(Dl*Dr));
                         }
@@ -1675,13 +1675,13 @@ void lhamil::read_from_file(const char* filename) {
     idf.close();
 }
 
-void lhamil::print_hamil_CSR() {
+void lhamil::print_hamil_CSR()const {
     std::cout << "hamiltonian in CSR format: " << std::endl;
     std::cout << "------------------------------" << std::endl;
     H.print();
 }
 
-void lhamil::print_hamil(int range) {
+void lhamil::print_hamil(int range)const {
     int i,k,row_starts,col_index;
     if(range>=nHilbert)
         range=nHilbert;
@@ -1706,7 +1706,7 @@ void lhamil::print_hamil(int range) {
     }
 }
 
-void lhamil::print_lhamil(int range) {
+void lhamil::print_lhamil(int range)const {
     if(range>=overlap.size()) range=overlap.size();
     for(int i=0; i<range; i++) {
         if(i==0)
@@ -1728,7 +1728,7 @@ void lhamil::print_lhamil(int range) {
     }
 }
 
-void lhamil::print_eigen( int range) {
+void lhamil::print_eigen( int range) const{
     if(range>=overlap.size()) range=overlap.size();
     cout<<"Eigenvalues:= [";
     for(int i=0; i<range; i++)

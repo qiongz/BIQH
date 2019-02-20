@@ -23,29 +23,29 @@ public:
     vector<unsigned long> id;     // reversal table, J->I, Lin's Table is a 2D array
     vector<short> basis_C;
     explicit basis();
-    basis(int _nphi,int _nel);
-    basis(int _nphi,int _nel, int _J,int _K);
-    basis(int _nphi,int _nel, int _nel_up, int _J,int _K);
+    basis(const int & _nphi,const int & _nel);
+    basis(const int & _nphi,const int & _nel, const int & _J,const int &_K);
+    basis(const int & _nphi,const int & _nel, const int & _nel_up,const int & _J,const int &_K);
     const basis & operator=(const basis &);
     ~basis();
-    unsigned long factorial(int,int);
-    long common_divisor(int,int);
     void init();
-    void init(int _nphi,int _nel);
-    void init(int _nphi,int _nel,int _J,int _K);
-    void init(int _nphi,int _nel,int _nel_up,int _J,int _K);
-    void init(int _nphi,int _nel,int _nel_up,int _nel_su,int _J,int _K);
+    void init(const int &_nphi,const int &_nel);
+    void init(const int &_nphi,const int & _nel,const int& _J,const int& _K);
+    void init(const int &_nphi,const int &_nel,const int &_nel_up,const int& _J,const int &_K);
+    void init(const int &_nphi,const int &_nel,const int &_nel_up,const int &_nel_su,const int &_J,const int &_K);
     void generate(long,long,long,unsigned long);
     void generate_all_density(long,long,long,unsigned long);
     void generate_fixed_density(long,long,long,unsigned long);
-    int get_sign(unsigned long c,int n,int m,int nt,int mt,int t);
-    int get_sign(unsigned long c,int n, int nt);
-    int get_nel(int,long);
-    int get_nel(int,unsigned long);
-    unsigned long translate(unsigned long c, int k, int &sign) ;
-    unsigned long inv_translate(unsigned long c, int k, int &sign) ;
+    int get_sign(const unsigned long & c,const int &n,const int &m,const int &nt,const int &mt,const int &t) const;
+    int get_sign(const unsigned long & c,const int &n,const int &nt) const;
+    int get_nel(const int &,const long &) const;
+    int get_nel(const int &,const unsigned long &) const;
+    unsigned long translate(const unsigned long &c, const int &k, int &sign) const;
+    unsigned long inv_translate(const unsigned long &c, const int &k, int &sign) const;
+    unsigned long factorial(const int &, const int &) const;
+    long common_divisor(const int&,const int &) const ;
+    void prlong() const;
     void clear();
-    void prlong();
 };
 
 #endif

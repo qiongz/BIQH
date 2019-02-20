@@ -106,15 +106,49 @@ void init_argv(int &nLL,int &nphi, int& nel, int &nel_up,int &nel_su,int &J, int
         }
     }
     try {
-        if(nel<0)
+        if(nphi<0 )
             throw std::logic_error("-n: positive value required !");
-    } catch(std::logic_error &e) {
+    } 
+    catch(std::logic_error &n) {
+        std::cout<<n.what()<<std::endl;
+        usage(argv[0]);
+        exit(2);
+    }
+    try {
+	if(nel<=0 || nel>=4*nphi)
+            throw std::logic_error("-e: Total No. of electrons should be in (0,4*nphi)");
+    }
+    catch(std::logic_error &e) {
         std::cout<<e.what()<<std::endl;
         usage(argv[0]);
         exit(2);
     }
-    catch(std::overflow_error &e) {
-        std::cout<<e.what()<<std::endl;
+    try {
+	if(nel_up<0 || nel_up>=nel)
+            throw std::logic_error("-U: No. of upper-layer electrons should be in [0,nel_up] !");
+    }
+    catch(std::logic_error &u) {
+        std::cout<<u.what()<<std::endl;
+        usage(argv[0]);
+        exit(2);
+    }
+    try {
+	if(nel_su<0 || nel_su>=nel)
+            throw std::logic_error("-u: No. of spin-up electrons should be in [0,nel_up] !");
+    }
+    catch(std::logic_error &s) {
+        std::cout<<s.what()<<std::endl;
+        usage(argv[0]);
+        exit(2);
+    }
+    try{
+	if(nphi>21 && nel>2*nphi/3 && nel<nphi*4/3)
+            throw std::overflow_error("Hilbert space too large !");
+
+    }
+    catch(std::overflow_error &h) {
+        std::cout<<h.what()<<std::endl;
+        usage(argv[0]);
         exit(2);
     }
 

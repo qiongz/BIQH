@@ -34,25 +34,25 @@ public:
      \param t hopping strength,
      \param U onsite replusive interaction strength
      */
-    void set_hamil(double _lx, double _ly, long _nphi, long _nLL,double _d,double _Delta_SAS,double _Delta_V,double _Delta_Z,int nthread);  //!< Initialize hamiltonian matrix
-    void peer_set_hamil(double,double,double,int,long,long);
+    void set_hamil(const double &_lx, const double &_ly,const  long &_nphi, const long &_nLL,const double &_d,const double &_Delta_SAS,const double &_Delta_V,const double &_Delta_Z,const int &nthread);  //!< Initialize hamiltonian matrix
+    void peer_set_hamil(const double&,const double&,const double&,const int&,const long&,const long&);
 
     const hamil & operator=(const hamil &);
     /** Return the ground state energy of the system */
-    double ground_state_energy();
-    double pseudospin_Sz();
-    double pseudospin_Sx();
-    double spinflip_tunneling();
-    double Sz();
+    double ground_state_energy() const;
+    double pseudospin_Sz()const;
+    double pseudospin_Sx()const;
+    double spinflip_tunneling()const;
+    double Sz()const;
 
     /** Diagonalize the full hamiltonian */
     void init_Coulomb_matrix();
-    double Coulomb_interaction(int alpha,int q_x, int q_y);
+    double Coulomb_interaction(const int &alpha,const int &q_x,const  int &q_y);
     void diag();
 
     /** Print the hamiltonian matrix */
-    void print_hamil(int range);
+    void print_hamil(int &range)const;
     /** Print the eigenvalues of the system */
-    void print_eigen(int range);
+    void print_eigen(int &range)const;
 };
 #endif
